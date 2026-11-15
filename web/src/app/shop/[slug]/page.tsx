@@ -3,14 +3,18 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ProductDetail } from '@/components/ProductDetail'
 import { getProduct, getProducts, memberDiscount } from '@/lib/data'
+import { pageMeta } from '@/lib/seo'
+import { money } from '@/lib/utils'
 
 export async function generateStaticParams() {
   return (await getProducts()).map((p) => ({ slug: p.slug }))
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const product = await getProduct((await params).slug)
-  return { title: product ? product.name : 'Shop' }
+  const slug = (await params).slug
+  const product = await getProduct(slug)
+  if (!product) return { title: 'Shop' }
+  return pageMeta(product.name, `${product.name} (${product.sub}), ${money(product.price)} from the Deadly Drops club shop. Free pickup at the courts in Chula Vista, member discount at checkout.`, `/shop/${slug}/`)
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {

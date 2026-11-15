@@ -3,8 +3,9 @@ import { ContactForm } from '@/components/ContactForm'
 import c from '@/components/contact.module.css'
 import { getClub, getFaqs } from '@/lib/data'
 import { asset } from '@/lib/utils'
+import { pageMeta } from '@/lib/seo'
 
-export const metadata: Metadata = { title: 'Contact us' }
+export const metadata: Metadata = pageMeta('Contact us', 'Contact Deadly Drops Pickleball in Chula Vista, CA about joining, tournaments, coaching or a shop order. Email info@deadlydropspickleball.com.', '/contact/')
 
 export default async function ContactPage() {
   const [club, faqs] = await Promise.all([getClub(), getFaqs()])

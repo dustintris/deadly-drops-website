@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import { ShopCatalogue } from '@/components/ShopCatalogue'
 import { getProducts, memberDiscount } from '@/lib/data'
+import { pageMeta } from '@/lib/seo'
 
-export const metadata: Metadata = { title: 'Shop' }
+export const metadata: Metadata = pageMeta('Shop', 'Deadly Drops club shop: paddles, apparel and court gear, with free pickup at the courts and a member discount at checkout.', '/shop/')
 
 export default async function ShopPage() {
   const products = await getProducts()

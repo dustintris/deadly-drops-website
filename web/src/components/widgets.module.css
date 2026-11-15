@@ -1,5 +1,12 @@
 /* ---------- ticker ---------- */
-.ticker { background: var(--accent); color: var(--on-accent); overflow: hidden; border-block: 1px solid var(--accent); }
+.ticker { position: relative; background: var(--accent); color: var(--on-accent); overflow: hidden; border-block: 1px solid var(--accent); }
+.ticker[data-paused='true'] .tickTrack { animation-play-state: paused; }
+.tickPause {
+  position: absolute; right: 0; top: 0; bottom: 0; min-width: 52px; padding: 0 14px;
+  background: var(--accent); color: var(--on-accent); font-size: 12px;
+  box-shadow: -16px 0 16px var(--accent);
+}
+.tickPause:hover { background: var(--accent-soft); }
 .tickTrack { display: flex; width: max-content; animation: marquee 38s linear infinite; }
 .tickTrack > div { display: flex; align-items: center; gap: 28px; padding: 12px 14px; white-space: nowrap; }
 .tickTrack span { font-family: var(--font-display); font-size: 20px; text-transform: uppercase; letter-spacing: .02em; }

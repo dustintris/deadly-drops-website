@@ -5,35 +5,53 @@ import type { Spotlight as SpotlightT } from '@/lib/types'
 import { asset } from '@/lib/utils'
 import styles from './widgets.module.css'
 
-/** Member spotlight carousel. Rotates every 10s, pauses on hover/focus and under reduced motion. */
+/**
+ * Member spotlight carousel. Rotates every 10s with a visible pause button (WCAG 2.2.2), also pauses on
+ * hover/focus and stays still under reduced motion. Only changes the user makes are announced.
+ */
 export function Spotlight({ items }: { items: SpotlightT[] }) {
   const [i, setI] = useState(0)
-  const [paused, setPaused] = useState(false)
+  const [hover, setHover] = useState(false)
+  const [stopped, setStopped] = useState(false)
+  const [announce, setAnnounce] = useState('')
   const s = items[i]
-  const go = (d: number) => setI((x) => (x + d + items.length) % items.length)
+
+  const show = (next: number, userAction: boolean) => {
+    const k = (next + items.length) % items.length
+    setI(k)
+    if (userAction) setAnnounce(`${items[k].name}, ${k + 1} of ${items.length}`)
+  }
 
   useEffect(() => {
-    if (paused || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const id = setTimeout(() => go(1), 10000)
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) setStopped(true)
+  }, [])
+
+  useEffect(() => {
+    if (stopped || hover) return
+    const id = setTimeout(() => setI((x) => (x + 1) % items.length), 10000)
     return () => clearTimeout(id)
-  })
+  }, [i, stopped, hover, items.length])
 
   return (
     <div
       className={styles.spot}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocusCapture={() => setPaused(true)}
-      onBlurCapture={() => setPaused(false)}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      onFocusCapture={() => setHover(true)}
+      onBlurCapture={() => setHover(false)}
     >
       <div className="head-row">
         <p className="eyebrow">Member spotlight</p>
         <div className={styles.spotArrows}>
-          <button onClick={() => go(-1)} aria-label="Previous member">←</button>
-          <button onClick={() => go(1)} aria-label="Next member">→</button>
+          <button onClick={() => setStopped((x) => !x)} aria-pressed={stopped} aria-label={stopped ? 'Play spotlight' : 'Pause spotlight'}>
+            <span aria-hidden="true">{stopped ? '▶' : '❚❚'}</span>
+          </button>
+          <button onClick={() => show(i - 1, true)} aria-label="Previous member">←</button>
+          <button onClick={() => show(i + 1, true)} aria-label="Next member">→</button>
         </div>
       </div>
-      <div className={styles.spotGrid} aria-live="polite">
+      <p className="sr" role="status" aria-atomic="true">{announce}</p>
+      <div className={styles.spotGrid}>
         <div className={`photo ${styles.spotPhoto}`} key={s.slug}>
           <img src={asset(s.photo)} alt="" loading="lazy" style={{ objectPosition: s.photoPosition }} />
           <span className="badge">{s.division}</span>
@@ -48,7 +66,7 @@ export function Spotlight({ items }: { items: SpotlightT[] }) {
           </dl>
           <div className={styles.dots} role="group" aria-label="Choose member">
             {items.map((m, k) => (
-              <button key={m.slug} aria-label={m.name} aria-pressed={k === i} onClick={() => setI(k)} />
+              <button key={m.slug} aria-label={m.name} aria-pressed={k === i} onClick={() => show(k, true)} />
             ))}
           </div>
         </div>

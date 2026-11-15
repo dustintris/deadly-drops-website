@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { LiveScore } from '@/components/LiveScore'
 import { Monogram } from '@/components/Monogram'
@@ -7,6 +8,9 @@ import { NextEventBlock, LadderBoard } from '@/components/EventBits'
 import { getClub, getLadder, getLiveMatch, getMemberCount, getMembers, getNextEvent, getSpotlights, getTicker } from '@/lib/data'
 import { asset } from '@/lib/utils'
 import s from './home.module.css'
+import { pageMeta } from '@/lib/seo'
+
+export const metadata: Metadata = pageMeta(undefined, 'Pickleball tournaments and community events in Chula Vista, CA. Register for Dominate Charity 2026: $55 entry, cash prizes for the podium.', '/')
 
 export default async function Home() {
   const [club, members, count, live, spotlights, event, ladder, ticker] = await Promise.all([

@@ -2,8 +2,9 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { GalleryGrid } from '@/components/GalleryGrid'
 import { getGallery } from '@/lib/data'
+import { pageMeta } from '@/lib/seo'
 
-export const metadata: Metadata = { title: 'Gallery' }
+export const metadata: Metadata = pageMeta('Gallery', 'Photos from Deadly Drops Pickleball tournaments, ladder nights, clinics and socials in Chula Vista, CA. Send us yours to add.', '/gallery/')
 
 export default async function GalleryPage() {
   const items = await getGallery()

@@ -8,8 +8,9 @@ import { SeasonList } from '@/components/SeasonList'
 import t from '@/components/tournaments.module.css'
 import { getBracket, getChampions, getDivisionGuide, getEvents, getLadder, getNextEvent } from '@/lib/data'
 import { money } from '@/lib/utils'
+import { pageMeta } from '@/lib/seo'
 
-export const metadata: Metadata = { title: 'Tournaments' }
+export const metadata: Metadata = pageMeta('Tournaments', 'Dominate Charity 2026 in Chula Vista: $55 entry or $65 with a meal, tournament shirt included, round robin into a medal round, $100 gold prize.', '/tournaments/')
 
 export default async function TournamentsPage() {
   const [event, events, guide, bracket, champions, ladder] = await Promise.all([
