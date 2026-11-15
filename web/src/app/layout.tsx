@@ -36,6 +36,23 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <style dangerouslySetInnerHTML={{ __html: themeToCss(theme) }} />
       </head>
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'SportsOrganization',
+              name: club.name,
+              sport: 'Pickleball',
+              slogan: club.tagline,
+              email: club.email,
+              telephone: club.phoneHref.replace('tel:', ''),
+              address: { '@type': 'PostalAddress', addressLocality: 'Chula Vista', addressRegion: 'CA', postalCode: club.postcode, addressCountry: 'US' },
+              url: process.env.NEXT_PUBLIC_SITE_URL || 'https://deadlydropspickleball.com',
+              logo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://deadlydropspickleball.com'}${process.env.NEXT_PUBLIC_BASE_PATH || ''}/logo.png`,
+            }),
+          }}
+        />
         <a className="skip" href="#main">Skip to content</a>
         <CartProvider>
           <p className={shell.notice}>Preview build · member names, ratings, results, shop items and photos are sample content</p>

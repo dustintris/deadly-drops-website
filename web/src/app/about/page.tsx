@@ -5,8 +5,9 @@ import { PageHero } from '@/components/PageHero'
 import a from '@/components/about.module.css'
 import { getClub, getCommittee, getNextEvent } from '@/lib/data'
 import { asset, money } from '@/lib/utils'
+import { pageMeta } from '@/lib/seo'
 
-export const metadata: Metadata = { title: 'About us' }
+export const metadata: Metadata = pageMeta('About us', 'Deadly Drops Pickleball runs structured, DUPR-friendly tournaments in Chula Vista, CA, built on sportsmanship and open to every age and level.', '/about/')
 
 export default async function AboutPage() {
   const [club, committee, event] = await Promise.all([getClub(), getCommittee(), getNextEvent()])

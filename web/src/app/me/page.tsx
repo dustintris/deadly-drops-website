@@ -3,8 +3,9 @@ import { Dashboard } from '@/components/Dashboard'
 import { TonightCard } from '@/components/TonightCard'
 import m from '@/components/me.module.css'
 import { getMe, getProfile } from '@/lib/data'
+import { pageMeta } from '@/lib/seo'
 
-export const metadata: Metadata = { title: 'My play' }
+export const metadata: Metadata = pageMeta('My play', 'Your Deadly Drops ladder, matches and results.', '/me/', { noindex: true })
 
 export default async function MePage() {
   const me = await getMe()

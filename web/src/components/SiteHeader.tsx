@@ -26,7 +26,8 @@ export function SiteHeader({ city }: { city: string }) {
   const inShop = path.startsWith('/shop') || path.startsWith('/cart')
   const current = NAV.find((n) => n.href !== '/' && isActive(path, n.href))
 
-  useEffect(() => setOpen(false), [path])
+  const [menuPath, setMenuPath] = useState(path)
+  if (menuPath !== path) { setMenuPath(path); setOpen(false) } // close the menu after navigation
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)

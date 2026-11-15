@@ -3,14 +3,17 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Dashboard } from '@/components/Dashboard'
 import { getMembers, getProfile } from '@/lib/data'
+import { pageMeta } from '@/lib/seo'
 
 export async function generateStaticParams() {
   return (await getMembers()).map((m) => ({ slug: m.slug }))
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const p = await getProfile((await params).slug)
-  return { title: p ? p.member.name : 'Member' }
+  const slug = (await params).slug
+  const p = await getProfile(slug)
+  if (!p) return { title: 'Member' }
+  return pageMeta(p.member.name, `${p.member.name} plays division ${p.member.division} at Deadly Drops Pickleball, Chula Vista: rating ${p.member.rating.toFixed(2)}, season record ${p.record}.`, `/members/${slug}/`)
 }
 
 export default async function MemberPage({ params }: { params: Promise<{ slug: string }> }) {

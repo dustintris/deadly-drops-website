@@ -48,12 +48,12 @@ export function RegistrationForm({ event }: { event: ClubEvent }) {
         <div className={styles.regGrid}>
           <div className="field">
             <label htmlFor="reg-name">Full name</label>
-            <input id="reg-name" className="input" value={form.name} onChange={(e) => set('name', e.target.value)} aria-invalid={!!errors.name} aria-describedby="reg-name-err" autoComplete="name" />
+            <input id="reg-name" required aria-required="true" className="input" value={form.name} onChange={(e) => set('name', e.target.value)} aria-invalid={!!errors.name} aria-describedby="reg-name-err" autoComplete="name" />
             {errors.name && <p id="reg-name-err" className="error">{errors.name}</p>}
           </div>
           <div className="field">
             <label htmlFor="reg-email">Email</label>
-            <input id="reg-email" type="email" inputMode="email" className="input" value={form.email} onChange={(e) => set('email', e.target.value)} onBlur={() => form.email && !isEmail(form.email) && setErrors((x) => ({ ...x, email: `${EMAIL_ERROR} Your QR ticket goes here.` }))} aria-invalid={!!errors.email} aria-describedby="reg-email-err" autoComplete="email" placeholder="you@email.com" />
+            <input id="reg-email" required aria-required="true" type="email" inputMode="email" className="input" value={form.email} onChange={(e) => set('email', e.target.value)} onBlur={() => form.email && !isEmail(form.email) && setErrors((x) => ({ ...x, email: `${EMAIL_ERROR} Your QR ticket goes here.` }))} aria-invalid={!!errors.email} aria-describedby="reg-email-err" autoComplete="email" placeholder="you@email.com" />
             {errors.email && <p id="reg-email-err" className="error">{errors.email}</p>}
           </div>
         </div>

@@ -44,12 +44,12 @@ export function ContactForm({ email }: { email: string }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
         <div className="field">
           <label htmlFor="c-name">Your name</label>
-          <input id="c-name" className="input" placeholder="Full name" value={f.name} onChange={(e) => set('name', e.target.value)} aria-invalid={!!err.name} aria-describedby="c-name-e" autoComplete="name" />
+          <input id="c-name" required aria-required="true" className="input" placeholder="Full name" value={f.name} onChange={(e) => set('name', e.target.value)} aria-invalid={!!err.name} aria-describedby="c-name-e" autoComplete="name" />
           {err.name && <p id="c-name-e" className="error">{err.name}</p>}
         </div>
         <div className="field">
           <label htmlFor="c-email">Email</label>
-          <input id="c-email" type="email" inputMode="email" className="input" placeholder="you@email.com" value={f.email} onChange={(e) => set('email', e.target.value)} onBlur={() => f.email && !isEmail(f.email) && setErr((x) => ({ ...x, email: `${EMAIL_ERROR} We reply to this address.` }))} aria-invalid={!!err.email} aria-describedby="c-email-e" autoComplete="email" />
+          <input id="c-email" required aria-required="true" type="email" inputMode="email" className="input" placeholder="you@email.com" value={f.email} onChange={(e) => set('email', e.target.value)} onBlur={() => f.email && !isEmail(f.email) && setErr((x) => ({ ...x, email: `${EMAIL_ERROR} We reply to this address.` }))} aria-invalid={!!err.email} aria-describedby="c-email-e" autoComplete="email" />
           {err.email && <p id="c-email-e" className="error">{err.email}</p>}
         </div>
       </div>
@@ -63,7 +63,7 @@ export function ContactForm({ email }: { email: string }) {
       </fieldset>
       <div className="field">
         <label htmlFor="c-msg">Message</label>
-        <textarea id="c-msg" className="input" placeholder="Tell us what you need. If you've never played, say so and we'll pair you with someone patient." value={f.message} onChange={(e) => set('message', e.target.value)} aria-invalid={!!err.message} aria-describedby="c-msg-e" />
+        <textarea id="c-msg" required aria-required="true" className="input" placeholder="Tell us what you need. If you've never played, say so and we'll pair you with someone patient." value={f.message} onChange={(e) => set('message', e.target.value)} aria-invalid={!!err.message} aria-describedby="c-msg-e" />
         {err.message && <p id="c-msg-e" className="error">{err.message}</p>}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>

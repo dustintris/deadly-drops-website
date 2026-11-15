@@ -76,7 +76,7 @@ button { cursor: pointer; background: none; border: 0; }
 .light .btn-ghost { border-color: rgb(var(--ink-dark-rgb) / .3); color: var(--ink-dark); }
 .light .btn-ghost:hover { border-color: var(--ink-dark); color: var(--ink-dark); }
 .btn-dark { background: var(--ink-dark); color: var(--ink); }
-.btn-dark:hover { background: #000; }
+.btn-dark:hover { background: color-mix(in srgb, var(--ink-dark) 80%, var(--bg)); }
 .btn-line { border: 1px solid rgb(var(--accent-rgb) / .5); color: var(--accent); }
 .btn-line:hover { background: rgb(var(--accent-rgb) / .1); }
 .btn-sm { min-height: 40px; padding: 0 18px; font-size: 11px; }
@@ -133,8 +133,8 @@ textarea.input { padding: 14px 16px; min-height: 140px; resize: vertical; }
 .light .input { background: var(--paper-card); border-color: rgb(var(--ink-dark-rgb) / .15); color: var(--ink-dark); }
 .light .input::placeholder { color: rgb(var(--ink-dark-rgb) / .4); }
 .light .input:focus { border-color: var(--accent-deep); box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / .45); }
-.error { color: #ff8f8f; font-size: 13px; }
-.light .error { color: #b3261e; }
+.error { color: var(--danger); font-size: 13px; }
+.light .error { color: var(--danger-on-light); }
 
 /* ---------- motion ---------- */
 @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }

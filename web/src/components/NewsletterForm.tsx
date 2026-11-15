@@ -24,6 +24,8 @@ export function NewsletterForm() {
       <label htmlFor="join-email" className={styles.joinLabel}>Your email</label>
       <input
         id="join-email"
+        required
+        aria-required="true"
         className="input"
         type="email"
         autoComplete="email"
