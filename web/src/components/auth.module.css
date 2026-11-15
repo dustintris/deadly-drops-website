@@ -16,7 +16,7 @@
 .keep { display: flex; align-items: center; gap: 10px; font-size: 14px; min-height: 44px; cursor: pointer; }
 .keep input { width: 18px; height: 18px; accent-color: var(--accent); }
 .forgot { font-size: 13px; font-weight: 600; color: var(--accent); min-height: 44px; }
-.or { display: flex; align-items: center; gap: 12px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .4); }
+.or { display: flex; align-items: center; gap: 12px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .66); }
 .or::before, .or::after { content: ''; flex: 1; height: 1px; background: rgb(var(--ink-rgb) / .12); }
 .switch { text-align: center; }
 @media (max-width: 900px) {

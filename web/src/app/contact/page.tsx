@@ -13,7 +13,6 @@ export default async function ContactPage() {
       <section className="dark">
         <div className={`wrap ${c.grid}`}>
           <div className={c.formCol}>
-            <p className="eyebrow">Contact us</p>
             <h1 className="display d-l">Ask us anything</h1>
             <p className="lede">A real member reads these. If it&rsquo;s about your first tournament, say so and we&rsquo;ll walk you through it.</p>
             <ContactForm email={club.email} />

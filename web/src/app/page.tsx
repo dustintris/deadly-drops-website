@@ -19,7 +19,7 @@ export default async function Home() {
       <section className={s.hero}>
         <picture>
           <source media="(max-width: 720px)" srcSet={asset('/images/stand-in/player-palms.jpg')} />
-          <img className={s.heroImg} src={asset('/images/stand-in/net-closeup.jpg')} alt="" />
+          <img className={s.heroImg} src={asset('/images/stand-in/net-closeup.jpg')} alt="" fetchPriority="high" />
         </picture>
         <div className={`wrap ${s.heroInner}`}>
           <div className={s.heroCopy} data-enter>

@@ -11,7 +11,7 @@ export const club: Club = {
   city: 'Chula Vista, CA',
   postcode: '91915',
   email: 'info@deadlydropspickleball.com',
-  phone: '1.619.888.1411',
+  phone: '(619) 888-1411',
   phoneHref: 'tel:+16198881411',
   about:
     'Deadly Drops Pickleball is a premier destination for players in Chula Vista. We focus on structured tournaments and community events built on sportsmanship, sharpening competitive skills, and an inclusive environment where every age and skill level belongs.',

@@ -60,7 +60,7 @@ export function SiteHeader({ city }: { city: string }) {
         <div className={styles.actions}>
           <Link href="/login/" className={styles.login}>Log in</Link>
           {inShop ? (
-            <Link href="/cart/" className="btn btn-accent btn-sm">Cart · {count}</Link>
+            <Link href="/cart/" className="btn btn-accent btn-sm" aria-label={`Cart, ${count} ${count === 1 ? 'item' : 'items'}`}>Cart · {count}</Link>
           ) : (
             <Link href="/signup/" className="btn btn-accent btn-sm">Sign up to play</Link>
           )}
@@ -92,6 +92,7 @@ export function SiteHeader({ city }: { city: string }) {
           </li>
         </ul>
       </div>
+      <p className="sr" role="status" aria-atomic="true">{count} {count === 1 ? 'item' : 'items'} in cart</p>
     </header>
   )
 }

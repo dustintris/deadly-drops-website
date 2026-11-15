@@ -12,7 +12,6 @@ export default async function GalleryPage() {
       <div className="wrap">
         <div className="head-row">
           <div className="stack-16">
-            <p className="eyebrow">Gallery</p>
             <h1 className="display d-l">Our time on court</h1>
             <p className="lede">Shot by members, mostly on phones. Send us yours, tag the event, and we&rsquo;ll add them.</p>
           </div>

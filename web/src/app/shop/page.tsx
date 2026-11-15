@@ -11,7 +11,6 @@ export default async function ShopPage() {
       <div className="wrap">
         <div className="head-row" style={{ marginBottom: 0 }}>
           <div className="stack-16">
-            <p className="eyebrow">Club shop</p>
             <h1 className="display d-l">Wear the drop</h1>
             <p className="lede">
               Club kit, paddles and the small stuff you forgot in the car. Members get {Math.round(memberDiscount * 100)}% off

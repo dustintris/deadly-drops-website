@@ -2,7 +2,7 @@ import { asset } from '@/lib/utils'
 import styles from './page.module.css'
 
 type Props = {
-  eyebrow: string
+  eyebrow?: string
   title: React.ReactNode
   lede?: React.ReactNode
   photo?: string
@@ -18,7 +18,7 @@ export function PageHero({ eyebrow, title, lede, photo, photoPosition = '50% 40%
       {photo && <img className={styles.heroImg} src={asset(photo)} alt="" style={{ objectPosition: photoPosition }} />}
       <div className={`wrap ${styles.heroInner}`}>
         <div className={styles.heroCopy} data-enter>
-          <p className="eyebrow">{eyebrow}</p>
+          {eyebrow && <p className="eyebrow">{eyebrow}</p>}
           <h1 className="display d-l">{title}</h1>
           {lede && <p className="lede">{lede}</p>}
           {children}

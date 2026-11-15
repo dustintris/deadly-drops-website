@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { EMAIL_ERROR, focusFirstError, isEmail } from '@/lib/forms'
 
 const TOPICS = ['Joining', 'Tournaments', 'Coaching', 'Shop order', 'Something else']
 
@@ -33,9 +34,10 @@ export function ContactForm({ email }: { email: string }) {
         e.preventDefault()
         const x: Record<string, string> = {}
         if (!f.name.trim()) x.name = 'Enter your name.'
-        if (!/^\S+@\S+\.\S+$/.test(f.email)) x.email = 'Enter an email like name@example.com so we can reply.'
+        if (!isEmail(f.email)) x.email = `${EMAIL_ERROR} We reply to this address.`
         if (f.message.trim().length < 5) x.message = 'Tell us a little about what you need.'
         setErr(x)
+        focusFirstError(x, [['name', 'c-name'], ['email', 'c-email'], ['message', 'c-msg']])
         if (!Object.keys(x).length) setSent(true)
       }}
     >
@@ -47,7 +49,7 @@ export function ContactForm({ email }: { email: string }) {
         </div>
         <div className="field">
           <label htmlFor="c-email">Email</label>
-          <input id="c-email" type="email" className="input" placeholder="you@email.com" value={f.email} onChange={(e) => set('email', e.target.value)} aria-invalid={!!err.email} aria-describedby="c-email-e" autoComplete="email" />
+          <input id="c-email" type="email" inputMode="email" className="input" placeholder="you@email.com" value={f.email} onChange={(e) => set('email', e.target.value)} onBlur={() => f.email && !isEmail(f.email) && setErr((x) => ({ ...x, email: `${EMAIL_ERROR} We reply to this address.` }))} aria-invalid={!!err.email} aria-describedby="c-email-e" autoComplete="email" />
           {err.email && <p id="c-email-e" className="error">{err.email}</p>}
         </div>
       </div>
