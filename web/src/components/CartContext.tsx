@@ -15,13 +15,11 @@ type Cart = {
 }
 
 const CartCtx = createContext<Cart | null>(null)
-const KEY = 'dd-cart-v1'
+const KEY = 'dd-cart-v2'
 
 /* Example basket so the cart screen is never empty in the preview. */
 const STARTER: CartLine[] = [
-  { slug: 'club-paddle', name: 'Club Paddle', variant: '4 ¼" grip · lime edge', unit: 149, qty: 1 },
-  { slug: 'deadly-drops-tee', name: 'Deadly Drops Tee', variant: 'Medium · lime on black', unit: 32, qty: 2 },
-  { slug: 'grip-tape-3-pack', name: 'Grip Tape 3-pack', variant: 'Tacky lime', unit: 14, qty: 1 },
+  { slug: 'dry-fit-t-shirt', name: 'Dry Fit T-Shirt', variant: 'Black', unit: 25, qty: 1 },
 ]
 
 /**

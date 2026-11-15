@@ -1,17 +1,33 @@
 /**
- * Data access for every page. Today these read local content files; when the
- * club backend exists, swap each body for an API / database call. Pages only
- * import from here, never from src/content directly.
+ * Data access for every page. Owner-editable content (club info, events, ticker, shop, gallery,
+ * community, FAQs, page copy, theme) comes from the MIS content store via getContent(); member,
+ * ladder and results data are still sample content in src/content/sample.ts.
+ * Pages only import from here, never from src/content or the store directly.
  */
-import { club, events, faqs, tickerItems } from '@/content/club'
+import { getContent } from './content'
+import type { CommunityPostT, PageKey } from './content-schema'
 import * as sample from '@/content/sample'
+import type { Club, ClubEvent, GalleryItem, Product } from './types'
 import type { Division } from './types'
 
-export const getClub = async () => club
-export const getEvents = async () => events
-export const getNextEvent = async () => events.find((e) => e.registrationOpen) ?? events[0]
-export const getFaqs = async () => faqs
-export const getTicker = async () => tickerItems
+export const getClub = async (): Promise<Club> => (await getContent()).settings
+export const getSettings = async () => (await getContent()).settings
+export const getTheme = async () => (await getContent()).theme
+export const getNotice = async () => {
+  const n = (await getContent()).settings.notice
+  return n.enabled && n.text ? n : null
+}
+export const getShopSettings = async () => (await getContent()).settings.shop
+export const getPageCopy = async (key: PageKey) => (await getContent()).pages[key]
+
+export const getEvents = async (): Promise<ClubEvent[]> => (await getContent()).events.filter((e) => e.visible)
+export const getNextEvent = async (): Promise<ClubEvent> => {
+  const list = await getEvents()
+  const all = (await getContent()).events
+  return list.find((e) => e.featured) ?? list.find((e) => e.registrationOpen) ?? list[0] ?? all[0]
+}
+export const getFaqs = async () => (await getContent()).faqs.filter((f) => f.visible)
+export const getTicker = async () => (await getContent()).ticker.filter((t) => t.visible).map((t) => t.text)
 
 export const getMembers = async (division?: Division) =>
   division ? sample.members.filter((m) => m.division === division) : sample.members
@@ -25,11 +41,23 @@ export const getChampions = async () => sample.champions
 export const getDivisionGuide = async () => sample.divisionGuide
 export const getCommittee = async () => sample.committee
 
-export const getProducts = async () => sample.products
-export const getProduct = async (slug: string) => sample.products.find((p) => p.slug === slug) ?? null
-export const memberDiscount = sample.MEMBER_DISCOUNT
+export const getProducts = async (): Promise<Product[]> =>
+  (await getContent()).products.filter((p) => p.visible).map((p) => ({ ...p, stock: p.stock ?? null }))
+export const getProduct = async (slug: string) => (await getProducts()).find((p) => p.slug === slug) ?? null
+export const getMemberDiscount = async () => (await getContent()).settings.shop.memberDiscount
 
-export const getGallery = async () => sample.gallery
+export const getGallery = async (): Promise<GalleryItem[]> =>
+  (await getContent()).gallery.filter((g) => g.visible).map((g) => ({
+    id: g.id, caption: g.caption, meta: g.meta, album: g.album, src: g.image.src, position: g.image.position ?? '50% 50%',
+    alt: g.image.alt, wide: g.wide, shotBy: g.shotBy,
+  }))
+
+/* ---------- community ---------- */
+const livePosts = async () =>
+  (await getContent()).posts.filter((p) => p.status === 'published').sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
+export const getCommunityPosts = async (kind?: CommunityPostT['kind']) => (await livePosts()).filter((p) => !kind || p.kind === kind)
+export const getCommunityPost = async (slug: string) => (await livePosts()).find((p) => p.slug === slug) ?? null
+export const getCommunityPhotos = async () => (await getGallery()).filter((g) => g.album === 'Community' || g.album === 'Socials')
 export const getMe = async () => sample.me
 
 /** Player dashboard numbers. Sample: derived from the member until real match data exists. */

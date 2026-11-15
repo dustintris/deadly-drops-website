@@ -5,15 +5,21 @@ export type Club = {
   city: string
   postcode: string
   email: string
+  /** empty = not shown on the site */
   phone: string
   phoneHref: string
   about: string
   highlights: string[]
   howItWorks: { title: string; body: string }[]
   favorites: { title: string; body: string }[]
+  social?: { instagram?: string; facebook?: string; youtube?: string; tiktok?: string }
+  aboutPoints?: { title: string; body: string }[]
 }
 
 export type Prize = { place: 'Gold' | 'Silver' | 'Bronze'; amount: number }
+
+/** An image chosen in the MIS: a stand-in, the logo, or an uploaded /media file. */
+export type ImageRef = { src: string; alt: string; position?: string }
 
 export type ClubEvent = {
   slug: string
@@ -28,6 +34,15 @@ export type ClubEvent = {
   format: string
   prizes: Prize[]
   registrationOpen: boolean
+  id?: string
+  /** external registration page (e.g. a bracket platform); the site links out when set */
+  registrationUrl?: string
+  location?: string
+  startTime?: string
+  image?: ImageRef
+  /** the event the homepage and tournaments hero feature */
+  featured?: boolean
+  visible?: boolean
 }
 
 export type Division = '2.5' | '3.0' | '3.5' | '4.0' | '4.5+'
@@ -63,17 +78,24 @@ export type Product = {
   category: 'Paddles' | 'Apparel' | 'Gear' | 'Balls'
   description?: string
   options?: { label: string; values: string[] }[]
+  id?: string
+  images?: ImageRef[]
+  /** null = not tracked; 0 = sold out */
+  stock?: number | null
+  visible?: boolean
 }
 
 export type GalleryItem = {
   id: string
   caption: string
   meta: string
-  album: 'Tournaments' | 'Ladder' | 'Clinics' | 'Socials'
+  album: 'Tournaments' | 'Ladder' | 'Clinics' | 'Socials' | 'Community'
   src: string
   position: string
   wide?: boolean
   shotBy?: string
+  alt?: string
+  visible?: boolean
 }
 
 export type MatchResult = { result: 'W' | 'L'; opponents: string; date: string; score: string }

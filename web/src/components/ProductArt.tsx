@@ -1,4 +1,5 @@
-import type { Product } from '@/lib/types'
+import type { ImageRef, Product } from '@/lib/types'
+import { asset } from '@/lib/utils'
 import styles from './shop.module.css'
 
 const ICONS: Record<Product['category'], React.ReactNode> = {
@@ -27,10 +28,18 @@ const ICONS: Record<Product['category'], React.ReactNode> = {
 }
 
 /**
- * Product illustration shown until the club supplies product photography.
- * Production: replace with <img src={product.photo}> once photos exist.
+ * Product picture: the owner's first product photo when there is one, otherwise a drawn illustration.
+ * Pass `image` to show a specific photo (the detail page uses this to switch between photos).
  */
-export function ProductArt({ product, large = false }: { product: Product; large?: boolean }) {
+export function ProductArt({ product, large = false, image }: { product: Product; large?: boolean; image?: ImageRef }) {
+  const photo = image ?? product.images?.[0]
+  if (photo?.src) {
+    return (
+      <div className={`${styles.art} ${styles.artPhoto} ${large ? styles.artLarge : ''}`}>
+        <img src={asset(photo.src)} alt={photo.alt || product.name} style={{ objectPosition: photo.position }} loading={large ? 'eager' : 'lazy'} />
+      </div>
+    )
+  }
   return (
     <div className={`${styles.art} ${large ? styles.artLarge : ''}`} role="img" aria-label={`${product.name} illustration`}>
       <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">

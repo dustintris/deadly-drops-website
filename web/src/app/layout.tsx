@@ -1,10 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { CartProvider } from '@/components/CartContext'
-import { MobileTabBar } from '@/components/MobileTabBar'
-import { SiteFooter } from '@/components/SiteFooter'
-import { SiteHeader } from '@/components/SiteHeader'
-import shell from '@/components/shell.module.css'
-import { getClub } from '@/lib/data'
+import { getClub, getTheme } from '@/lib/data'
 import { body, display, mono } from '@/theme/fonts'
 import { defaultTheme, themeToCss } from '@/theme/tokens'
 import './globals.css'
@@ -27,9 +22,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { themeColor: defaultTheme.bg, width: 'device-width', initialScale: 1, viewportFit: 'cover' }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const club = await getClub()
-  // Future MIS: load the club's saved theme here instead of defaultTheme.
-  const theme = defaultTheme
+  // colours and club facts come from the MIS (Admin → Colours, Club info)
+  const [club, theme] = await Promise.all([getClub(), getTheme()])
   return (
     <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <head>
@@ -46,21 +40,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               sport: 'Pickleball',
               slogan: club.tagline,
               email: club.email,
-              telephone: club.phoneHref.replace('tel:', ''),
+              ...(club.phoneHref ? { telephone: club.phoneHref.replace('tel:', '') } : {}),
+              sameAs: Object.values(club.social ?? {}).filter(Boolean),
               address: { '@type': 'PostalAddress', addressLocality: 'Chula Vista', addressRegion: 'CA', postalCode: club.postcode, addressCountry: 'US' },
               url: process.env.NEXT_PUBLIC_SITE_URL || 'https://deadlydropspickleball.com',
               logo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://deadlydropspickleball.com'}${process.env.NEXT_PUBLIC_BASE_PATH || ''}/logo.png`,
-            }),
+            }).replace(/</g, '\\u003c'),
           }}
         />
-        <a className="skip" href="#main">Skip to content</a>
-        <CartProvider>
-          <p className={shell.notice}>Preview build · member names, ratings, results, shop items and photos are sample content</p>
-          <SiteHeader city={club.city} />
-          <main id="main">{children}</main>
-          <SiteFooter club={club} />
-          <MobileTabBar />
-        </CartProvider>
+        {children}
       </body>
     </html>
   )
