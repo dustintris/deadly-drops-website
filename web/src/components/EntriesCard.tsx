@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import type { ClubEvent } from '@/lib/types'
+import { eventState } from '@/lib/events'
 import { money } from '@/lib/utils'
 import styles from './tournaments.module.css'
 
@@ -15,7 +16,7 @@ export function EntriesCard({ event }: { event: ClubEvent }) {
     return () => clearInterval(id)
   }, [event.date])
 
-  if (event.date && now !== null) {
+  if (event.date && now !== null && eventState(event) !== 'past') {
     const ms = Math.max(0, new Date(event.date).getTime() - now)
     const parts = [
       [Math.floor(ms / 864e5), 'Days'],
@@ -30,6 +31,18 @@ export function EntriesCard({ event }: { event: ClubEvent }) {
             <div key={l} data-accent={i === 2}><strong>{String(n).padStart(2, '0')}</strong><span>{l}</span></div>
           ))}
         </div>
+      </div>
+    )
+  }
+
+  if (!event.prizes.length) {
+    return (
+      <div className={styles.entries}>
+        <p className="eyebrow">Entry</p>
+        <ol className={styles.pool}>
+          <li><span>Per player</span><strong>{money(event.entryFee)}</strong></li>
+          {event.includes.slice(0, 3).map((x) => <li key={x}><span>{x}</span></li>)}
+        </ol>
       </div>
     )
   }

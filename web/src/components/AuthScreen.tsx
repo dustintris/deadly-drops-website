@@ -8,7 +8,7 @@ export async function AuthScreen({ initial }: { initial: 'login' | 'signup' }) {
   return (
     <section className={styles.auth}>
       <div className={styles.visual}>
-        <img src={asset('/images/stand-in/net-closeup.jpg')} alt="" />
+        <img src={asset('/images/club/court-group-photo.jpg')} alt="" />
         <div className={styles.visualCopy}>
           <p className="display d-m">Everybody&rsquo;s welcome. Nobody coasts.</p>
           <p className="muted">One account covers tournament entry, the ladder and the shop discount.</p>

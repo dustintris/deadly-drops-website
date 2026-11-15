@@ -5,7 +5,7 @@ import { NewsletterForm } from './NewsletterForm'
 import styles from './shell.module.css'
 
 const COLS = [
-  { title: 'Club', links: [['About us', '/about/'], ['Members', '/members/'], ['My play', '/me/']] },
+  { title: 'Club', links: [['About us', '/about/'], ['Community', '/community/'], ['Members', '/members/'], ['My play', '/me/']] },
   { title: 'Play', links: [['Tournaments', '/tournaments/'], ['Register', '/tournaments/#register'], ['Ladder', '/tournaments/#ladder']] },
   { title: 'More', links: [['Shop', '/shop/'], ['Gallery', '/gallery/'], ['Contact', '/contact/']] },
 ]
@@ -20,8 +20,7 @@ export function SiteFooter({ club }: { club: Club }) {
             {club.city} {club.postcode}
             <br />
             <a href={`mailto:${club.email}`}>{club.email}</a>
-            <br />
-            <a href={club.phoneHref}>{club.phone}</a>
+            {club.phone && (<><br /><a href={club.phoneHref}>{club.phone}</a></>)}
           </p>
         </div>
         {COLS.map((c) => (
@@ -41,7 +40,7 @@ export function SiteFooter({ club }: { club: Club }) {
       </div>
       <div className={`wrap ${styles.footerFine}`}>
         <span>© {new Date().getFullYear()} {club.name}</span>
-        <span>Photography: stock stand-ins until club photos are supplied.</span>
+        <span>Tournament photography: Clara Barra and Bert Temple.</span>
       </div>
     </footer>
   )

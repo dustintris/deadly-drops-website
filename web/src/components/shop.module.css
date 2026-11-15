@@ -73,3 +73,18 @@
   .lines li > b { grid-column: 2; grid-row: 1; }
   .lines .qty { grid-column: 1; }
 }
+
+/* product photos and stock */
+.artPhoto { overflow: hidden; }
+.artPhoto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
+.item:hover .artPhoto img { transform: scale(1.04); }
+.itemStock { position: absolute; top: 12px; right: 12px; }
+.soldOut { display: inline-block; padding: 4px 10px; border-radius: 100px; background: var(--ink-dark); color: var(--ink); font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+.lowStock { display: inline-block; padding: 4px 10px; border-radius: 100px; background: var(--accent); color: var(--on-accent); font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+.gallery { display: grid; gap: 12px; }
+.thumbs { list-style: none; padding: 0; display: flex; gap: 10px; flex-wrap: wrap; }
+.thumbs button { width: 72px; height: 72px; border-radius: 10px; overflow: hidden; padding: 0; border: 2px solid transparent; background: var(--surface); cursor: pointer; }
+.thumbs button img { width: 100%; height: 100%; object-fit: cover; }
+.thumbs button[aria-pressed='true'] { border-color: var(--accent-deep); box-shadow: 0 0 0 2px var(--accent); }
+.thumbs button:focus-visible { outline: 3px solid var(--accent-deep); outline-offset: 2px; }
+.stockNote { font-weight: 600; }
