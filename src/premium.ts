@@ -1,17 +1,26 @@
 import * as THREE from 'three'
-import { initReveals } from './standard'
+import { initSite, prefersReducedMotion } from './site'
 
 /**
  * Premium tier hero: a spinning 3D pickleball with a gold orbit ring and a
  * pink particle field. Reacts to mouse movement and fades with scroll.
+ * Sits to the right of the headline on wide screens and above it on phones;
+ * pauses offscreen, holds still under reduced motion, and falls back to the
+ * club crest when WebGL is unavailable.
  */
 
-initReveals()
+initSite()
 
 const canvas = document.getElementById('scene') as HTMLCanvasElement
-const hero = document.getElementById('hero') as HTMLElement
+const hero = document.getElementById('top') as HTMLElement
 
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
+let renderer: THREE.WebGLRenderer
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
+} catch {
+  hero.classList.add('no-webgl')
+  throw new Error('WebGL unavailable, showing the static crest instead')
+}
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
 const scene = new THREE.Scene()
@@ -95,18 +104,33 @@ window.addEventListener('pointermove', (event) => {
 })
 
 function resize(): void {
-  const width = hero.clientWidth
-  const height = hero.clientHeight
+  const width = canvas.clientWidth
+  const height = canvas.clientHeight
   renderer.setSize(width, height, false)
   camera.aspect = width / height
+  // wide screens: shift the ball right so the headline sits on clear ground
+  if (width > 860) camera.setViewOffset(width, height, -width * 0.2, 0, width, height)
+  else camera.clearViewOffset()
   camera.updateProjectionMatrix()
 }
 window.addEventListener('resize', resize)
 resize()
 
+const reduced = prefersReducedMotion()
+let visible = true
+let running = false
+new IntersectionObserver(([entry]) => {
+  visible = entry.isIntersecting
+  if (visible && !reduced && !running) requestAnimationFrame(animate)
+}).observe(hero)
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && visible && !reduced && !running) requestAnimationFrame(animate)
+})
+
 const clock = new THREE.Clock()
 function animate(): void {
-  const t = clock.getElapsedTime()
+  running = visible && !document.hidden && !reduced
+  const t = reduced ? 1.2 : clock.getElapsedTime()
   ball.rotation.y = t * 0.35
   ball.rotation.x = Math.sin(t * 0.4) * 0.18
   ring.rotation.z = t * 0.22
@@ -125,6 +149,11 @@ function animate(): void {
   camera.lookAt(0, 0, 0)
 
   renderer.render(scene, camera)
-  requestAnimationFrame(animate)
+  if (running) requestAnimationFrame(animate)
 }
 animate()
+
+// when paused or still, a resize still needs a fresh frame
+window.addEventListener('resize', () => {
+  if (!running) renderer.render(scene, camera)
+})

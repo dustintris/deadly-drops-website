@@ -3,105 +3,192 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Deadly Drops Pickleball</title>
+  <title>Deadly Drops Pickleball | Tournaments in Chula Vista, CA</title>
+  <meta name="description" content="Deadly Drops Pickleball runs DUPR-friendly tournaments and community events in Chula Vista, CA. Register for Dominate Charity 2026: $55 entry, cash prizes for the podium.">
+  <meta name="theme-color" content="#2a0b1c">
+  <meta property="og:title" content="Deadly Drops Pickleball">
+  <meta property="og:description" content="Tournaments and community events for every level in Chula Vista, CA.">
+  <meta property="og:image" content="./logo.png">
   <link rel="icon" type="image/png" href="./logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <nav class="site-nav">
-    <img src="./logo.png" alt="Deadly Drops logo">
-    <span class="brand">DEADLY <span>DROPS</span></span>
-    <a href="#how">How it works</a>
-    <a href="#event">Tournaments</a>
-    <a href="#community">Community</a>
-    <a href="#about">About</a>
-    <a href="#contact">Contact</a>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!--NAV-->
+  <nav class="site-nav" aria-label="Main">
+    <div class="wrap">
+      <a class="nav-brand" href="#top" aria-label="Deadly Drops Pickleball, back to top">
+        <img src="./logo.png" alt="" width="40" height="48">
+        <span>Deadly Drops</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#event">Tournament</a></li>
+        <li><a href="#community">Community</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><a class="btn btn-primary nav-cta" href="mailto:info@deadlydropspickleball.com?subject=Register%20for%20Dominate%20Charity%202026">Register</a></li>
+      </ul>
+    </div>
   </nav>
+  <!--/NAV-->
 
-  <header class="hero">
-    <img class="hero-logo" src="./logo.png" alt="Deadly Drops Pickleball logo">
-    <h1>DEADLY <span>DROPS</span> PICKLEBALL</h1>
-    <p class="tagline">Become the best pickleball player of yourself.</p>
-    <div class="cta-row">
-      <a class="btn primary" href="#event">Next tournament</a>
-      <a class="btn ghost" href="#contact">Join the club</a>
-    </div>
-  </header>
-
-  <section class="block" id="how">
-    <h2 class="reveal">How it works</h2>
-    <p class="lead reveal">From sign-up to the medal round in three easy steps.</p>
-    <div class="cards">
-      <div class="card reveal"><div class="step">1</div><h3>Register online</h3>
-        <p>Sign up for tournaments and events in minutes. You get a personal QR ticket by email for
-          quick check-in on game day.</p></div>
-      <div class="card reveal"><div class="step">2</div><h3>Get matched</h3>
-        <p>Connect with partners and get placed in a division that fits your skill level. DUPR
-          ratings keep every bracket fair.</p></div>
-      <div class="card reveal"><div class="step">3</div><h3>Play and enjoy</h3>
-        <p>Round robin play, live scoreboards, medals and a community atmosphere that keeps
-          everyone coming back.</p></div>
-    </div>
-  </section>
-
-  <section class="block" id="event">
-    <h2 class="reveal">Next tournament</h2>
-    <div class="event-banner reveal">
-      <img src="./logo.png" alt="Dominate Charity 2026 pink event logo">
-      <div>
-        <h3>Dominate Charity 2026</h3>
-        <p>Our pink charity classic. Entry $55 per player, or $65 with an authentic tournament meal.
-          Tournament shirt included. Round robin into a medal round, live scoreboards on site.</p>
-        <div class="prize-row">
-          <span class="prize"><span class="gold">Gold</span> $100</span>
-          <span class="prize">Silver $75</span>
-          <span class="prize">Bronze $50</span>
-          <span class="prize">Medals for all podiums</span>
+  <!--HERO-->
+  <header class="hero" id="top">
+    <div class="wrap">
+      <div class="hero-copy" data-enter>
+        <h1>Deadly Drops<small>Pickleball in Chula Vista, CA</small></h1>
+        <p class="tagline">Become the best pickleball player of yourself.</p>
+        <p class="next-up"><strong>Next up: Dominate Charity 2026.</strong> Our pink charity classic, $55 entry, with cash prizes for the podium.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="mailto:info@deadlydropspickleball.com?subject=Register%20for%20Dominate%20Charity%202026">Register for the tournament</a>
+          <a class="btn btn-quiet" href="#event">See prizes and format</a>
         </div>
       </div>
-    </div>
-  </section>
-
-  <section class="block" id="community">
-    <h2 class="reveal">Community favorites</h2>
-    <div class="cards">
-      <div class="card reveal"><h3>Courtside Fuel</h3>
-        <p>Authentic regional tournament meals prepared fresh daily. Play hard, eat well.</p></div>
-      <div class="card reveal"><h3>Elite Gear</h3>
-        <p>Professional paddles and custom bags, hand picked by players for players.</p></div>
-      <div class="card reveal"><h3>Match Play</h3>
-        <p>Division tournaments year round, from friendly ladders to championship brackets.</p></div>
-    </div>
-  </section>
-
-  <section class="block" id="about">
-    <h2 class="reveal">About the club</h2>
-    <div class="about-flex">
-      <div class="card reveal">
-        <p>Deadly Drops Pickleball is a premier destination for players in Chula Vista. We focus on
-          structured tournaments and community events built on sportsmanship, sharpening
-          competitive skills, and cultivating an inclusive environment where every age and skill
-          level belongs.</p>
-      </div>
-      <div class="card reveal">
-        <h3>At a glance</h3>
-        <p>Chula Vista, CA 91915<br>Year-round divisions<br>Senior friendly scoreboards<br>
-          Charity events with real prizes</p>
+      <div class="hero-art">
+        <img src="./logo.png" alt="Deadly Drops crest: a samurai player in a pink helmet, cherry blossoms and a pink ribbon" width="945" height="1145">
       </div>
     </div>
-  </section>
+  </header>
+  <!--/HERO-->
 
-  <footer class="site-footer" id="contact">
-    <div class="foot-brand">DEADLY DROPS PICKLEBALL</div>
-    <p><a href="mailto:info@deadlydropspickleball.com">info@deadlydropspickleball.com</a> ·
-      1.619.888.1411 · Chula Vista, CA 91915</p>
-    <p>Facebook · Instagram</p>
+  <main id="main">
+    <section class="section on-light" id="how" aria-labelledby="how-title">
+      <div class="wrap">
+        <h2 id="how-title">How it works</h2>
+        <p class="lead">From sign-up to the medal round in three steps.</p>
+        <ol class="steps">
+          <li><h3>Register online</h3>
+            <p>Sign up for a tournament in a few minutes. A personal QR ticket arrives by email for fast check-in on game day.</p></li>
+          <li><h3>Get matched</h3>
+            <p>Find a partner and get placed in a division that fits your level. DUPR ratings keep every bracket fair.</p></li>
+          <li><h3>Play for medals</h3>
+            <p>Round robin play into a medal round, with live scoreboards and a crowd that cheers for every rally.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section event" id="event" aria-labelledby="event-title">
+      <div class="wrap">
+        <div class="event-grid">
+          <div>
+            <h2 id="event-title">Dominate Charity 2026</h2>
+            <p class="lead">Our pink charity classic. Bring a partner, play your division, and help a good cause while you chase the podium.</p>
+            <dl class="facts">
+              <dt>Entry</dt><dd>$55 per player</dd>
+              <dt>With meal</dt><dd>$65, fresh tournament meal included</dd>
+              <dt>Every player gets</dt><dd>A tournament shirt</dd>
+              <dt>Format</dt><dd>Round robin into a medal round</dd>
+              <dt>Scoring</dt><dd>Live scoreboards on site</dd>
+            </dl>
+            <div class="cta-row">
+              <a class="btn btn-primary" href="mailto:info@deadlydropspickleball.com?subject=Register%20for%20Dominate%20Charity%202026">Register for the tournament</a>
+            </div>
+          </div>
+          <figure class="play">
+            <svg class="play-court" viewBox="0 0 460 220" role="img" aria-labelledby="court-title">
+              <title id="court-title">Play diagram: a soft drop shot arcs over the net and lands in the opponents' kitchen</title>
+              <rect class="court" x="10" y="10" width="440" height="200"/>
+              <rect class="kitchen" x="160" y="11" width="70" height="198"/>
+              <rect class="kitchen" x="230" y="11" width="70" height="198"/>
+              <line class="line" x1="160" y1="10" x2="160" y2="210"/>
+              <line class="line" x1="300" y1="10" x2="300" y2="210"/>
+              <line class="line" x1="10" y1="110" x2="160" y2="110"/>
+              <line class="line" x1="300" y1="110" x2="450" y2="110"/>
+              <line class="net" x1="230" y1="2" x2="230" y2="218"/>
+              <text class="label" x="195" y="200" text-anchor="middle">Kitchen</text>
+              <text class="label" x="265" y="200" text-anchor="middle">Kitchen</text>
+              <text class="label" x="22" y="30">You</text>
+              <text class="label" x="438" y="30" text-anchor="end">Opponents</text>
+              <path class="path" id="drop-path" d="M 52 160 Q 190 0 266 76"/>
+              <ellipse class="shadow" id="drop-shadow" cx="266" cy="80" rx="7" ry="3"/>
+              <circle class="landing" cx="266" cy="76" r="4"/>
+              <circle class="ball" id="drop-ball" cx="266" cy="76" r="7"/>
+            </svg>
+            <div class="play-bar">
+              <p>The club's namesake: a soft drop into the kitchen.</p>
+              <button class="btn btn-quiet replay" type="button" id="replay">Replay the drop</button>
+            </div>
+          </figure>
+        </div>
+
+        <div class="podium">
+          <h3>Cash prizes and medals</h3>
+          <ol>
+            <li class="gold" style="--prize: 100"><strong>$100</strong><span>Gold</span></li>
+            <li class="silver" style="--prize: 75"><strong>$75</strong><span>Silver</span></li>
+            <li class="bronze" style="--prize: 50"><strong>$50</strong><span>Bronze</span></li>
+          </ol>
+          <p>Medals for every podium finish.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section on-light" id="community" aria-labelledby="community-title">
+      <div class="wrap">
+        <h2 id="community-title">Community favorites</h2>
+        <ul class="favorites">
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11h18a9 9 0 0 1-18 0Z"/><path d="M8 7c0-1.5 1-2 1-3.5M12 7c0-1.5 1-2 1-3.5M16 7c0-1.5 1-2 1-3.5"/></svg>
+            <h3>Courtside Fuel</h3>
+            <p>Regional tournament meals, cooked fresh every event day. Play hard, eat well.</p>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="11" height="13" rx="5.5" transform="rotate(-30 10.5 8.5)"/><path d="m12.5 15.5 3.5 6"/><circle cx="19" cy="6" r="2"/></svg>
+            <h3>Elite Gear</h3>
+            <p>Professional paddles and custom bags, picked by players for players.</p>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h5v6H3M3 14h5v6H3M8 7h4v10H8M12 12h5"/><path d="M17 9h4v6h-4z"/></svg>
+            <h3>Match Play</h3>
+            <p>Division tournaments all year, from friendly ladders to championship brackets.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section on-light" id="about" aria-labelledby="about-title">
+      <div class="wrap">
+        <h2 id="about-title">About the club</h2>
+        <div class="about-grid">
+          <p>Deadly Drops Pickleball runs structured tournaments and community events in Chula Vista. We care about sportsmanship, sharper competitive play, and a club where every age and skill level belongs.</p>
+          <dl class="glance">
+            <dt>Where</dt><dd>Chula Vista, CA</dd>
+            <dt>Divisions</dt><dd>Year round, DUPR friendly</dd>
+            <dt>On court</dt><dd>Senior-friendly live scoreboards</dd>
+            <dt>Events</dt><dd>Charity tournaments with real prizes</dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" id="contact" aria-labelledby="contact-title">
+    <div class="wrap">
+      <h2 id="contact-title">Get in touch</h2>
+      <a class="contact-email" href="mailto:info@deadlydropspickleball.com">info@deadlydropspickleball.com</a>
+      <ul class="contact-list">
+        <li><a href="tel:+16198881411">Call 619-888-1411</a></li>
+        <li><a href="https://www.google.com/maps/search/?api=1&amp;query=Chula+Vista+CA+91915">Chula Vista, CA 91915</a></li>
+      </ul>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="mailto:info@deadlydropspickleball.com?subject=Register%20for%20Dominate%20Charity%202026">Register for Dominate Charity</a>
+      </div>
+      <p class="fine">Deadly Drops Pickleball, Chula Vista CA</p>
+    </div>
   </footer>
 
-  <div class="tier-switch">
-    <a href="./index.html">Tiers</a> <a href="./basic.html">$</a>
-    <a class="on" href="./standard.html">$$</a> <a href="./premium.html">$$$</a>
-  </div>
+  <nav class="tier-switch" aria-label="Showcase tiers">
+    <a href="./index.html">Tiers</a>
+    <a href="./basic.html" aria-label="Basic tier">$</a>
+    <a href="./standard.html" aria-label="Standard tier" aria-current="page">$$</a>
+    <a href="./premium.html" aria-label="Premium tier">$$$</a>
+  </nav>
   <script type="module" src="./src/standard.ts"></script>
 </body>
 </html>
