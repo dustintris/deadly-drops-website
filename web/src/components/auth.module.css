@@ -1,0 +1,26 @@
+.auth { display: grid; grid-template-columns: 1fr 1fr; min-height: calc(100svh - 110px); background: var(--surface); }
+.visual { position: relative; overflow: hidden; display: flex; align-items: flex-end; }
+.visual img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.visual::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, rgb(var(--bg-rgb) / .95) 20%, rgb(var(--bg-rgb) / .35)); }
+.visualCopy { position: relative; z-index: 1; padding: clamp(32px, 5vw, 64px); }
+.visualCopy > * + * { margin-top: 16px; }
+.visualCopy dl { display: flex; gap: 36px; margin-top: 28px; flex-wrap: wrap; }
+.visualCopy dd { margin: 0; }
+.formSide { padding: clamp(40px, 6vw, 80px) clamp(20px, 6vw, 88px); display: flex; flex-direction: column; justify-content: center; gap: 18px; max-width: 640px; }
+.tabs { display: grid; grid-template-columns: 1fr 1fr; padding: 5px; border-radius: 100px; border: 1px solid rgb(var(--accent-rgb) / .22); }
+.tabs button { min-height: 44px; border-radius: 100px; font-weight: 700; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .6); transition: background-color .2s ease, color .2s ease; }
+.tabs button[aria-selected='true'] { background: var(--accent); color: var(--on-accent); }
+.pass { position: relative; }
+.pass button { position: absolute; right: 8px; top: 50%; translate: 0 -50%; min-height: 36px; padding: 0 10px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.keep { display: flex; align-items: center; gap: 10px; font-size: 14px; min-height: 44px; cursor: pointer; }
+.keep input { width: 18px; height: 18px; accent-color: var(--accent); }
+.forgot { font-size: 13px; font-weight: 600; color: var(--accent); min-height: 44px; }
+.or { display: flex; align-items: center; gap: 12px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .4); }
+.or::before, .or::after { content: ''; flex: 1; height: 1px; background: rgb(var(--ink-rgb) / .12); }
+.switch { text-align: center; }
+@media (max-width: 900px) {
+  .auth { grid-template-columns: 1fr; }
+  .visual { min-height: 220px; }
+  .visualCopy dl, .visualCopy > p:nth-child(2) { display: none; }
+}

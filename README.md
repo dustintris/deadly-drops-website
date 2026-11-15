@@ -20,3 +20,8 @@ npm run dev
 
 Pushing to `main` builds and deploys to GitHub Pages via
 `.github/workflows/pages.yml`.
+
+## New site (Next.js)
+
+`web/` holds the production-track Next.js build of the new lime/black UI mockups (9 screens, clickable).
+See `web/README.md`.
