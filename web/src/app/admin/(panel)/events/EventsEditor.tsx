@@ -5,14 +5,20 @@ import type { ClubEventT } from '@/lib/content-schema'
 
 const PLACES = ['Gold', 'Silver', 'Bronze'] as const
 
-function autoLabel(date: string | null) {
+function autoLabel(date: string | null, end?: string) {
   if (!date) return 'Date to be announced'
   const d = new Date(`${date}T12:00:00`)
+  if (end && end !== date) {
+    const e = new Date(`${end}T12:00:00`)
+    return `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}–${e.toLocaleDateString('en-US', d.getMonth() === e.getMonth() ? { day: 'numeric', year: 'numeric' } : { month: 'short', day: 'numeric', year: 'numeric' })}`
+  }
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 export function EventsEditor({ initial, rev }: { initial: ClubEventT[]; rev: number }) {
   const s = useSection('events', initial, rev)
+  // only brand-new tournaments get a web address from their name; saved ones keep theirs so links never break
+  const savedIds = new Set(initial.map((x) => x.id))
   const list = s.value
 
   return (
@@ -42,8 +48,8 @@ export function EventsEditor({ initial, rev }: { initial: ClubEventT[]; rev: num
             <>
               <div className="adm-grid">
                 <TextField label="Name" path={p('name')} value={e.name} max={80}
-                  onChange={(v) => set({ ...e, name: v, slug: e.slug.startsWith('tournament-') || e.slug === slugify(e.name) ? slugify(v) : e.slug })} />
-                <TextField label="Web address" path={p('slug')} value={e.slug} hint="Lowercase words with dashes." onChange={(v) => set({ ...e, slug: slugify(v) })} />
+                  onChange={(v) => set({ ...e, name: v, slug: !savedIds.has(e.id) && slugify(v) ? slugify(v) : e.slug })} />
+                <TextField label="Web address" path={p('slug')} value={e.slug} hint="Lowercase words with dashes. Changing it breaks links people already shared." onChange={(v) => set({ ...e, slug: slugify(v) })} />
               </div>
               <TextField label="Summary" path={p('summary')} value={e.summary} max={200} multiline={2} onChange={(v) => set({ ...e, summary: v })} />
               <fieldset className="adm-card" style={{ border: '1px solid rgb(var(--ink-dark-rgb) / .1)' }}>
@@ -52,8 +58,14 @@ export function EventsEditor({ initial, rev }: { initial: ClubEventT[]; rev: num
                   <div className="adm-field">
                     <label htmlFor={`f-${p('date')}`}>Date</label>
                     <input id={`f-${p('date')}`} type="date" className="adm-input" value={e.date ?? ''}
-                      onChange={(ev) => { const d = ev.target.value || null; set({ ...e, date: d, dateLabel: autoLabel(d) }) }} />
+                      onChange={(ev) => { const d = ev.target.value || null; set({ ...e, date: d, dateLabel: autoLabel(d, e.endDate) }) }} />
                     <p className="hint">Leave empty while the date is not announced.</p>
+                  </div>
+                  <div className="adm-field">
+                    <label htmlFor={`f-${p('endDate')}`}>Last day (multi-day tournaments)</label>
+                    <input id={`f-${p('endDate')}`} type="date" className="adm-input" value={e.endDate ?? ''} min={e.date ?? undefined}
+                      onChange={(ev) => set({ ...e, endDate: ev.target.value || undefined })} />
+                    <p className="hint">Leave empty for a one-day event.</p>
                   </div>
                   <TextField label="Date shown on the site" path={p('dateLabel')} value={e.dateLabel} max={60} onChange={(v) => set({ ...e, dateLabel: v })} />
                   <TextField label="Start time" path={p('startTime')} type="time" value={e.startTime ?? ''} onChange={(v) => set({ ...e, startTime: v || undefined })} />
@@ -71,7 +83,7 @@ export function EventsEditor({ initial, rev }: { initial: ClubEventT[]; rev: num
                   {PLACES.map((place) => {
                     const prize = e.prizes.find((x) => x.place === place)
                     return (
-                      <MoneyField key={place} label={`${place} prize`} path={p(`prizes.${e.prizes.findIndex((x) => x.place === place)}.amount`)} optional
+                      <MoneyField key={place} label={`${place} prize`} path={p(`prize-${place}`)} optional
                         value={prize?.amount} hint="Empty = no cash prize for this place."
                         onChange={(v) => set({ ...e, prizes: PLACES.flatMap((pl) => { const amt = pl === place ? v : e.prizes.find((x) => x.place === pl)?.amount; return amt === undefined ? [] : [{ place: pl, amount: amt }] }) })} />
                     )

@@ -24,7 +24,9 @@ export const Id = z.string().regex(/^[a-z0-9-]{4,40}$/)
 
 /** Dollars, 0–10,000, at most 2 decimals. */
 export const Money = z.number({ invalid_type_error: 'Enter an amount like 55 or 55.00.' }).min(0, 'Amount cannot be negative.').max(10000, 'Amount is too large.')
-  .refine((n) => Math.round(n * 100) === n * 100, 'Use at most 2 decimal places.')
+  // compare with a tolerance: 19.99 * 100 is 1998.9999999999998 in floating point
+  .refine((n) => Math.abs(Math.round(n * 100) - n * 100) < 1e-6, 'Use at most 2 decimal places.')
+  .transform((n) => Math.round(n * 100) / 100)
 
 /** Parses what an owner types into a price box: "$1,234.50", "55". */
 export function parseMoney(input: string): number | null {
@@ -34,8 +36,11 @@ export function parseMoney(input: string): number | null {
 }
 
 const httpsUrl = z.string().trim().max(500).regex(/^https:\/\/[^\s"<>]+$/, 'Links must start with https://')
-const internalOrHttps = z.string().trim().max(500).regex(/^(\/[a-z0-9/#-]*|https:\/\/[^\s"<>]+)$/, 'Use a page path like /tournaments/ or a full https:// link.')
-const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-03-14.').refine((d) => !Number.isNaN(Date.parse(d)), 'That date does not exist.')
+const internalOrHttps = z.string().trim().max(500).regex(/^(\/(?!\/)[a-z0-9/#-]*|https:\/\/[^\s"<>]+)$/, 'Use a page path like /tournaments/ or a full https:// link.')
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-03-14.')
+  .refine((d) => { const t = new Date(`${d}T00:00:00Z`); return !Number.isNaN(t.getTime()) && t.toISOString().slice(0, 10) === d }, 'That date does not exist.')
+/** lists typed one-per-line: blank lines are ignored instead of failing validation */
+const lines = <T extends z.ZodTypeAny>(item: T) => z.preprocess((v) => (Array.isArray(v) ? v.filter((x) => String(x ?? '').trim() !== '') : v), z.array(item))
 const optional = <T extends z.ZodTypeAny>(s: T) => z.union([s, z.literal('').transform(() => undefined)]).optional()
 
 /* ---------- entities ---------- */
@@ -47,16 +52,20 @@ export const SiteSettings = z.object({
   city: text(2, 60, 'City'),
   postcode: z.string().regex(/^\d{5}$/, 'Use a 5-digit ZIP code.'),
   email: z.string().trim().email('Enter an email like info@example.com.'),
-  phone: z.string().transform(clean).pipe(z.string().refine((v) => v === '' || /^[+()\d .-]{7,24}$/.test(v), 'Enter a phone number like (619) 555-0123, or leave it empty to hide it.')),
-  phoneHref: z.string().regex(/^(tel:\+\d{8,15})?$/),
+  phone: z.string().transform(clean).pipe(z.string().refine((v) => v === '' || (/^[+()\d .-]{7,24}$/.test(v) && v.replace(/\D/g, '').length >= 10), 'Enter a full phone number with area code, like (619) 555-0123, or leave it empty to hide it.')),
+  // derived from phone below; whatever the browser sends is ignored
+  phoneHref: z.string().optional(),
   about: text(20, 800, 'About text'),
-  highlights: z.array(text(2, 60, 'Highlight')).max(6),
+  highlights: lines(text(2, 60, 'Highlight')).pipe(z.array(z.string()).max(6, 'Up to 6 highlights.')),
   howItWorks: z.array(z.object({ title: text(2, 40, 'Step title'), body: text(5, 240, 'Step text') })).length(3, 'There are always 3 steps.'),
   favorites: z.array(z.object({ title: text(2, 40, 'Title'), body: text(5, 240, 'Text') })).max(6),
   aboutPoints: z.array(z.object({ title: text(2, 40, 'Title'), body: text(5, 300, 'Text') })).max(6).default([]),
   social: z.object({ instagram: optional(httpsUrl), facebook: optional(httpsUrl), youtube: optional(httpsUrl), tiktok: optional(httpsUrl) }).default({}),
   notice: z.object({ enabled: z.boolean(), text: text(0, 140, 'Notice'), href: optional(internalOrHttps) }),
   shop: z.object({ memberDiscount: z.number().min(0).max(0.5, 'Discount can be at most 50%.'), pickupNote: text(0, 80, 'Pickup note') }),
+}).transform((s) => {
+  const d = s.phone.replace(/\D/g, '')
+  return { ...s, phoneHref: d ? `tel:+${d.length === 10 ? '1' + d : d}` : '' }
 })
 
 export const Theme = z.object({
@@ -75,12 +84,14 @@ export const ClubEvent = z.object({
   name: text(3, 80, 'Event name'),
   summary: text(10, 200, 'Summary'),
   date: isoDate.nullable(),
+  /** last day of a multi-day tournament (empty = one day) */
+  endDate: optional(isoDate),
   dateLabel: text(3, 60, 'Date label'),
   startTime: optional(z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Use a time like 08:30.')),
   location: optText(120, 'Location'),
   entryFee: Money,
   entryFeeWithMeal: Money.optional(),
-  includes: z.array(text(2, 60, 'Included item')).max(8),
+  includes: lines(text(2, 60, 'Included item')).pipe(z.array(z.string()).max(8, 'Up to 8 items.')),
   format: text(3, 120, 'Format'),
   prizes: z.array(Prize).max(3).refine((p) => new Set(p.map((x) => x.place)).size === p.length, 'Each place can only appear once.'),
   registrationOpen: z.boolean(),
@@ -89,6 +100,7 @@ export const ClubEvent = z.object({
   featured: z.boolean(),
   visible: z.boolean(),
 }).refine((e) => e.entryFeeWithMeal === undefined || e.entryFeeWithMeal > e.entryFee, { message: 'The with-meal price must be higher than the entry fee.', path: ['entryFeeWithMeal'] })
+  .refine((e) => !e.endDate || (!!e.date && e.endDate >= e.date), { message: 'The last day must be on or after the first day.', path: ['endDate'] })
 
 export const TickerItem = z.object({
   id: Id,
@@ -146,7 +158,7 @@ export const CommunityPost = z.object({
   photos: z.array(ImageRef).max(40).default([]),
   author: text(2, 60, 'Author'),
   publishedAt: isoDate,
-  tags: z.array(text(2, 24, 'Tag')).max(6).default([]),
+  tags: lines(text(2, 24, 'Tag')).pipe(z.array(z.string()).max(6, 'Up to 6 tags.')).default([]),
   featured: z.boolean(),
   status: z.enum(['draft', 'published']),
 }).refine((p) => p.kind === 'news' || !!p.cover, { message: 'Articles and photo stories need a cover image.', path: ['cover'] })
@@ -173,7 +185,7 @@ export const SECTIONS = {
   ticker: z.array(TickerItem).max(20),
   products: z.array(Product).max(200).refine((l) => new Set(l.map((p) => p.slug)).size === l.length, 'Two products have the same web address.'),
   gallery: z.array(GalleryItem).max(500),
-  posts: z.array(CommunityPost).max(500).refine((l) => new Set(l.map((p) => p.slug)).size === l.length, 'Two posts have the same web address.'),
+  posts: z.array(CommunityPost).max(250).refine((l) => new Set(l.map((p) => p.slug)).size === l.length, 'Two posts have the same web address.'),
   faqs: z.array(Faq).max(40),
   pages: z.object(Object.fromEntries(PAGE_KEYS.map((k) => [k, PageCopy])) as Record<PageKey, typeof PageCopy>),
 } as const

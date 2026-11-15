@@ -8,7 +8,7 @@ import { useCart } from './CartContext'
 import { ProductArt } from './ProductArt'
 import styles from './shop.module.css'
 
-export function ProductDetail({ product, discount }: { product: Product; discount: number }) {
+export function ProductDetail({ product, discount, pickupNote }: { product: Product; discount: number; pickupNote?: string }) {
   const opts = product.options ?? []
   const [picked, setPicked] = useState<string[]>(opts.map((o) => o.values[Math.min(1, o.values.length - 1)]))
   const [qty, setQty] = useState(1)
@@ -95,8 +95,7 @@ export function ProductDetail({ product, discount }: { product: Product; discoun
           </p>
         )}
         <ul className="chips" style={{ listStyle: 'none', padding: 0 }}>
-          <li className="tag">Free pickup at the courts</li>
-          <li className="tag">30-day returns</li>
+          {pickupNote && <li className="tag">{pickupNote}</li>}
         </ul>
       </div>
     </div>

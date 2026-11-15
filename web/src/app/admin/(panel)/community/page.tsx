@@ -2,10 +2,12 @@ import Link from 'next/link'
 import { MediaLibraryProvider } from '@/components/admin/kit'
 import { getAdminData } from '@/lib/admin-data'
 import { CommunityEditor } from './CommunityEditor'
+import { requireAdmin } from '@/lib/auth/session'
 
 export const metadata = { title: 'Community & news' }
 
 export default async function CommunityAdmin() {
+  await requireAdmin() // each page checks: a layout check alone can be skipped by partial rendering
   const { draft, library } = await getAdminData()
   return (
     <MediaLibraryProvider initial={library}>

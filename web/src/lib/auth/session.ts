@@ -1,5 +1,7 @@
 import 'server-only'
 import { createHmac, timingSafeEqual } from 'node:crypto'
+import { promises as fs } from 'node:fs'
+import path from 'node:path'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
@@ -9,10 +11,12 @@ import { redirect } from 'next/navigation'
  * Single owner account from env (ADMIN_EMAIL / ADMIN_PASSWORD_HASH); raise
  * ADMIN_SESSION_VERSION to sign every session out.
  */
-export const COOKIE = 'dd_admin'
+// __Host- prefix (production): Secure, Path=/, no Domain, so no subdomain can set or overwrite it
+export const COOKIE = process.env.NODE_ENV === 'production' ? '__Host-dd_admin' : 'dd_admin'
 const MAX_AGE = 8 * 60 * 60
 
-type Session = { email: string; exp: number; v: string }
+/** iat in milliseconds, exp in seconds */
+type Session = { email: string; exp: number; v: string; iat: number }
 
 function secret(): Buffer {
   const s = process.env.SESSION_SECRET || ''
@@ -27,7 +31,7 @@ export function adminConfigured(): boolean {
 }
 
 export async function createSession(email: string) {
-  const payload: Session = { email, exp: Math.floor(Date.now() / 1000) + MAX_AGE, v: version() }
+  const payload: Session = { email, iat: Date.now(), exp: Math.floor(Date.now() / 1000) + MAX_AGE, v: version() }
   const data = Buffer.from(JSON.stringify(payload)).toString('base64url')
   ;(await cookies()).set(COOKIE, `${data}.${sign(data)}`, {
     httpOnly: true,
@@ -54,10 +58,28 @@ export async function getSession(): Promise<Session | null> {
   try {
     const s = JSON.parse(Buffer.from(data, 'base64url').toString()) as Session
     if (s.exp < Date.now() / 1000 || s.v !== version() || s.email !== process.env.ADMIN_EMAIL) return null
+    if (typeof s.iat !== 'number' || s.iat < (await revokedBefore())) return null
     return s
   } catch {
     return null
   }
+}
+
+/* "Sign out" ends every session issued before now, on every device (server-side revocation). */
+const REVOKE_FILE = () => path.join(path.resolve(/*turbopackIgnore: true*/ process.env.CONTENT_DIR || path.join(process.cwd(), 'data')), 'auth.json')
+
+async function revokedBefore(): Promise<number> {
+  try {
+    return Number(JSON.parse(await fs.readFile(REVOKE_FILE(), 'utf8')).revokedBefore) || 0
+  } catch {
+    return 0
+  }
+}
+
+export async function revokeAllSessions() {
+  const file = REVOKE_FILE()
+  await fs.mkdir(path.dirname(file), { recursive: true, mode: 0o700 })
+  await fs.writeFile(file, JSON.stringify({ revokedBefore: Date.now() }), { mode: 0o600 })
 }
 
 /** Call at the top of every admin page and Server Action. Route Handlers use getSession() and return 401. */

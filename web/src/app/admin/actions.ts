@@ -5,10 +5,11 @@ import { draftMode, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { audit } from '@/lib/audit'
 import { verifyPassword } from '@/lib/auth/password'
-import { clearFailures, isLocked, recordFailure } from '@/lib/auth/rate-limit'
-import { adminConfigured, createSession, destroySession, requireAdmin } from '@/lib/auth/session'
+import { clearFailures, clientIp, recordFailure, waitFor, withHashSlot } from '@/lib/auth/rate-limit'
+import { adminConfigured, createSession, destroySession, requireAdmin, revokeAllSessions } from '@/lib/auth/session'
 import { MediaAsset, SECTIONS, sectionHash, type SectionKey, type SiteContent } from '@/lib/content-schema'
-import { discardDraft, publish, readDraft, saveDraftSection, StaleRevisionError, updateDraft } from '@/lib/store/file-store'
+import { findUsage } from '@/lib/media-usage'
+import { discardDraft, publish, readPublished, saveDraftSection, StaleRevisionError, updateDraft } from '@/lib/store/file-store'
 import { removeImage } from '@/lib/store/media-store'
 
 export type ActionResult = { ok: boolean; message: string; errors?: Record<string, string>; rev?: number; email?: string; hash?: string }
@@ -17,21 +18,28 @@ export type ActionResult = { ok: boolean; message: string; errors?: Record<strin
 
 export async function login(_: ActionResult | null, form: FormData): Promise<ActionResult> {
   if (!adminConfigured()) return { ok: false, message: 'The admin login is not set up yet. Run npm run admin:setup on the server.' }
-  const email = String(form.get('email') ?? '').trim().toLowerCase()
-  const password = String(form.get('password') ?? '')
-  const ip = (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim() || 'local'
-  const keys = [`ip:${ip}`, `email:${email}`]
-  if (keys.some(isLocked)) return { ok: false, message: 'Too many attempts. Wait 15 minutes and try again.', email }
+  const email = String(form.get('email') ?? '').trim().toLowerCase().slice(0, 254)
+  const password = String(form.get('password') ?? '').slice(0, 1024)
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !password) return { ok: false, message: 'Enter your email and password.', email }
+  const ip = clientIp(await headers())
+  const wait = Math.max(waitFor(`ip:${ip}`, 'ip'), waitFor(`email:${email}`, 'email'))
+  if (wait > 0) {
+    const mins = Math.ceil(wait / 60000)
+    return { ok: false, message: `Too many attempts. Try again in ${mins} minute${mins === 1 ? '' : 's'}.`, email }
+  }
 
   const okEmail = email === (process.env.ADMIN_EMAIL ?? '').toLowerCase()
-  // always run the hash so a wrong email takes as long as a wrong password
-  const okPassword = await verifyPassword(password, process.env.ADMIN_PASSWORD_HASH ?? 'scrypt$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=')
+  // always run the hash so a wrong email takes as long as a wrong password; at most 2 hashes at once
+  const okPassword = await withHashSlot(() =>
+    verifyPassword(password, process.env.ADMIN_PASSWORD_HASH ?? 'scrypt$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='))
   if (!okEmail || !okPassword) {
-    keys.forEach(recordFailure)
-    await audit(email || 'unknown', 'login_failed', ip)
+    recordFailure(`ip:${ip}`)
+    recordFailure(`email:${email}`)
+    await audit(email, 'login_failed', ip)
     return { ok: false, message: 'That email or password is wrong.', email }
   }
-  keys.forEach(clearFailures)
+  clearFailures(`ip:${ip}`)
+  clearFailures(`email:${email}`)
   await createSession(process.env.ADMIN_EMAIL!)
   await audit(email, 'login', ip)
   redirect('/admin/')
@@ -39,6 +47,7 @@ export async function login(_: ActionResult | null, form: FormData): Promise<Act
 
 export async function logout() {
   const s = await requireAdmin()
+  await revokeAllSessions()
   await destroySession()
   ;(await draftMode()).disable()
   await audit(s.email, 'logout')
@@ -59,7 +68,7 @@ function zodErrors(issues: { path: (string | number)[]; message: string }[]): Re
 /** Save one section of the draft. The client sends the whole section as JSON. */
 export async function saveSection(section: SectionKey, json: string, baseHash: string): Promise<ActionResult> {
   const s = await requireAdmin()
-  if (!(section in SECTIONS)) return { ok: false, message: 'Unknown section.' }
+  if (!Object.hasOwn(SECTIONS, section)) return { ok: false, message: 'Unknown section.' }
   let value: unknown
   try {
     value = JSON.parse(json)
@@ -99,19 +108,6 @@ export async function discardChanges(): Promise<ActionResult> {
 
 /* ---------- media ---------- */
 
-/** Where an image is used, so the owner never deletes a picture the site still shows. */
-export async function findUsage(src: string, doc?: SiteContent): Promise<string[]> {
-  const d = doc ?? (await readDraft())
-  const where: string[] = []
-  const has = (v: unknown) => JSON.stringify(v).includes(`"${src}"`)
-  d.events.forEach((e) => has(e) && where.push(`Event: ${e.name}`))
-  d.products.forEach((p) => has(p) && where.push(`Product: ${p.name}`))
-  d.gallery.forEach((g) => has(g) && where.push(`Gallery: ${g.caption}`))
-  d.posts.forEach((p) => has(p) && where.push(`Community: ${p.title}`))
-  Object.entries(d.pages).forEach(([k, p]) => has(p) && where.push(`Page: ${k}`))
-  return where
-}
-
 export async function updateMediaAlt(id: string, alt: string): Promise<ActionResult> {
   const s = await requireAdmin()
   const parsed = MediaAsset.shape.alt.safeParse(alt)
@@ -123,15 +119,26 @@ export async function updateMediaAlt(id: string, alt: string): Promise<ActionRes
 
 export async function deleteMedia(id: string): Promise<ActionResult> {
   const s = await requireAdmin()
-  const doc = await readDraft()
-  const asset = doc.media.find((m) => m.id === id)
-  if (!asset) return { ok: false, message: 'That image is already gone.' }
-  const used = await findUsage(`/media/${asset.file}`, doc)
-  if (used.length) return { ok: false, message: `Still used by ${used.join(', ')}. Replace it there first.` }
-  const d = await updateDraft((x) => ({ ...x, media: x.media.filter((m) => m.id !== id) }))
-  // the published site may still show it until the next publish, so only remove files no live page uses
-  const live = await import('@/lib/store/file-store').then((m) => m.readPublished())
-  if (!(await findUsage(`/media/${asset.file}`, live)).length) await removeImage(asset.file)
-  await audit(s.email, 'media_delete', asset.file)
-  return { ok: true, message: 'Image deleted.', rev: d.rev }
+  let file = ''
+  try {
+    // check and remove in one locked step, so a save in another tab cannot start using the image in between
+    const d = await updateDraft((doc) => {
+      const asset = doc.media.find((m) => m.id === id)
+      if (!asset) throw new UserFacingError('That image is already gone.')
+      const used = findUsage(`/media/${asset.file}`, doc)
+      if (used.length) throw new UserFacingError(`Still used by ${used.join(', ')}. Replace it there first.`)
+      file = asset.file
+      return { ...doc, media: doc.media.filter((m) => m.id !== id) }
+    })
+    // the live site may still show it until the next publish, so only remove a file no live page uses
+    if (!findUsage(`/media/${file}`, await readPublished()).length) await removeImage(file)
+    await audit(s.email, 'media_delete', file)
+    return { ok: true, message: 'Image deleted.', rev: d.rev }
+  } catch (e) {
+    if (e instanceof UserFacingError) return { ok: false, message: e.message }
+    console.error(e)
+    return { ok: false, message: 'Deleting failed on the server. Try again.' }
+  }
 }
+
+class UserFacingError extends Error {}

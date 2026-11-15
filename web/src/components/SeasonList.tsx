@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import type { ClubEvent } from '@/lib/types'
-import { eventCta, eventState } from '@/lib/events'
+import { eventCta, type EventState } from '@/lib/events'
 import { money } from '@/lib/utils'
 import { Monogram } from './Monogram'
 import type { Member } from '@/lib/types'
@@ -11,8 +11,8 @@ import styles from './tournaments.module.css'
 
 type Champion = { event: string; pair: string; detail: string; lead: Member }
 
-export function SeasonList({ events, champions }: { events: ClubEvent[]; champions: Champion[] }) {
-  const withState = events.map((e) => ({ e, st: eventState(e) }))
+export function SeasonList({ events, states, champions }: { events: ClubEvent[]; states: Record<string, EventState>; champions: Champion[] }) {
+  const withState = events.map((e) => ({ e, st: states[e.slug] ?? 'tba' }))
   const upcoming = withState.filter((x) => x.st !== 'past')
   const past = withState.filter((x) => x.st === 'past').sort((a, b) => (b.e.date ?? '').localeCompare(a.e.date ?? ''))
   const [tab, setTab] = useState<'upcoming' | 'past'>(upcoming.length ? 'upcoming' : 'past')
@@ -38,7 +38,7 @@ export function SeasonList({ events, champions }: { events: ClubEvent[]; champio
               <li key={e.slug} className="card">
                 <div className={styles.date}>
                   <strong>{d ? String(d.getDate()).padStart(2, '0') : 'TBA'}</strong>
-                  <span>{d ? d.toLocaleString('en-US', { month: 'short' }) : '2026'}</span>
+                  <span>{d ? d.toLocaleString('en-US', { month: 'short' }) : 'Date soon'}</span>
                 </div>
                 <div className={styles.seasonBody}>
                   <h3>{e.name}</h3>

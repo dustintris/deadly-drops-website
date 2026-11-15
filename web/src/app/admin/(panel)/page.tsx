@@ -2,10 +2,12 @@ import Link from 'next/link'
 import { recentAudit } from '@/lib/audit'
 import { readDraft, readPublished } from '@/lib/store/file-store'
 import { money } from '@/lib/utils'
+import { requireAdmin } from '@/lib/auth/session'
 
 export const metadata = { title: 'Dashboard' }
 
 export default async function Dashboard() {
+  await requireAdmin() // each page checks: a layout check alone can be skipped by partial rendering
   const [draft, live, log] = await Promise.all([readDraft(), readPublished(), recentAudit(8)])
   const event = live.events.find((e) => e.featured && e.visible) ?? live.events[0]
   const standIns = [

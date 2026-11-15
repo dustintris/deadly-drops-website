@@ -37,7 +37,7 @@ export default async function ContactPage() {
             </div>
             <div className={c.firstTime}>
               <p className="eyebrow">Never played a tournament?</p>
-              <p>Register online, and we place you in a division that fits. Your QR ticket arrives by email for quick check-in.</p>
+              <p>Charity tournaments focus on fun, friendly games, a great first taste of competitive play. Email us and we will find you the right division.</p>
             </div>
           </aside>
         </div>

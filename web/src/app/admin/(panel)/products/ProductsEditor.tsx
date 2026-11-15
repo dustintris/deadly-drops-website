@@ -30,6 +30,8 @@ const legend = { fontWeight: 700, padding: '0 6px' }
 
 export function ProductsEditor({ initial, rev }: { initial: ProductT[]; rev: number }) {
   const s = useSection('products', initial, rev)
+  // only brand-new products get a web address from their name; saved ones keep theirs so links never break
+  const savedIds = new Set(initial.map((x) => x.id))
   const list = s.value
 
   return (
@@ -59,7 +61,7 @@ export function ProductsEditor({ initial, rev }: { initial: ProductT[]; rev: num
             <>
               <div className="adm-grid">
                 <TextField label="Product name" path={path('name')} value={p.name} max={60}
-                  onChange={(v) => set({ ...p, name: v, slug: p.slug.startsWith('product-') || p.slug === slugify(p.name) ? slugify(v) : p.slug })} />
+                  onChange={(v) => set({ ...p, name: v, slug: !savedIds.has(p.id) && slugify(v) ? slugify(v) : p.slug })} />
                 <TextField label="Web address" path={path('slug')} value={p.slug} hint="Lowercase words with dashes. The page will be /shop/your-words/."
                   onChange={(v) => set({ ...p, slug: slugify(v) })} />
               </div>

@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { saveSection, type ActionResult } from '@/app/admin/actions'
 import { parseMoney, sectionHash, type SectionKey } from '@/lib/content-schema'
+import { asset } from '@/lib/utils'
 
 /* ---------- section state ---------- */
 
@@ -17,7 +18,7 @@ export const useFieldError = (path: string) => useContext(ErrorCtx)[path]
 
 export function useSection<T>(section: SectionKey, initial: T, _rev?: number) {
   const router = useRouter()
-  const [value, setValue] = useState<T>(initial)
+  const [value, setValueRaw] = useState<T>(initial)
   const [base, setBase] = useState(() => sectionHash(initial))
   const [saved, setSaved] = useState(() => JSON.stringify(initial))
   const [errors, setErrors] = useState<Errors>({})
@@ -25,23 +26,42 @@ export function useSection<T>(section: SectionKey, initial: T, _rev?: number) {
   const [busy, setBusy] = useState(false)
   const dirty = JSON.stringify(value) !== saved
 
+  // editing clears old messages (server errors are keyed by position and go stale after a reorder)
+  const setValue = useCallback((v: T | ((p: T) => T)) => { setValueRaw(v); setErrors({}); setResult(null) }, [])
+
+  // the server sent new content (Discard, Publish, a save elsewhere): take it unless the owner is mid-edit
+  const incoming = JSON.stringify(initial)
+  const [lastIncoming, setLastIncoming] = useState(incoming)
+  if (incoming !== lastIncoming) {
+    setLastIncoming(incoming)
+    if (!dirty) { setValueRaw(initial); setSaved(incoming); setBase(sectionHash(initial)) }
+  }
+
   useEffect(() => {
     if (!dirty) return
     const warn = (e: BeforeUnloadEvent) => { e.preventDefault() }
     window.addEventListener('beforeunload', warn)
-    return () => window.removeEventListener('beforeunload', warn)
+    document.body.dataset.unsaved = '1' // AdminNav asks before leaving
+    return () => { window.removeEventListener('beforeunload', warn); delete document.body.dataset.unsaved }
   }, [dirty])
 
   const save = useCallback(async () => {
     setBusy(true)
     setResult(null)
-    const res = await saveSection(section, JSON.stringify(value), base)
-    setBusy(false)
+    let res: ActionResult
+    try {
+      res = await saveSection(section, JSON.stringify(value), base)
+    } catch {
+      res = { ok: false, message: 'Could not reach the server. Check your connection, or sign in again, then save.' }
+    } finally {
+      setBusy(false)
+    }
     setResult(res)
     setErrors(res.errors ?? {})
     if (res.ok && res.hash) {
       setBase(res.hash)
       setSaved(JSON.stringify(value))
+      setLastIncoming(JSON.stringify(value))
       router.refresh()
     } else if (res.errors) {
       const first = Object.keys(res.errors)[0]
@@ -112,8 +132,15 @@ export function TextField({ label, path, hint, value, onChange, max, type = 'tex
 /** Price box: the owner types "55" or "$55.00"; stored as a number. */
 export function MoneyField({ label, path, hint, value, onChange, optional }: Base & { value: number | undefined; onChange: (v: number | undefined) => void; optional?: boolean }) {
   const err = useFieldError(path)
-  const [text, setText] = useState(value === undefined ? '' : value.toFixed(2).replace(/\.00$/, ''))
+  const show = (v: number | undefined) => (v === undefined ? '' : v.toFixed(2).replace(/\.00$/, ''))
+  const [text, setText] = useState(show(value))
   const [local, setLocal] = useState<string | null>(null)
+  // value changed from outside (another row moved here, Discard, reset): show it
+  const [lastValue, setLastValue] = useState(value)
+  if (value !== lastValue) {
+    setLastValue(value)
+    if (value !== (text.trim() === '' ? undefined : parseMoney(text))) { setText(show(value)); setLocal(null) }
+  }
   const id = `f-${path}`
   return (
     <div className="adm-field">
@@ -194,11 +221,14 @@ export function LinesField({ label, path, value, onChange, hint, max }: Base & {
 
 /* ---------- list editor ---------- */
 
-export function ListEditor<T>({ items, onChange, render, title, thumb, badge, makeNew, addLabel = 'Add', path, startOpen }: {
+export function ListEditor<T>({ items, onChange, render, title, thumb, badge, makeNew, addLabel = 'Add', path, startOpen, getKey }: {
   items: T[]; onChange: (items: T[]) => void; render: (item: T, i: number, set: (v: T) => void) => React.ReactNode
   title: (item: T) => string; thumb?: (item: T) => string | undefined; badge?: (item: T) => React.ReactNode
   makeNew?: () => T; addLabel?: string; path: string; startOpen?: boolean
+  /** stable key per item (defaults to item.id) so moving or deleting rows never mixes up their fields */
+  getKey?: (item: T, i: number) => string
 }) {
+  const keyOf = getKey ?? ((item: T, i: number) => String((item as { id?: string }).id ?? i))
   const errors = useContext(ErrorCtx)
   const move = (i: number, d: number) => {
     const j = i + d
@@ -215,8 +245,8 @@ export function ListEditor<T>({ items, onChange, render, title, thumb, badge, ma
           const hasErr = Object.keys(errors).some((k) => k.startsWith(`${path ? path + '.' : ''}${i}.`))
           const src = thumb?.(item)
           return (
-            <li key={i}>
-              <details className="adm-item" open={startOpen || hasErr || undefined} data-path={`${path ? path + '.' : ''}${i}`}>
+            <li key={keyOf(item, i)}>
+              <details className="adm-item" open={startOpen || hasErr || undefined} data-path={`${path ? path + '.' : ''}${i}`} aria-label={title(item) || 'Untitled'}>
                 <summary style={{ listStyle: 'none' }}>
                   <header>
                     <span className="title">
@@ -267,10 +297,10 @@ export function ImageField({ label, path, value, onChange, hint, required }: Bas
     <div className="adm-field">
       <span className="lbl">{label}</span>
       <div className="adm-imagefield">
-        <div className="preview">{value?.src ? <img src={value.src} alt="" style={{ objectPosition: value.position }} /> : 'No image'}</div>
+        <div className="preview">{value?.src ? <img src={asset(value.src)} alt="" style={{ objectPosition: value.position }} /> : 'No image'}</div>
         <div style={{ display: 'grid', gap: 8, flex: 1, minWidth: 200 }}>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button id={id} type="button" className="adm-btn" onClick={() => setOpen(true)}>{value?.src ? 'Change image' : 'Choose image'}</button>
+            <button id={id} type="button" className="adm-btn" aria-label={`${label}: ${value?.src ? 'change' : 'choose'} image`} onClick={() => setOpen(true)}>{value?.src ? 'Change image' : 'Choose image'}</button>
             {value?.src && !required && <button type="button" className="adm-btn danger" onClick={() => onChange(undefined)}>Remove</button>}
           </div>
           {value?.src && (
@@ -301,7 +331,7 @@ export function ImagePicker({ current, onPick, onClose }: { current?: string; on
         <ul className="adm-thumbs" style={{ listStyle: 'none', padding: 0, maxHeight: '55svh', overflowY: 'auto' }}>
           {images.map((img) => (
             <li key={img.src} className="adm-thumb" aria-pressed={img.src === current}>
-              <img src={img.src} alt="" loading="lazy" />
+              <img src={asset(img.src)} alt="" loading="lazy" />
               <span className="cap">{img.stand ? 'Stand-in · ' : ''}{img.label}</span>
               <button className="pick" onClick={() => onPick(img)} aria-label={`Use ${img.label}`} />
             </li>
@@ -344,7 +374,8 @@ export function Uploader({ onUploaded, compact }: { onUploaded?: (img: LibraryIm
       const body = new FormData()
       body.append('file', await prepare(f), f.name.replace(/\.[^.]+$/, '') + '.img')
       body.append('alt', '')
-      const res = await fetch('/admin/api/upload/', { method: 'POST', body })
+      const res = await fetch(asset('/admin/api/upload/'), { method: 'POST', body }).catch(() => null)
+      if (!res) { setMsg(`${f.name}: could not reach the server. Check your connection.`); return }
       const data = await res.json().catch(() => ({ ok: false, message: 'Upload failed.' }))
       if (!data.ok) { setMsg(`${f.name}: ${data.message}`); return }
       const img = { src: data.src as string, alt: '', label: f.name }

@@ -12,14 +12,14 @@ import { asset } from '@/lib/utils'
 import s from './home.module.css'
 import { pageMeta } from '@/lib/seo'
 
-export const metadata: Metadata = pageMeta(undefined, 'Pickleball tournaments and community events in Chula Vista, CA. Register for Dominate Charity 2026: $55 entry, cash prizes for the podium.', '/')
+export const metadata: Metadata = pageMeta(undefined, 'Deadly Drops Pickleball: charity tournaments, social play and a welcoming community for players of every level in Chula Vista, CA.', '/')
 
 export default async function Home() {
   const [club, members, count, live, spotlights, event, ladder, ticker, copy] = await Promise.all([
     getClub(), getMembers(), getMemberCount(), getLiveMatch(), getSpotlights(), getNextEvent(), getLadder(), getTicker(), getPageCopy('home'),
   ])
-  const state = eventState(event)
-  const cta = eventCta(event, state)
+  const state = event ? eventState(event) : 'tba'
+  const cta = event ? eventCta(event, state) : { label: 'Get notified', href: '#join-email', external: false }
   const hero = copy.heroImage ?? { src: '/images/club/dominate-play-1.jpg', alt: '' }
   const roster = members.slice(0, 22)
 
@@ -106,7 +106,13 @@ export default async function Home() {
 
       <section className="dark rule-top">
         <div className={`wrap ${s.nextGrid}`}>
-          <NextEventBlock event={event} />
+          {event ? <NextEventBlock event={event} /> : (
+            <div style={{ paddingBlock: 'clamp(56px, 7vw, 88px)' }} className="stack-16">
+              <p className="eyebrow">Tournaments</p>
+              <h2 className="display d-l">Next tournament coming soon</h2>
+              <p className="lede">New tournaments are announced by email first. Join the list at the bottom of the page.</p>
+            </div>
+          )}
           <LadderBoard entries={ladder} />
         </div>
       </section>

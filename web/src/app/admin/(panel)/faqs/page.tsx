@@ -1,9 +1,11 @@
 import { readDraft } from '@/lib/store/file-store'
 import { FaqEditor } from './FaqEditor'
+import { requireAdmin } from '@/lib/auth/session'
 
 export const metadata = { title: 'FAQ' }
 
 export default async function FaqAdmin() {
+  await requireAdmin() // each page checks: a layout check alone can be skipped by partial rendering
   const d = await readDraft()
   return (
     <>

@@ -27,6 +27,7 @@ const today = () => {
 
 export function CommunityEditor({ initial, rev }: { initial: Post[]; rev: number }) {
   const s = useSection('posts', initial, rev)
+  const savedIds = new Set(initial.map((x) => x.id))
   const list = s.value
   const counts = {
     published: list.filter((p) => p.status === 'published').length,
@@ -72,19 +73,20 @@ export function CommunityEditor({ initial, rev }: { initial: Post[]; rev: number
           excerpt: 'Write a sentence or two that sums up this post.', body: '',
           cover: undefined, photos: [], author: 'Deadly Drops', publishedAt: today(), tags: [], featured: false, status: 'draft',
         })}
-        render={(post, i, set) => <PostFields post={post} i={i} set={set} setFeatured={(v) => s.setValue(list.map((x, k) => ({ ...x, featured: k === i ? v : v ? false : x.featured })))} />}
+        render={(post, i, set) => <PostFields saved={savedIds.has(post.id)} post={post} i={i} set={set} setFeatured={(v) => s.setValue(list.map((x, k) => ({ ...x, featured: k === i ? v : v ? false : x.featured })))} />}
       />
       <SaveBar s={s} />
     </SectionForm>
   )
 }
 
-function PostFields({ post, i, set, setFeatured }: { post: Post; i: number; set: (p: Post) => void; setFeatured: (v: boolean) => void }) {
+function PostFields({ post, i, set, setFeatured, saved }: { saved: boolean; post: Post; i: number; set: (p: Post) => void; setFeatured: (v: boolean) => void }) {
   const [preview, setPreview] = useState(false)
   const p = (k: string) => `${i}.${k}`
   const needsCover = post.kind !== 'news'
   const dateErr = useFieldError(p('publishedAt'))
-  const autoSlug = post.slug.startsWith('post-') || post.slug === slugify(post.title)
+  // only brand-new posts get a web address from the title; published ones keep theirs so links never break
+  const autoSlug = !saved
 
   return (
     <>

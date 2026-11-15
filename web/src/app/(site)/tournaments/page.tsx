@@ -9,16 +9,25 @@ import t from '@/components/tournaments.module.css'
 import { getBracket, getChampions, getDivisionGuide, getEvents, getLadder, getNextEvent } from '@/lib/data'
 import { eventCta, eventEyebrow, eventState } from '@/lib/events'
 import { pageMeta } from '@/lib/seo'
+import { money } from '@/lib/utils'
 
-export const metadata: Metadata = pageMeta('Tournaments', 'Dominate Charity 2026 in Chula Vista: $55 entry or $65 with a meal, tournament shirt included, round robin into a medal round, $100 gold prize.', '/tournaments/')
+export async function generateMetadata(): Promise<Metadata> {
+  const e = await getNextEvent()
+  const desc = e
+    ? `${e.name}, ${e.dateLabel}${e.location ? ` at ${e.location.split(',')[0]}` : ''}. ${money(e.entryFee)} entry. Deadly Drops Pickleball charity tournaments in Chula Vista, CA.`
+    : 'Deadly Drops Pickleball charity tournaments in Chula Vista, CA: divisions by age and DUPR level, round robin play, a meal and a shirt with every entry.'
+  return pageMeta('Tournaments', desc.slice(0, 160), '/tournaments/')
+}
 
 export default async function TournamentsPage() {
   const [event, events, guide, bracket, champions, ladder] = await Promise.all([
     getNextEvent(), getEvents(), getDivisionGuide(), getBracket(), getChampions(), getLadder(),
   ])
 
-  const state = eventState(event)
-  const cta = eventCta(event, state)
+  const state = event ? eventState(event) : 'tba'
+  const cta = event ? eventCta(event, state) : null
+  // worked out here on the server so the browser cannot disagree about the date
+  const states = Object.fromEntries(events.map((e) => [e.slug, eventState(e)]))
   // from the club's own tournament pages
   const weekend = [
     { title: 'Matched by age and DUPR', body: 'We design our tournaments around age brackets and DUPR levels so everyone plays with peers who match their pace, experience, and stamina.' },
@@ -29,29 +38,33 @@ export default async function TournamentsPage() {
 
   return (
     <>
-      <PageHero
-        eyebrow={eventEyebrow(state)}
-        title={event.name}
-        lede={event.summary}
-        photo={event.image?.src ?? '/images/club/dominate-podium-1.jpg'}
-        photoPosition={event.image?.position ?? '50% 40%'}
-        aside={<EntriesCard event={event} />}
-      >
-        <p className={t.heroWhen}>{event.dateLabel}</p>
-        <ul className="chips" style={{ listStyle: 'none', padding: 0 }}>
-          {eventTags(event).map((x) => <li key={x} className="tag">{x}</li>)}
-        </ul>
-        {event.location && <p className="small muted">{event.location}</p>}
-        {cta.external ? (
-          <a href={cta.href} className="btn btn-accent" target="_blank" rel="noopener noreferrer">{cta.label} <span className="sr">(opens in a new tab)</span></a>
-        ) : (
-          <Link href={state === 'open' ? '#register' : cta.href} className="btn btn-accent">{cta.label}</Link>
-        )}
-      </PageHero>
+      {event && cta ? (
+        <PageHero
+          eyebrow={eventEyebrow(state)}
+          title={event.name}
+          lede={event.summary}
+          photo={event.image?.src ?? '/images/club/dominate-podium-1.jpg'}
+          photoPosition={event.image?.position ?? '50% 40%'}
+          aside={<EntriesCard event={event} state={state} />}
+        >
+          <p className={t.heroWhen}>{event.dateLabel}</p>
+          <ul className="chips" style={{ listStyle: 'none', padding: 0 }}>
+            {eventTags(event).map((x) => <li key={x} className="tag">{x}</li>)}
+          </ul>
+          {event.location && <p className="small muted">{event.location}</p>}
+          {cta.external ? (
+            <a href={cta.href} className="btn btn-accent" target="_blank" rel="noopener noreferrer">{cta.label} <span className="sr">(opens in a new tab)</span></a>
+          ) : (
+            <Link href={state === 'open' ? '#register' : cta.href} className="btn btn-accent">{cta.label}</Link>
+          )}
+        </PageHero>
+      ) : (
+        <PageHero eyebrow="Tournaments" title="Next tournament coming soon" lede="New tournaments are announced by email first. Join the list at the bottom of the page." photo="/images/club/dominate-podium-1.jpg" />
+      )}
 
       <section className="section dark">
         <div className="wrap">
-          <SeasonList events={events} champions={champions} />
+          <SeasonList events={events} states={states} champions={champions} />
         </div>
       </section>
 
@@ -107,7 +120,7 @@ export default async function TournamentsPage() {
         </div>
       </section>
 
-      {state === 'open' && !event.registrationUrl && (
+      {event && state === 'open' && !event.registrationUrl && (
         <section className="section light" id="register">
           <div className="wrap">
             <RegistrationForm event={event} />
