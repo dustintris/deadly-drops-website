@@ -3,75 +3,95 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Deadly Drops Pickleball</title>
+  <title>Deadly Drops Pickleball | Tournaments in Chula Vista, CA</title>
+  <meta name="description" content="Deadly Drops Pickleball runs DUPR-friendly tournaments and community events in Chula Vista, CA.">
+  <meta name="theme-color" content="#a3154f">
   <link rel="icon" type="image/png" href="./logo.png">
   <style>
-    * { box-sizing: border-box; margin: 0; }
-    body { font-family: 'Segoe UI', Arial, sans-serif; color: #222; line-height: 1.6; }
-    .wrap { max-width: 720px; margin: 0 auto; padding: 28px 18px 60px; }
-    header { text-align: center; padding: 10px 0 4px; }
-    header img { width: 110px; }
-    h1 { font-size: 30px; color: #b02a63; margin-top: 10px; }
-    .tag { color: #666; }
-    h2 { margin: 34px 0 8px; font-size: 21px; color: #b02a63; border-bottom: 2px solid #f3cade; padding-bottom: 6px; }
-    ul { padding-left: 20px; }
-    li { margin: 4px 0; }
-    .event { background: #fdf3f8; border: 1px solid #f3cade; border-radius: 8px; padding: 14px 16px; margin-top: 10px; }
-    .btn { display: inline-block; margin-top: 12px; background: #d6336c; color: #fff; text-decoration: none;
-      padding: 10px 20px; border-radius: 6px; font-weight: 700; }
-    footer { margin-top: 44px; border-top: 1px solid #eee; padding-top: 16px; color: #666; font-size: 14px; text-align: center; }
-    a { color: #b02a63; }
-    .tier-switch { position: fixed; left: 12px; bottom: 12px; background: #fff; border: 1px solid #ddd;
-      border-radius: 999px; padding: 6px 12px; font-size: 13px; box-shadow: 0 2px 10px rgba(0,0,0,.12); }
-    .tier-switch a { margin: 0 4px; text-decoration: none; font-weight: 700; }
-    .tier-switch a.on { color: #d6336c; }
+    /* Basic tier: no web fonts, no scripts, one stylesheet. Same brand tokens as the other tiers. */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; }
+    :root { --deep: #a3154f; --cta: #c2185b; --ink: #2a0b1c; --muted: #6b3a52; --line: #efd0df; --blossom: #fff4f8; }
+    body { font: 17px/1.6 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color: var(--ink); background: #fff; }
+    .wrap { max-width: 680px; margin: 0 auto; padding: 32px 20px 120px; }
+    header { display: grid; grid-template-columns: 96px 1fr; gap: 20px; align-items: center; padding-bottom: 24px; border-bottom: 3px solid var(--deep); }
+    header img { width: 96px; height: auto; }
+    h1 { font-size: clamp(28px, 6vw, 38px); line-height: 1.1; color: var(--deep); }
+    .tag { color: var(--muted); margin-top: 4px; }
+    h2 { margin: 40px 0 10px; font-size: 24px; line-height: 1.2; color: var(--deep); }
+    ul, ol { padding-left: 22px; }
+    li { margin: 6px 0; }
+    .event { background: var(--blossom); border-left: 4px solid var(--cta); padding: 18px 20px; margin-top: 12px; }
+    .event table { border-collapse: collapse; margin-top: 10px; }
+    .event td { padding: 4px 18px 4px 0; }
+    .btn { display: inline-flex; align-items: center; min-height: 48px; margin-top: 16px; background: var(--cta); color: #fff;
+      text-decoration: none; padding: 0 22px; border-radius: 8px; font-weight: 700; }
+    .btn:hover { background: var(--deep); }
+    a { color: var(--deep); text-underline-offset: 3px; }
+    :focus-visible { outline: 3px solid var(--cta); outline-offset: 3px; }
+    .contact a { display: inline-block; padding: 6px 0; }
+    footer { margin-top: 48px; border-top: 1px solid var(--line); padding-top: 16px; color: var(--muted); font-size: 15px; }
+    .tier-switch { position: fixed; left: 12px; bottom: 12px; display: flex; gap: 2px; background: #fff; border: 1px solid var(--line);
+      border-radius: 999px; padding: 4px; box-shadow: 0 6px 18px rgba(42, 11, 28, .15); }
+    .tier-switch a { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 40px; padding: 0 12px;
+      text-decoration: none; font-weight: 700; font-size: 15px; border-radius: 999px; }
+    .tier-switch a[aria-current='page'] { background: var(--cta); color: #fff; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <img src="./logo.png" alt="Deadly Drops Pickleball logo">
-      <h1>Deadly Drops Pickleball</h1>
-      <p class="tag">Become the best pickleball player of yourself.</p>
+      <img src="./logo.png" alt="Deadly Drops Pickleball crest" width="945" height="1145">
+      <div>
+        <h1>Deadly Drops Pickleball</h1>
+        <p class="tag">Become the best pickleball player of yourself.</p>
+      </div>
     </header>
 
-    <h2>About the club</h2>
-    <p>Deadly Drops Pickleball is a premier destination for players in Chula Vista. We run
-      structured tournaments and community events built on sportsmanship, sharpening competitive
-      skills, and an inclusive environment for every age and level.</p>
+    <main>
+      <h2>Next tournament: Dominate Charity 2026</h2>
+      <div class="event">
+        <p>Our pink charity classic. Round robin into a medal round, with a tournament shirt for every player.</p>
+        <table>
+          <tr><td>Entry</td><td><strong>$55</strong> per player</td></tr>
+          <tr><td>With meal</td><td><strong>$65</strong></td></tr>
+          <tr><td>Prizes</td><td>Gold $100, Silver $75, Bronze $50, plus medals</td></tr>
+        </table>
+        <a class="btn" href="mailto:info@deadlydropspickleball.com?subject=Register%20for%20Dominate%20Charity%202026">Register for the tournament</a>
+      </div>
 
-    <h2>How it works</h2>
-    <ul>
-      <li>Register online for tournaments and events.</li>
-      <li>Get matched to a division that fits your skill level (DUPR friendly).</li>
-      <li>Play, compete for medals, and enjoy the community.</li>
-    </ul>
+      <h2>How it works</h2>
+      <ol>
+        <li>Register online for tournaments and events.</li>
+        <li>Get placed in a division that fits your level (DUPR friendly).</li>
+        <li>Play, compete for medals, and enjoy the community.</li>
+      </ol>
 
-    <h2>Next tournament</h2>
-    <div class="event">
-      <strong>Dominate Charity 2026</strong> - our pink charity classic.<br>
-      Entry $55 per player, or $65 with a fresh tournament meal. Tournament shirt included.<br>
-      Medals plus cash prizes: Gold $100, Silver $75, Bronze $50.
-      <br><a class="btn" href="#contact">Register</a>
-    </div>
+      <h2>About the club</h2>
+      <p>Deadly Drops Pickleball runs structured tournaments and community events in Chula Vista,
+        built on sportsmanship, sharper competitive play, and a club where every age and level belongs.</p>
 
-    <h2>Community favorites</h2>
-    <ul>
-      <li><strong>Courtside Fuel:</strong> authentic regional tournament meals prepared fresh daily.</li>
-      <li><strong>Elite Gear:</strong> professional paddles and custom bags.</li>
-      <li><strong>Match Play:</strong> division tournaments year round.</li>
-    </ul>
+      <h2>Community favorites</h2>
+      <ul>
+        <li><strong>Courtside Fuel:</strong> regional tournament meals, cooked fresh every event day.</li>
+        <li><strong>Elite Gear:</strong> professional paddles and custom bags.</li>
+        <li><strong>Match Play:</strong> division tournaments all year.</li>
+      </ul>
 
-    <h2 id="contact">Contact</h2>
-    <p>Email: <a href="mailto:info@deadlydropspickleball.com">info@deadlydropspickleball.com</a><br>
-      Phone: 1.619.888.1411<br>
-      Chula Vista, CA 91915</p>
+      <h2 id="contact">Contact</h2>
+      <p class="contact">
+        <a href="mailto:info@deadlydropspickleball.com">info@deadlydropspickleball.com</a><br>
+        <a href="tel:+16198881411">619-888-1411</a><br>
+        Chula Vista, CA 91915
+      </p>
+    </main>
 
     <footer>Deadly Drops Pickleball, Chula Vista CA</footer>
   </div>
-  <div class="tier-switch">
-    <a href="./index.html">Tiers</a> <a class="on" href="./basic.html">$</a>
-    <a href="./standard.html">$$</a> <a href="./premium.html">$$$</a>
-  </div>
+  <nav class="tier-switch" aria-label="Showcase tiers">
+    <a href="./index.html">Tiers</a>
+    <a href="./basic.html" aria-label="Basic tier" aria-current="page">$</a>
+    <a href="./standard.html" aria-label="Standard tier">$$</a>
+    <a href="./premium.html" aria-label="Premium tier">$$$</a>
+  </nav>
 </body>
 </html>
