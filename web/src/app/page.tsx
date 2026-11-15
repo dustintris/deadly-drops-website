@@ -44,8 +44,6 @@ export default async function Home() {
             <LiveScore {...live} />
           </div>
         </div>
-        <span className={s.ball} aria-hidden="true" />
-        <span className={s.paddle} aria-hidden="true" />
         <span className={s.scrollCue} aria-hidden="true">Scroll</span>
       </section>
 
