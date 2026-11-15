@@ -2,10 +2,12 @@ import 'server-only'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import type { LibraryImage } from '@/components/admin/kit'
+import { requireAdmin } from './auth/session'
 import { readDraft } from './store/file-store'
 
 /** Everything an admin screen needs: the draft and the image library (uploads + bundled photos). */
 export async function getAdminData() {
+  await requireAdmin()
   const draft = await readDraft()
   const bundled: LibraryImage[] = []
   for (const dir of ['club', 'stand-in']) {

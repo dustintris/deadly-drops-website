@@ -21,7 +21,7 @@ export function buildSeed(): SiteContent {
       social: club.social ?? {},
       aboutPoints,
       notice: { enabled: true, text: 'Preview build · member names, ratings and results are sample content' },
-      shop: { memberDiscount: MEMBER_DISCOUNT, pickupNote: 'Free pickup at the courts' },
+      shop: { memberDiscount: MEMBER_DISCOUNT, pickupNote: '' },
     },
     theme: { ...defaultTheme },
     events: events.map((e, i) => ({

@@ -2,10 +2,12 @@ import Link from 'next/link'
 import { MediaLibraryProvider } from '@/components/admin/kit'
 import { getAdminData } from '@/lib/admin-data'
 import { ProductsEditor } from './ProductsEditor'
+import { requireAdmin } from '@/lib/auth/session'
 
 export const metadata = { title: 'Shop & prices' }
 
 export default async function ProductsAdmin() {
+  await requireAdmin() // each page checks: a layout check alone can be skipped by partial rendering
   const { draft, library } = await getAdminData()
   const discount = Math.round(draft.settings.shop.memberDiscount * 100)
   return (

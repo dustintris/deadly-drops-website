@@ -24,9 +24,22 @@ export class StaleRevisionError extends Error {
   constructor() { super('This was changed somewhere else (another tab?). Reload the page and try again.') }
 }
 
+/**
+ * Content saved by an older version may lack newer sections or settings fields: fill them from the seed,
+ * so pages and editors always get a complete document.
+ */
+function normalize(doc: Partial<SiteContent>): SiteContent {
+  const seed = buildSeed()
+  const out = { ...seed, ...doc } as SiteContent
+  for (const k of Object.keys(seed) as (keyof SiteContent)[]) if (out[k] === undefined || out[k] === null) (out as Record<string, unknown>)[k] = seed[k]
+  out.settings = { ...seed.settings, ...doc.settings } as SiteContent['settings']
+  out.pages = { ...seed.pages, ...doc.pages }
+  return out
+}
+
 async function readJson(file: string): Promise<SiteContent | null> {
   try {
-    return JSON.parse(await fs.readFile(file, 'utf8')) as SiteContent
+    return normalize(JSON.parse(await fs.readFile(file, 'utf8')) as Partial<SiteContent>)
   } catch (e) {
     if ((e as NodeJS.ErrnoException).code === 'ENOENT') return null
     throw e
@@ -35,9 +48,9 @@ async function readJson(file: string): Promise<SiteContent | null> {
 
 /** Write to a temp file, flush, then rename: a crash never leaves half a file. */
 async function writeJsonAtomic(file: string, data: unknown) {
-  await fs.mkdir(path.dirname(file), { recursive: true })
+  await fs.mkdir(path.dirname(file), { recursive: true, mode: 0o700 })
   const tmp = `${file}.${randomBytes(6).toString('hex')}.tmp`
-  const handle = await fs.open(tmp, 'w')
+  const handle = await fs.open(tmp, 'w', 0o600)
   try {
     await handle.writeFile(JSON.stringify(data, null, 1))
     await handle.sync()

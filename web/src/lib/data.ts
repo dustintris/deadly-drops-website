@@ -4,7 +4,8 @@
  * ladder and results data are still sample content in src/content/sample.ts.
  * Pages only import from here, never from src/content or the store directly.
  */
-import { getContent } from './content'
+import { getContent, isPreview } from './content'
+import { eventState } from './events'
 import type { CommunityPostT, PageKey } from './content-schema'
 import * as sample from '@/content/sample'
 import type { Club, ClubEvent, GalleryItem, Product } from './types'
@@ -21,10 +22,16 @@ export const getShopSettings = async () => (await getContent()).settings.shop
 export const getPageCopy = async (key: PageKey) => (await getContent()).pages[key]
 
 export const getEvents = async (): Promise<ClubEvent[]> => (await getContent()).events.filter((e) => e.visible)
-export const getNextEvent = async (): Promise<ClubEvent> => {
+/** The tournament the site leads with: the featured one, else the next upcoming, else the latest past one. null if none is visible. */
+export const getNextEvent = async (): Promise<ClubEvent | null> => {
   const list = await getEvents()
-  const all = (await getContent()).events
-  return list.find((e) => e.featured) ?? list.find((e) => e.registrationOpen) ?? list[0] ?? all[0]
+  const byDate = [...list].sort((a, b) => (a.date ?? '9999').localeCompare(b.date ?? '9999'))
+  return (
+    list.find((e) => e.featured) ??
+    byDate.find((e) => eventState(e) !== 'past') ??
+    byDate.reverse().find((e) => eventState(e) === 'past') ??
+    null
+  )
 }
 export const getFaqs = async () => (await getContent()).faqs.filter((f) => f.visible)
 export const getTicker = async () => (await getContent()).ticker.filter((t) => t.visible).map((t) => t.text)
@@ -53,8 +60,11 @@ export const getGallery = async (): Promise<GalleryItem[]> =>
   }))
 
 /* ---------- community ---------- */
-const livePosts = async () =>
-  (await getContent()).posts.filter((p) => p.status === 'published').sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
+// while the owner previews, draft posts show too, so they can be checked before publishing
+const livePosts = async () => {
+  const preview = await isPreview()
+  return (await getContent()).posts.filter((p) => preview || p.status === 'published').sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
+}
 export const getCommunityPosts = async (kind?: CommunityPostT['kind']) => (await livePosts()).filter((p) => !kind || p.kind === kind)
 export const getCommunityPost = async (slug: string) => (await livePosts()).find((p) => p.slug === slug) ?? null
 export const getCommunityPhotos = async () => (await getGallery()).filter((g) => g.album === 'Community' || g.album === 'Socials')

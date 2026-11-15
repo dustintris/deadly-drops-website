@@ -61,6 +61,7 @@ export const events: ClubEvent[] = [
     name: 'DOMINATE',
     summary: 'Our very first tournament: two days, 24 age-bracketed divisions, and 100% 911-free. Play for charity, have fun, make friends, make a difference.',
     date: '2026-06-13',
+    endDate: '2026-06-14',
     dateLabel: 'June 13–14, 2026',
     location: 'Better at Pickleball, Olympic Training Center, 2800 Olympic Parkway, Chula Vista, CA 91915',
     entryFee: 55,

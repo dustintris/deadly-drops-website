@@ -2,13 +2,16 @@ import type { ClubEvent } from './types'
 
 export type EventState = 'open' | 'upcoming' | 'past' | 'tba'
 
+/** Today's date in Chula Vista (YYYY-MM-DD), whatever time zone the server runs in. */
+export function clubToday(now = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now)
+}
+
 /** Where a tournament stands today, so the site never shows "Register" for an event that is over. */
 export function eventState(e: ClubEvent, now = new Date()): EventState {
   if (!e.date) return e.registrationOpen ? 'open' : 'tba'
-  // a label like "June 13–14" means a two-day event: it ends a day later
-  const lastDay = new Date(`${e.date}T23:59:59`)
-  if (/\d\s*[–-]\s*\d/.test(e.dateLabel)) lastDay.setDate(lastDay.getDate() + 1)
-  if (lastDay < now) return 'past'
+  const lastDay = e.endDate ?? e.date
+  if (lastDay < clubToday(now)) return 'past' // ISO dates compare as strings
   return e.registrationOpen ? 'open' : 'upcoming'
 }
 

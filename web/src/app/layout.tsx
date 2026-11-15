@@ -7,7 +7,7 @@ import './globals.css'
 export const metadata: Metadata = {
   title: { default: 'Deadly Drops Pickleball | Chula Vista, CA', template: '%s | Deadly Drops Pickleball' },
   description:
-    'Structured pickleball tournaments and community events in Chula Vista, CA. Register for Dominate Charity 2026: $55 entry, cash prizes for the podium.',
+    'Deadly Drops Pickleball: charity tournaments, social play and a welcoming community for players of every level in Chula Vista, CA.',
   icons: { icon: `${process.env.NEXT_PUBLIC_BASE_PATH || ''}/logo.png` },
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://deadlydropspickleball.com'),
   openGraph: {

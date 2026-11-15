@@ -1,11 +1,13 @@
-import { findUsage } from '@/app/admin/actions'
+import { findUsage } from '@/lib/media-usage'
 import { MediaLibraryProvider } from '@/components/admin/kit'
 import { getAdminData } from '@/lib/admin-data'
 import { MediaManager, type BundledPhoto, type UploadedPhoto } from './MediaManager'
+import { requireAdmin } from '@/lib/auth/session'
 
 export const metadata = { title: 'Photos' }
 
 export default async function MediaAdmin() {
+  await requireAdmin() // each page checks: a layout check alone can be skipped by partial rendering
   const { draft, library } = await getAdminData()
   const uploads: UploadedPhoto[] = await Promise.all(
     [...draft.media]

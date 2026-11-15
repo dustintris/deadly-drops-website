@@ -18,7 +18,8 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // the repo root has its own package-lock (the old showcase); this app lives in web/
   turbopack: { root: path.resolve(__dirname) },
-  experimental: { serverActions: { bodySizeLimit: '1mb' } },
+  // a whole section is saved at once; long community articles need room
+  experimental: { serverActions: { bodySizeLimit: '6mb' } },
   async headers() {
     return [
       {
@@ -26,6 +27,9 @@ const nextConfig: NextConfig = {
         headers: [
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=()' },
+          { key: 'Content-Security-Policy', value: "frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'" },
         ],
       },
       {

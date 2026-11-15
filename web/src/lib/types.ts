@@ -27,6 +27,8 @@ export type ClubEvent = {
   summary: string
   /** ISO date of day one, or null while unannounced */
   date: string | null
+  /** last day of a multi-day tournament */
+  endDate?: string
   dateLabel: string
   entryFee: number
   entryFeeWithMeal?: number

@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import type { ClubEvent } from '@/lib/types'
-import { eventState } from '@/lib/events'
+import type { EventState } from '@/lib/events'
 import { money } from '@/lib/utils'
 import styles from './tournaments.module.css'
 
 /** Hero side card: a live countdown once the event has a date, otherwise the prize pool. */
-export function EntriesCard({ event }: { event: ClubEvent }) {
+export function EntriesCard({ event, state }: { event: ClubEvent; state: EventState }) {
   const [now, setNow] = useState<number | null>(null)
   useEffect(() => {
     if (!event.date) return
@@ -16,8 +16,8 @@ export function EntriesCard({ event }: { event: ClubEvent }) {
     return () => clearInterval(id)
   }, [event.date])
 
-  if (event.date && now !== null && eventState(event) !== 'past') {
-    const ms = Math.max(0, new Date(event.date).getTime() - now)
+  if (event.date && now !== null && state !== 'past') {
+    const ms = Math.max(0, new Date(`${event.date}T${event.startTime ?? '08:00'}:00`).getTime() - now)
     const parts = [
       [Math.floor(ms / 864e5), 'Days'],
       [Math.floor(ms / 36e5) % 24, 'Hrs'],

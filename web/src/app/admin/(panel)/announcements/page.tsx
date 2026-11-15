@@ -1,9 +1,11 @@
 import { readDraft } from '@/lib/store/file-store'
 import { AnnouncementsEditor } from './AnnouncementsEditor'
+import { requireAdmin } from '@/lib/auth/session'
 
 export const metadata = { title: 'Announcements' }
 
 export default async function AnnouncementsAdmin() {
+  await requireAdmin() // each page checks: a layout check alone can be skipped by partial rendering
   const d = await readDraft()
   return (
     <>

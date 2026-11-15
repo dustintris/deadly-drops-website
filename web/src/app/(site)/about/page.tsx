@@ -104,8 +104,8 @@ export default async function AboutPage() {
         <div className={`wrap ${a.visit}`}>
           <div className="stack-16">
             <p className="eyebrow">Come play</p>
-            <h2 className="display d-m">{eventState(event) === 'past' ? 'Latest' : 'Next on court'}: {event.name}</h2>
-            <p className="muted">{event.summary} Entry {money(event.entryFee)}{event.entryFeeWithMeal ? `, or ${money(event.entryFeeWithMeal)} with a meal` : ''}.</p>
+            <h2 className="display d-m">{!event ? 'Come play' : `${eventState(event) === 'past' ? 'Latest' : 'Next on court'}: ${event.name}`}</h2>
+            {event && <p className="muted">{event.summary} Entry {money(event.entryFee)}{event.entryFeeWithMeal ? `, or ${money(event.entryFeeWithMeal)} with a meal` : ''}.</p>}
             <Link href="/tournaments/" className="btn btn-dark">See tournaments</Link>
           </div>
           <ul className={a.favs}>

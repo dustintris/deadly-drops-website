@@ -18,6 +18,11 @@ const NAV: { group?: string; href: string; label: string }[] = [
   { href: '/admin/theme/', label: 'Colours' },
 ]
 
+/** Ask before leaving a screen with unsaved edits (useSection marks the page). */
+function guard(e: React.MouseEvent) {
+  if (document.body.dataset.unsaved && !window.confirm('You have unsaved changes on this screen. Leave without saving?')) e.preventDefault()
+}
+
 export function AdminNav({ email }: { email: string }) {
   const path = usePathname() || '/admin/'
   const active = (href: string) => (href === '/admin/' ? path === '/admin' || path === '/admin/' : path.startsWith(href.replace(/\/$/, '')))
@@ -27,7 +32,7 @@ export function AdminNav({ email }: { email: string }) {
       {NAV.map((n) => (
         <div key={n.href} style={{ display: 'contents' }}>
           {n.group && <p className="group">{n.group}</p>}
-          <Link href={n.href} aria-current={active(n.href) ? 'page' : undefined}>{n.label}</Link>
+          <Link href={n.href} onClick={guard} aria-current={active(n.href) ? 'page' : undefined}>{n.label}</Link>
         </div>
       ))}
       <div className="bottom">

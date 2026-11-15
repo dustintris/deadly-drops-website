@@ -65,7 +65,7 @@ export function CartView({ discount }: { discount: number }) {
         <dl>
           <div><dt>Subtotal</dt><dd>{money(subtotal, true)}</dd></div>
           <div className={styles.disc}><dt>Member discount ({Math.round(discount * 100)}%)</dt><dd>{member ? `−${money(off, true)}` : '—'}</dd></div>
-          <div><dt>Pickup at the courts</dt><dd>Free</dd></div>
+          <div><dt>Pickup or delivery</dt><dd>Arranged with the club</dd></div>
         </dl>
         <label className={styles.memberToggle}>
           <input type="checkbox" checked={member} onChange={(e) => setMember(e.target.checked)} />

@@ -4,7 +4,7 @@ import { getSession } from '@/lib/auth/session'
 import { MediaAsset } from '@/lib/content-schema'
 import { isSameOrigin } from '@/lib/security'
 import { updateDraft } from '@/lib/store/file-store'
-import { MAX_BYTES, MAX_SIDE, putImage, sniffImage } from '@/lib/store/media-store'
+import { MAX_BYTES, MAX_SIDE, putImage, sniffImage, stripMetadata } from '@/lib/store/media-store'
 
 export const runtime = 'nodejs'
 
@@ -17,7 +17,9 @@ export async function POST(req: Request) {
   const session = await getSession()
   if (!session) return NextResponse.json({ ok: false, message: 'Sign in again.' }, { status: 401 })
   if (!isSameOrigin(req)) return NextResponse.json({ ok: false, message: 'Request blocked.' }, { status: 403 })
-  const declared = Number(req.headers.get('content-length') ?? 0)
+  // the size must be declared up front, so nothing large is read into memory before the check
+  const declared = Number(req.headers.get('content-length'))
+  if (!declared) return NextResponse.json({ ok: false, message: 'Upload size missing. Try again.' }, { status: 411 })
   if (declared > MAX_BYTES + 64 * 1024) return NextResponse.json({ ok: false, message: 'Images can be at most 5 MB.' }, { status: 413 })
 
   let form: FormData
@@ -30,8 +32,8 @@ export async function POST(req: Request) {
   if (!(file instanceof File)) return NextResponse.json({ ok: false, message: 'Choose an image to upload.' }, { status: 400 })
   if (file.size > MAX_BYTES) return NextResponse.json({ ok: false, message: 'Images can be at most 5 MB.' }, { status: 413 })
 
-  const buf = Buffer.from(await file.arrayBuffer())
-  const kind = sniffImage(buf)
+  const raw = Buffer.from(await file.arrayBuffer())
+  const kind = sniffImage(raw)
   if (!kind) {
     return NextResponse.json({ ok: false, message: 'Use a JPEG, PNG or WebP photo. iPhone HEIC photos: set the camera to "Most Compatible" or export as JPEG.' }, { status: 415 })
   }
@@ -39,6 +41,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, message: 'That image is too large. Keep each side under 6000 pixels.' }, { status: 413 })
   }
 
+  // drop location and camera data before anything is stored or shown
+  const buf = stripMetadata(raw, kind)
+  if (!buf) return NextResponse.json({ ok: false, message: 'That file looks damaged. Export it again and retry.' }, { status: 415 })
   const { id, file: name } = await putImage(buf, kind)
   const asset = MediaAsset.parse({
     id, file: name, mime: kind.mime, width: kind.width, height: kind.height, bytes: buf.length,
