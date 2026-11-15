@@ -35,7 +35,7 @@ export function LiveScore({ court, division, teamA, teamB, startA, startB, compa
   }, [])
 
   return (
-    <section className={`${styles.score} ${compact ? styles.scoreCompact : ''}`} aria-label={`Live score, ${court}`}>
+    <section className={`${styles.score} ${compact ? styles.scoreCompact : ''}`} aria-label={`Live score on ${court}, game to 11`}>
       <header>
         <span className="eyebrow"><span className="live-dot" /> Live · {court}</span>
         {!compact && <span className={styles.scoreDiv}>{division}</span>}
@@ -43,7 +43,7 @@ export function LiveScore({ court, division, teamA, teamB, startA, startB, compa
       <div className={styles.scoreRow} data-lead={a >= b}>
         {!compact && <Monogram member={teamA.lead} size="sm" round />}
         <span>{teamA.label}</span>
-        <strong aria-live="polite">{a}</strong>
+        <strong>{a}</strong>
       </div>
       <div className={styles.scoreRow} data-lead={b > a}>
         {!compact && <Monogram member={teamB.lead} size="sm" round />}

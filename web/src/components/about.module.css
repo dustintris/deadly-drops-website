@@ -4,7 +4,8 @@
 .stats dd { margin: 0; }
 @media (max-width: 760px) { .stats { grid-template-columns: 1fr 1fr; } .stats > div:nth-child(2) { border-right: 0; } .stats > div:nth-child(-n + 2) { border-bottom: 1px solid rgb(var(--accent-rgb) / .12); } }
 
-.collage { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; aspect-ratio: 1.4 / 1; }
+.collage { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 10px; aspect-ratio: 1.4 / 1; }
+.collage img { min-height: 0; }
 .collage img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
 .collage img:first-child { grid-row: span 2; }
 
@@ -14,7 +15,7 @@
 .values strong { font-size: 40px; line-height: 1; color: var(--accent); }
 .values li[data-accent='true'] strong { color: var(--on-accent); }
 .values h3 { margin-top: 14px; font-size: 19px; font-weight: 600; }
-.values p { margin-top: 10px; font-size: 14px; opacity: .72; }
+.values p { margin-top: 10px; font-size: 14px; opacity: .84; }
 
 .team { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
 .team li { overflow: hidden; transition: transform .2s ease, border-color .2s ease; }
@@ -23,13 +24,13 @@
 .teamBody { padding: 16px; }
 .teamBody strong { display: block; }
 .teamBody :global(.eyebrow) { display: block; margin-top: 4px; font-size: 10px; }
-.teamBody p { margin-top: 8px; font-size: 13px; color: rgb(var(--ink-rgb) / .55); }
+.teamBody p { margin-top: 8px; font-size: 13px; color: rgb(var(--ink-rgb) / .66); }
 
 .visit { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 6vw, 80px); padding-block: clamp(56px, 8vw, 88px); }
 .favs { list-style: none; padding: 0; }
 .favs li { display: grid; grid-template-columns: 160px 1fr; gap: 16px; padding: 18px 0; border-bottom: 1px solid rgb(var(--ink-dark-rgb) / .1); }
 .favs strong { font-weight: 600; }
-.favs span { font-size: 14px; color: rgb(var(--ink-dark-rgb) / .6); }
+.favs span { font-size: 14px; color: rgb(var(--ink-dark-rgb) / .72); }
 
 @media (max-width: 900px) {
   .values, .visit { grid-template-columns: 1fr; }

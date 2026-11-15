@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { ClubEvent } from '@/lib/types'
+import { EMAIL_ERROR, focusFirstError, isEmail } from '@/lib/forms'
 import { money } from '@/lib/utils'
 import styles from './tournaments.module.css'
 
@@ -25,8 +26,9 @@ export function RegistrationForm({ event }: { event: ClubEvent }) {
     if (step === 1) {
       const e: Record<string, string> = {}
       if (!form.name.trim()) e.name = 'Enter your full name.'
-      if (!/^\S+@\S+\.\S+$/.test(form.email)) e.email = 'Enter an email like name@example.com. Your QR ticket goes here.'
+      if (!isEmail(form.email)) e.email = `${EMAIL_ERROR} Your QR ticket goes here.`
       setErrors(e)
+      focusFirstError(e, [['name', 'reg-name'], ['email', 'reg-email']])
       if (Object.keys(e).length) return
     }
     setStep((s) => s + 1)
@@ -51,7 +53,7 @@ export function RegistrationForm({ event }: { event: ClubEvent }) {
           </div>
           <div className="field">
             <label htmlFor="reg-email">Email</label>
-            <input id="reg-email" type="email" className="input" value={form.email} onChange={(e) => set('email', e.target.value)} aria-invalid={!!errors.email} aria-describedby="reg-email-err" autoComplete="email" placeholder="you@email.com" />
+            <input id="reg-email" type="email" inputMode="email" className="input" value={form.email} onChange={(e) => set('email', e.target.value)} onBlur={() => form.email && !isEmail(form.email) && setErrors((x) => ({ ...x, email: `${EMAIL_ERROR} Your QR ticket goes here.` }))} aria-invalid={!!errors.email} aria-describedby="reg-email-err" autoComplete="email" placeholder="you@email.com" />
             {errors.email && <p id="reg-email-err" className="error">{errors.email}</p>}
           </div>
         </div>

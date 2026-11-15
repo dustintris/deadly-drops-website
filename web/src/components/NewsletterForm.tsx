@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { EMAIL_ERROR, isEmail } from '@/lib/forms'
 import styles from './shell.module.css'
 
 /** Preview only: validates and confirms locally. Wire to the mailing-list provider in production. */
@@ -16,23 +17,26 @@ export function NewsletterForm() {
       noValidate
       onSubmit={(e) => {
         e.preventDefault()
-        setState(/^\S+@\S+\.\S+$/.test(email) ? 'done' : 'error')
+        if (isEmail(email)) setState('done')
+        else { setState('error'); document.getElementById('join-email')?.focus() }
       }}
     >
-      <label htmlFor="join-email" className="sr">Email</label>
+      <label htmlFor="join-email" className={styles.joinLabel}>Your email</label>
       <input
         id="join-email"
         className="input"
         type="email"
-        placeholder="Email"
+        autoComplete="email"
+        inputMode="email"
+        placeholder="you@email.com"
         value={email}
         aria-invalid={state === 'error'}
         aria-describedby="join-help"
         onChange={(e) => { setEmail(e.target.value); setState('idle') }}
       />
       <button className="btn btn-accent btn-sm" type="submit">Send</button>
-      <p id="join-help" className={state === 'error' ? 'error' : styles.joinNote}>
-        {state === 'error' ? 'Enter an email like name@example.com.' : 'Event news and registration dates, a few times a year.'}
+      <p id="join-help" role="status" className={state === 'error' ? 'error' : styles.joinNote}>
+        {state === 'error' ? EMAIL_ERROR : 'Event news and registration dates, a few times a year.'}
       </p>
     </form>
   )

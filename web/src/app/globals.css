@@ -1,6 +1,8 @@
 /* Deadly Drops design system. Colours come from theme tokens (src/theme/tokens.ts). */
 *, *::before, *::after { box-sizing: border-box; margin: 0; }
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+/* no smooth scrolling: keyboard focus must be visible the moment it lands */
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: 96px; }
+@media (max-width: 720px) { html { scroll-padding-bottom: 80px; } }
 body {
   background: var(--bg); color: var(--ink);
   font-family: var(--font-body), system-ui, sans-serif; font-size: 16px; line-height: 1.55;
@@ -48,10 +50,10 @@ button { cursor: pointer; background: none; border: 0; }
 .light .eyebrow { color: color-mix(in srgb, var(--accent-deep) 62%, var(--ink-dark)); }
 .eyebrow:has(.live-dot) { display: inline-flex; align-items: center; gap: 8px; }
 .mono { font-family: var(--font-mono), monospace; letter-spacing: .06em; }
-.lede { font-size: 17px; line-height: 1.6; color: rgb(var(--ink-rgb) / .72); max-width: 46ch; }
-.light .lede, .light .muted { color: rgb(var(--ink-dark-rgb) / .62); }
-.muted { color: rgb(var(--ink-rgb) / .6); }
-.small { font-size: 14px; }
+.lede { font-size: 17px; line-height: 1.6; color: rgb(var(--ink-rgb) / .78); max-width: 46ch; }
+.light .lede, .light .muted { color: rgb(var(--ink-dark-rgb) / .74); }
+.muted { color: rgb(var(--ink-rgb) / .68); }
+.small { font-size: 15px; }
 .head-row { display: flex; align-items: end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 32px; }
 .stack-8 > * + * { margin-top: 8px; }
 .stack-16 > * + * { margin-top: 16px; }
@@ -79,8 +81,8 @@ button { cursor: pointer; background: none; border: 0; }
 .btn-line:hover { background: rgb(var(--accent-rgb) / .1); }
 .btn-sm { min-height: 40px; padding: 0 18px; font-size: 11px; }
 .btn-block { width: 100%; }
-.link-arrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); border-bottom: 1px solid var(--accent); padding-bottom: 3px; }
-.link-arrow:hover { color: var(--accent-soft); border-color: var(--accent-soft); }
+.link-arrow { display: inline-flex; align-items: center; min-height: 44px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); background: linear-gradient(var(--accent), var(--accent)) 0 calc(50% + 11px) / 100% 1px no-repeat; }
+.link-arrow:hover { color: var(--accent-soft); }
 
 /* ---------- chips ---------- */
 .chips { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -114,13 +116,13 @@ button { cursor: pointer; background: none; border: 0; }
 
 /* stat */
 .stat strong { display: block; font-family: var(--font-display); font-weight: 400; font-size: clamp(36px, 4vw, 48px); line-height: 1; }
-.stat span { display: block; margin-top: 6px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .55); }
+.stat span { display: block; margin-top: 6px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .66); }
 .light .stat span { color: rgb(var(--ink-dark-rgb) / .55); }
 
 /* ---------- forms ---------- */
 .field { display: grid; gap: 8px; }
-.field label, .label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .6); }
-.light .field label, .light .label { color: rgb(var(--ink-dark-rgb) / .6); }
+.field label, .label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .7); }
+.light .field label, .light .label { color: rgb(var(--ink-dark-rgb) / .72); }
 .input {
   width: 100%; min-height: 50px; padding: 0 16px; border-radius: 10px;
   background: var(--surface2); border: 1px solid rgb(var(--accent-rgb) / .22); color: var(--ink);
@@ -146,7 +148,6 @@ textarea.input { padding: 14px 16px; min-height: 140px; resize: vertical; }
   [data-enter] > *:nth-child(5) { animation-delay: .32s; }
 }
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); display: inline-block; animation: pulse 1.6s ease-in-out infinite; }

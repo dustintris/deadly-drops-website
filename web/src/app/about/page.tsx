@@ -27,8 +27,8 @@ export default async function AboutPage() {
   return (
     <>
       <PageHero
-        eyebrow="About the club"
-        title={<>Every age.<br />Every level.</>}
+        eyebrow="Chula Vista, CA"
+        title="Tournaments for every age and level"
         lede={club.tagline}
         photo="/images/stand-in/player-lunge.jpg"
         photoPosition="60% 30%"
@@ -54,9 +54,9 @@ export default async function AboutPage() {
             </ul>
           </div>
           <div className={a.collage}>
-            <img src={asset('/images/stand-in/court-line.jpg')} alt="" />
-            <img src={asset('/images/stand-in/ball-on-blue-court.jpg')} alt="" />
-            <img src={asset('/images/stand-in/player-forehand-night.jpg')} alt="" />
+            <img src={asset('/images/stand-in/court-line.jpg')} alt="" loading="lazy" />
+            <img src={asset('/images/stand-in/ball-on-blue-court.jpg')} alt="" loading="lazy" />
+            <img src={asset('/images/stand-in/player-forehand-night.jpg')} alt="" loading="lazy" />
           </div>
         </div>
       </section>

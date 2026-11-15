@@ -35,7 +35,7 @@ export function Spotlight({ items }: { items: SpotlightT[] }) {
       </div>
       <div className={styles.spotGrid} aria-live="polite">
         <div className={`photo ${styles.spotPhoto}`} key={s.slug}>
-          <img src={asset(s.photo)} alt="" style={{ objectPosition: s.photoPosition }} />
+          <img src={asset(s.photo)} alt="" loading="lazy" style={{ objectPosition: s.photoPosition }} />
           <span className="badge">{s.division}</span>
         </div>
         <div className={styles.spotBody} key={s.slug + '-b'}>

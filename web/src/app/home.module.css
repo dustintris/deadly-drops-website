@@ -27,12 +27,12 @@
   100% { transform: translate(260px, 70px) scale(.9); }
 }
 @keyframes swing { 0%, 70% { transform: rotate(-14deg); } 82% { transform: rotate(26deg); } 100% { transform: rotate(-4deg); } }
-.scrollCue { position: absolute; z-index: 2; left: 50%; bottom: 20px; transform: translateX(-50%); font-family: var(--font-mono); font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .45); }
+.scrollCue { position: absolute; z-index: 2; left: 50%; bottom: 20px; transform: translateX(-50%); font-family: var(--font-mono); font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .66); }
 
 /* ---------- roster ---------- */
 .roster { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(11, 1fr); gap: 10px; }
 .roster a { display: block; position: relative; aspect-ratio: 3 / 4; border-radius: 8px; overflow: hidden; border: 1px solid rgb(var(--accent-rgb) / .14); }
-.roster a > span:last-child { position: absolute; left: 8px; bottom: 6px; font-family: var(--font-mono); font-size: 10px; color: rgb(var(--ink-rgb) / .7); }
+.roster a > span:last-child { position: absolute; left: 8px; bottom: 6px; font-family: var(--font-mono); font-size: 10px; color: rgb(var(--ink-rgb) / .82); }
 .mobileScore { display: none; margin-top: 24px; }
 
 /* ---------- steps ---------- */
@@ -42,7 +42,7 @@
 .steps li[data-variant='dark'] strong { color: var(--accent); }
 .steps strong { display: block; font-size: 56px; line-height: 1; }
 .steps h3 { margin-top: 16px; font-size: 20px; font-weight: 600; }
-.steps p { margin-top: 10px; font-size: 15px; opacity: .78; }
+.steps p { margin-top: 10px; font-size: 15px; opacity: .86; }
 
 /* ---------- next event + ladder ---------- */
 .nextGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 64px; }

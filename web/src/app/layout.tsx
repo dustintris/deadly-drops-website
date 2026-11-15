@@ -14,7 +14,14 @@ export const metadata: Metadata = {
   description:
     'Structured pickleball tournaments and community events in Chula Vista, CA. Register for Dominate Charity 2026: $55 entry, cash prizes for the podium.',
   icons: { icon: `${process.env.NEXT_PUBLIC_BASE_PATH || ''}/logo.png` },
-  openGraph: { title: 'Deadly Drops Pickleball', description: "Everybody's welcome. Nobody coasts.", type: 'website' },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://deadlydropspickleball.com'),
+  openGraph: {
+    title: 'Deadly Drops Pickleball',
+    description: "Everybody's welcome. Nobody coasts. Tournaments and community events in Chula Vista, CA.",
+    type: 'website',
+    images: [{ url: `${process.env.NEXT_PUBLIC_BASE_PATH || ''}/logo.png`, width: 945, height: 1145, alt: 'Deadly Drops Pickleball crest' }],
+  },
+  twitter: { card: 'summary', title: 'Deadly Drops Pickleball', description: 'Tournaments and community events in Chula Vista, CA.' },
 }
 
 export const viewport: Viewport = { themeColor: defaultTheme.bg, width: 'device-width', initialScale: 1, viewportFit: 'cover' }
