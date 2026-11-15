@@ -1,0 +1,26 @@
+.next { padding-block: clamp(56px, 7vw, 88px); }
+.next > * + * { margin-top: 16px; }
+.when { font-family: var(--font-display); font-size: clamp(24px, 3vw, 34px); text-transform: uppercase; color: var(--accent); line-height: 1; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; }
+.prizeRow { display: flex; gap: 10px; flex-wrap: wrap; padding-block: 8px 12px; }
+.prizeRow div { min-width: 104px; padding: 14px 16px; border-radius: 12px; background: var(--surface2); border: 1px solid rgb(var(--accent-rgb) / .14); }
+.prizeRow div[data-place='Gold'] { border-color: var(--accent); }
+.prizeRow strong { display: block; font-family: var(--font-display); font-weight: 400; font-size: 32px; line-height: 1; }
+.prizeRow div[data-place='Gold'] strong { color: var(--accent); }
+.prizeRow span { display: block; margin-top: 4px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .55); }
+
+.ladder { padding-block: clamp(56px, 7vw, 88px); }
+.ladder :global(.eyebrow) { display: flex; align-items: center; gap: 8px; }
+.ladder ol { list-style: none; padding: 0; margin-top: 20px; display: grid; gap: 10px; }
+.ladder a {
+  position: relative; overflow: hidden; display: flex; align-items: center; gap: 14px;
+  min-height: 56px; padding: 0 16px; border-radius: 10px; background: var(--surface2);
+  border: 1px solid rgb(var(--accent-rgb) / .1); transition: border-color .2s ease, transform .2s ease;
+}
+.ladder a:hover { border-color: rgb(var(--accent-rgb) / .5); transform: translateX(3px); }
+.ladder a > * { position: relative; }
+.bar { position: absolute !important; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, rgb(var(--accent-rgb) / .2), rgb(var(--accent-rgb) / 0)); }
+.ladder b { width: 22px; font-family: var(--font-display); font-weight: 400; font-size: 24px; color: var(--accent); }
+.lname { font-weight: 600; font-size: 15px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ldiv { font-family: var(--font-mono); font-size: 11px; color: rgb(var(--ink-rgb) / .45); }
+.lpts { font-family: var(--font-mono); font-weight: 700; font-size: 14px; color: var(--accent); min-width: 44px; text-align: right; }
