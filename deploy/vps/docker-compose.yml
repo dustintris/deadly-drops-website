@@ -1,0 +1,28 @@
+# Deadly Drops site on the VPS: nginx serving the Next.js static export.
+#
+# Lives at /root/deadly-drops on the server. The shared Caddy container
+# (/root/FiberTrack/Caddyfile) terminates HTTPS for ddptournament.com and
+# proxies to this container over the external `fibertrack-edge` network via
+# the `ddp-web` alias. No ports are published on the host.
+#
+# ./www/current is a symlink to the active release in ./www/releases, so a
+# deploy swaps the symlink and needs no container restart. See deploy.sh.
+
+name: deadly-drops
+
+services:
+  web:
+    image: nginx:stable-alpine
+    restart: unless-stopped
+    volumes:
+      - ./www:/srv:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      proxy:
+        aliases:
+          - ddp-web
+
+networks:
+  proxy:
+    external: true
+    name: fibertrack-edge
