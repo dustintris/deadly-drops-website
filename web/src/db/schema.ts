@@ -1,7 +1,8 @@
 import { sql } from 'drizzle-orm'
-import { bigint, boolean, check, index, jsonb, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core'
+import { bigint, boolean, check, date, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core'
 import type { Perms } from '@/lib/auth/permissions'
 import type { SiteContent } from '@/lib/content-schema'
+import type { InfoT, RulesT } from '@/lib/tournaments/schema'
 
 /**
  * Database schema. Change it here, then run `npm run db:generate` to write the
@@ -63,6 +64,65 @@ export const sessions = pgTable(
   },
   (t) => [index('sessions_user_id_idx').on(t.userId), index('sessions_expires_at_idx').on(t.expiresAt)],
 )
+
+/**
+ * Tournaments, live on save (no publish step): `visible` false is a draft. `info` and `rules`
+ * are validated by src/lib/tournaments/schema.ts. `version` guards the editor against
+ * overwriting a newer save; `live_version` will tick on every score/check-in (P3).
+ */
+export const tournaments = pgTable(
+  'tournaments',
+  {
+    id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+    slug: text('slug').notNull().unique(),
+    name: text('name').notNull(),
+    days: date('days', { mode: 'string' }).array().notNull().default(sql`'{}'::date[]`),
+    info: jsonb('info').$type<InfoT>().notNull(),
+    rules: jsonb('rules').$type<RulesT>().notNull(),
+    featured: boolean('featured').notNull().default(false),
+    visible: boolean('visible').notNull().default(false),
+    version: integer('version').notNull().default(1),
+    liveVersion: bigint('live_version', { mode: 'number' }).notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('tournaments_one_featured_idx').on(t.featured).where(sql`${t.featured}`)],
+)
+
+/** Divisions of a tournament, each on one of its days. Teams and matches (P3) hang off these rows. */
+export const divisions = pgTable(
+  'divisions',
+  {
+    id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+    tournamentId: bigint('tournament_id', { mode: 'number' }).notNull().references(() => tournaments.id, { onDelete: 'cascade' }),
+    sort: integer('sort').notNull().default(0),
+    name: text('name').notNull(),
+    format: text('format').notNull(),
+    dayIndex: integer('day_index').notNull().default(0),
+    startTime: text('start_time').notNull(),
+    minutesPerRound: integer('minutes_per_round').notNull().default(17),
+    firstCourt: integer('first_court').notNull().default(1),
+    courtCount: integer('court_count').notNull().default(1),
+    teamLimit: integer('team_limit'),
+    gamesTo: integer('games_to'),
+    gamesPerTeam: integer('games_per_team'),
+    playoffs: text('playoffs').notNull().default('none'),
+    bronze: text('bronze').notNull().default('standings'),
+  },
+  (t) => [
+    index('divisions_tournament_idx').on(t.tournamentId, t.sort),
+    check('divisions_format_check', sql`${t.format} in ('mixed', 'mens', 'womens', 'open')`),
+    check('divisions_playoffs_check', sql`${t.playoffs} in ('none', 'top4', 'top8')`),
+    check('divisions_bronze_check', sql`${t.bronze} in ('standings', 'match')`),
+    check('divisions_start_time_check', sql`${t.startTime} ~ '^([01][0-9]|2[0-3]):[0-5][0-9]$'`),
+  ],
+)
+
+/** Small one-off markers, e.g. that the old tournaments were imported. */
+export const appMeta = pgTable('app_meta', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
+})
 
 /** Append-only record of admin actions, read newest first by id. */
 export const auditLog = pgTable('audit_log', {

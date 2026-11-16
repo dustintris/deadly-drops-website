@@ -4,10 +4,12 @@
  * ladder and results data are still sample content in src/content/sample.ts.
  * Pages only import from here, never from src/content or the store directly.
  */
+import { cache } from 'react'
 import { getContent, isPreview } from './content'
 import { eventState } from './events'
 import type { CommunityPostT, PageKey } from './content-schema'
 import * as sample from '@/content/sample'
+import { ensureImported, getTournamentBySlug, listTournaments, toClubEvent, type Tournament } from './tournaments/repo'
 import type { Club, ClubEvent, GalleryItem, Product } from './types'
 import type { Division } from './types'
 
@@ -21,7 +23,16 @@ export const getNotice = async () => {
 export const getShopSettings = async () => (await getContent()).settings.shop
 export const getPageCopy = async (key: PageKey) => (await getContent()).pages[key]
 
-export const getEvents = async (): Promise<ClubEvent[]> => (await getContent()).events.filter((e) => e.visible)
+/** Visible tournaments, earliest first. Live from the database: no publish step, once per request. */
+export const getEvents = cache(async (): Promise<ClubEvent[]> => {
+  await ensureImported()
+  return (await listTournaments({ visibleOnly: true })).map(toClubEvent)
+})
+/** One visible tournament with its days, divisions and rules, for its own page. */
+export const getTournamentPage = cache(async (slug: string): Promise<Tournament | null> => {
+  await ensureImported()
+  return getTournamentBySlug(slug, { visibleOnly: true })
+})
 /** The tournament the site leads with: the featured one, else the next upcoming, else the latest past one. null if none is visible. */
 export const getNextEvent = async (): Promise<ClubEvent | null> => {
   const list = await getEvents()

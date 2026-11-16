@@ -13,7 +13,7 @@ const NAV: { group?: string; items: NavItem[] }[] = [
   {
     group: 'Most used',
     items: [
-      { href: '/admin/events/', label: 'Tournaments', area: 'tournaments' },
+      { href: '/admin/tournaments/', label: 'Tournaments', area: 'tournaments' },
       { href: '/admin/announcements/', label: 'Announcements', area: 'content' },
       { href: '/admin/products/', label: 'Shop & prices', area: 'shop' },
       { href: '/admin/media/', label: 'Photos', area: 'content' },

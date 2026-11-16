@@ -108,7 +108,6 @@ export function presetOf(perms: Perms): string {
 export const SECTION_AREA: Record<SectionKey | 'media', Area> = {
   settings: 'content',
   theme: 'branding',
-  events: 'tournaments',
   ticker: 'content',
   products: 'shop',
   media: 'content',

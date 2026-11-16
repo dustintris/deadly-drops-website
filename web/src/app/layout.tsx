@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     title: 'Deadly Drops Pickleball',
     description: "Everybody's welcome. Nobody coasts. Tournaments and community events in Chula Vista, CA.",
     type: 'website',
-    images: [{ url: `${process.env.NEXT_PUBLIC_BASE_PATH || ''}/logo.png`, width: 945, height: 1145, alt: 'Deadly Drops Pickleball crest' }],
+    images: [{ url: `${process.env.NEXT_PUBLIC_BASE_PATH || ''}/logo.png`, width: 640, height: 640, alt: 'Deadly Drops Pickleball logo' }],
   },
   twitter: { card: 'summary', title: 'Deadly Drops Pickleball', description: 'Tournaments and community events in Chula Vista, CA.' },
 }

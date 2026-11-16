@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { recentAudit, type AuditEntry } from '@/lib/audit'
+import { getNextEvent } from '@/lib/data'
 import { readDraft, readPublished } from '@/lib/store/content-store'
+import { ensureImported, listTournaments, toClubEvent, type Tournament } from '@/lib/tournaments/repo'
 import { money } from '@/lib/utils'
 import { AREAS, AREA_LABELS, can, type Area } from '@/lib/auth/permissions'
 import { requireAdmin } from '@/lib/auth/session'
@@ -21,8 +23,17 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   // the activity log covers every area (and sign-ins), so it is for people who oversee staff
   const seeActivity = can(s, 'staff')
 
-  const [draft, live, log] = await Promise.all([readDraft(), readPublished(), seeActivity ? recentAudit(8) : Promise.resolve<AuditEntry[]>([])])
-  const event = seeTournaments ? live.events.find((e) => e.featured && e.visible) ?? live.events[0] : undefined
+  const [draft, live, log, next, tournaments] = await Promise.all([
+    readDraft(),
+    readPublished(),
+    seeActivity ? recentAudit(8) : Promise.resolve<AuditEntry[]>([]),
+    seeTournaments ? getNextEvent() : Promise.resolve(null),
+    seeTournaments ? ensureImported().then(() => listTournaments()) : Promise.resolve<Tournament[]>([]),
+  ])
+  // the one the website leads with; while none is shown, the first (hidden) one so it can be finished
+  const tournament = next ? tournaments.find((t) => t.slug === next.slug) : tournaments[0]
+  const event = next ?? (tournament ? toClubEvent(tournament) : undefined)
+  const eventHref = tournament ? `/admin/tournaments/${tournament.id}/` : '/admin/tournaments/'
   const standIns = [
     ...live.gallery.map((g) => g.image.src),
     ...Object.values(live.pages).flatMap((p) => [p.heroImage?.src, p.heroImageMobile?.src]),
@@ -48,11 +59,14 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       {event && (
         <section className="adm-card" aria-labelledby="next">
           <div className="adm-head">
-            <h2 id="next">Featured tournament: {event.name}</h2>
-            <Link className="adm-btn primary" href="/admin/events/">{can(s, 'tournaments', 'edit') ? 'Edit tournament' : 'View tournament'}</Link>
+            <h2 id="next">
+              {event.featured ? 'Featured' : 'Next'} tournament: {event.name}
+              {event.visible === false && <> <span className="adm-badge off">Hidden</span></>}
+            </h2>
+            <Link className="adm-btn primary" href={eventHref}>{can(s, 'tournaments', 'edit') ? 'Edit tournament' : 'View tournament'}</Link>
           </div>
           <div className="adm-grid">
-            <div className="adm-stat"><span className="adm-muted">Date</span><strong>{event.date ?? 'Not set'}</strong></div>
+            <div className="adm-stat"><span className="adm-muted">Date</span><strong>{event.date ? event.dateLabel : 'Not set'}</strong></div>
             <div className="adm-stat"><span className="adm-muted">Entry</span><strong>{money(event.entryFee)}</strong></div>
             <div className="adm-stat"><span className="adm-muted">Registration</span><strong>{event.registrationOpen ? 'Open' : 'Closed'}</strong></div>
             <div className="adm-stat"><span className="adm-muted">Sign-up link</span><strong>{event.registrationUrl ? 'Set' : 'Missing'}</strong></div>

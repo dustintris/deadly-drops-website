@@ -11,7 +11,7 @@ export default async function LoginPage() {
     <main className="adm-login">
       <div className="adm-card" style={{ width: 'min(440px, 100%)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <img src="/logo.png" alt="" width={48} height={48} style={{ background: 'var(--logo-plate)', borderRadius: 8, padding: 2, objectFit: 'contain' }} />
+          <img src="/logo.png" alt="" width={48} height={48} style={{ background: 'var(--logo-plate)', borderRadius: '50%', padding: 2, objectFit: 'contain' }} />
           <div>
             <h1 style={{ fontSize: 28 }}>Club admin</h1>
             <p className="adm-muted">Deadly Drops Pickleball</p>

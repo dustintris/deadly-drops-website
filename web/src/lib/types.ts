@@ -42,6 +42,8 @@ export type ClubEvent = {
   location?: string
   startTime?: string
   image?: ImageRef
+  /** the tournament's own logo */
+  logo?: ImageRef
   /** the event the homepage and tournaments hero feature */
   featured?: boolean
   visible?: boolean
