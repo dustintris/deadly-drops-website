@@ -31,8 +31,6 @@ services:
       CONTENT_DIR: /data
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH:-}
-      SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET in .env}
-      ADMIN_SESSION_VERSION: ${ADMIN_SESSION_VERSION:-1}
     volumes:
       - ./data:/data
     # Lets the non-root node user bind port 80 inside the container

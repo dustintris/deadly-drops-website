@@ -5,7 +5,7 @@
  * with these components (they show the server's validation errors by path), and saves with <SaveBar>.
  */
 import { useRouter } from 'next/navigation'
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { saveSection, type ActionResult } from '@/app/admin/actions'
 import { parseMoney, sectionHash, type SectionKey } from '@/lib/content-schema'
 import { asset } from '@/lib/utils'
@@ -16,7 +16,32 @@ type Errors = Record<string, string>
 const ErrorCtx = createContext<Errors>({})
 export const useFieldError = (path: string) => useContext(ErrorCtx)[path]
 
+/* ---------- read-only gate ---------- */
+
+// default true: an editor that isn't wrapped in <EditGate> stays editable
+const EditCtx = createContext(true)
+
+/**
+ * Wraps an editor. Without edit rights the fields are still shown but locked (a disabled fieldset
+ * disables every control inside), SaveBar disappears and saving does nothing. The server still
+ * rejects the save: this only keeps the screen honest.
+ */
+export function EditGate({ canEdit, children }: { canEdit: boolean; children: React.ReactNode }) {
+  const noteId = useId()
+  // always the same wrapper, only `disabled` changes: an editor keeps its state if the person's access changes
+  return (
+    <EditCtx.Provider value={canEdit}>
+      {!canEdit && <p id={noteId} className="adm-card" role="note" style={{ fontWeight: 600 }}>You can view this but not change it.</p>}
+      <fieldset disabled={!canEdit} className={canEdit ? undefined : 'adm-readonly'} aria-describedby={canEdit ? undefined : noteId}
+        style={{ border: 0, padding: 0, margin: 0, minWidth: 0, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 20 }}>
+        {children}
+      </fieldset>
+    </EditCtx.Provider>
+  )
+}
+
 export function useSection<T>(section: SectionKey, initial: T, _rev?: number) {
+  const canEdit = useContext(EditCtx)
   const router = useRouter()
   const [value, setValueRaw] = useState<T>(initial)
   const [base, setBase] = useState(() => sectionHash(initial))
@@ -46,6 +71,7 @@ export function useSection<T>(section: SectionKey, initial: T, _rev?: number) {
   }, [dirty])
 
   const save = useCallback(async () => {
+    if (!canEdit) return
     setBusy(true)
     setResult(null)
     let res: ActionResult
@@ -70,7 +96,7 @@ export function useSection<T>(section: SectionKey, initial: T, _rev?: number) {
         if (el) { el.closest('details')?.setAttribute('open', ''); el.focus(); el.scrollIntoView({ block: 'center' }) }
       })
     }
-  }, [section, value, base, router])
+  }, [canEdit, section, value, base, router])
 
   /** set a nested value by path segments: update(['0','name'], 'x') */
   const update = useCallback((path: (string | number)[], v: unknown) => {
@@ -93,6 +119,8 @@ export function SectionForm({ errors, children }: { errors: Errors; children: Re
 }
 
 export function SaveBar({ s, label = 'Save draft' }: { s: { save: () => void; dirty: boolean; busy: boolean; result: ActionResult | null }; label?: string }) {
+  const canEdit = useContext(EditCtx)
+  if (!canEdit) return null
   return (
     <div className="adm-save" role="region" aria-label="Save">
       <p className={`msg ${s.result ? (s.result.ok ? 'good' : 'bad') : ''}`} role="status">
@@ -362,13 +390,15 @@ async function prepare(file: File): Promise<Blob> {
 
 export function Uploader({ onUploaded, compact }: { onUploaded?: (img: LibraryImage) => void; compact?: boolean }) {
   const { add } = useLibrary()
+  const canEdit = useContext(EditCtx)
   const router = useRouter()
   const [over, setOver] = useState(false)
   const [msg, setMsg] = useState('')
   const input = useRef<HTMLInputElement>(null)
 
   const upload = async (files: FileList | null) => {
-    if (!files?.length) return
+    // a disabled fieldset locks the buttons but not drag-and-drop onto the drop zone
+    if (!canEdit || !files?.length) return
     for (const f of Array.from(files)) {
       setMsg(`Uploading ${f.name}…`)
       const body = new FormData()

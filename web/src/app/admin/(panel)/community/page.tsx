@@ -1,13 +1,14 @@
 import Link from 'next/link'
-import { MediaLibraryProvider } from '@/components/admin/kit'
+import { EditGate, MediaLibraryProvider } from '@/components/admin/kit'
 import { getAdminData } from '@/lib/admin-data'
 import { CommunityEditor } from './CommunityEditor'
-import { requireAdmin } from '@/lib/auth/session'
+import { can } from '@/lib/auth/permissions'
+import { requirePermission } from '@/lib/auth/session'
 
 export const metadata = { title: 'Community & news' }
 
 export default async function CommunityAdmin() {
-  await requireAdmin() // each page checks: a layout check alone can be skipped by partial rendering
+  const s = await requirePermission('content', 'view') // each page checks: a layout check alone can be skipped by partial rendering
   const { draft, library } = await getAdminData()
   return (
     <MediaLibraryProvider initial={library}>
@@ -21,7 +22,9 @@ export default async function CommunityAdmin() {
         </div>
         <Link href="/community/" className="adm-btn" target="_blank" rel="noopener noreferrer">View the Community page<span className="sr"> (opens in a new tab)</span></Link>
       </div>
-      <CommunityEditor initial={draft.posts ?? []} rev={draft.rev} />
+      <EditGate canEdit={can(s, 'content', 'edit')}>
+        <CommunityEditor initial={draft.posts ?? []} rev={draft.rev} />
+      </EditGate>
     </MediaLibraryProvider>
   )
 }
