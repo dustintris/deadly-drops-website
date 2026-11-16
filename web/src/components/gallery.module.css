@@ -21,6 +21,6 @@
 .lbSide { padding: 28px; display: flex; flex-direction: column; gap: 14px; }
 .lbSide dl { margin-top: auto; }
 .lbSide dl div { display: flex; justify-content: space-between; padding: 6px 0; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
-.lbSide dt { color: rgb(var(--ink-rgb) / .5); }
+.lbSide dt { color: rgb(var(--ink-rgb) / .66); }
 .lbSide dd { margin: 0; }
 @media (max-width: 760px) { .lbInner { grid-template-columns: 1fr; } .lbPhoto img { max-height: 45svh; } }

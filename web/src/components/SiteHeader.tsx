@@ -12,6 +12,7 @@ export const NAV = [
   { href: '/about/', label: 'About us' },
   { href: '/shop/', label: 'Shop' },
   { href: '/tournaments/', label: 'Tournaments' },
+  { href: '/community/', label: 'Community' },
   { href: '/gallery/', label: 'Gallery' },
   { href: '/contact/', label: 'Contact us' },
 ]
@@ -26,7 +27,8 @@ export function SiteHeader({ city }: { city: string }) {
   const inShop = path.startsWith('/shop') || path.startsWith('/cart')
   const current = NAV.find((n) => n.href !== '/' && isActive(path, n.href))
 
-  useEffect(() => setOpen(false), [path])
+  const [menuPath, setMenuPath] = useState(path)
+  if (menuPath !== path) { setMenuPath(path); setOpen(false) } // close the menu after navigation
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
@@ -60,7 +62,7 @@ export function SiteHeader({ city }: { city: string }) {
         <div className={styles.actions}>
           <Link href="/login/" className={styles.login}>Log in</Link>
           {inShop ? (
-            <Link href="/cart/" className="btn btn-accent btn-sm">Cart · {count}</Link>
+            <Link href="/cart/" className="btn btn-accent btn-sm" aria-label={`Cart, ${count} ${count === 1 ? 'item' : 'items'}`}>Cart · {count}</Link>
           ) : (
             <Link href="/signup/" className="btn btn-accent btn-sm">Sign up to play</Link>
           )}
@@ -92,6 +94,7 @@ export function SiteHeader({ city }: { city: string }) {
           </li>
         </ul>
       </div>
+      <p className="sr" role="status" aria-atomic="true">{count} {count === 1 ? 'item' : 'items'} in cart</p>
     </header>
   )
 }

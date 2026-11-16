@@ -5,10 +5,13 @@ import type { GalleryItem } from '@/lib/types'
 import { asset } from '@/lib/utils'
 import styles from './gallery.module.css'
 
-const ALBUMS = ['All', 'Tournaments', 'Ladder', 'Clinics', 'Socials'] as const
+const ORDER = ['Tournaments', 'Community', 'Socials', 'Ladder', 'Clinics'] as const
+type Album = 'All' | GalleryItem['album']
 
 export function GalleryGrid({ items }: { items: GalleryItem[] }) {
-  const [album, setAlbum] = useState<(typeof ALBUMS)[number]>('All')
+  const [album, setAlbum] = useState<Album>('All')
+  // only offer albums that have photos; hide the chips when there is just one
+  const albums: Album[] = ['All', ...ORDER.filter((a) => items.some((g) => g.album === a))]
   const [open, setOpen] = useState<number | null>(null)
   const dialog = useRef<HTMLDialogElement>(null)
   const list = album === 'All' ? items : items.filter((g) => g.album === album)
@@ -37,7 +40,7 @@ export function GalleryGrid({ items }: { items: GalleryItem[] }) {
     <>
       <div className={styles.bar}>
         <div className="chips" role="group" aria-label="Albums">
-          {ALBUMS.map((a) => (
+          {albums.length > 2 && albums.map((a) => (
             <button key={a} className="chip" aria-pressed={a === album} onClick={() => { setAlbum(a); setOpen(null) }}>{a}</button>
           ))}
         </div>

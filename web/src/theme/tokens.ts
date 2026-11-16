@@ -28,6 +28,12 @@ export type Theme = {
   onAccent: string
   /** dark tint used behind monogram tiles */
   accentTint: string
+  /** error text on dark grounds */
+  danger: string
+  /** error text on light grounds */
+  dangerOnLight: string
+  /** plate behind the crest logo (the artwork has a white ground) */
+  logoPlate: string
 }
 
 export const defaultTheme: Theme = {
@@ -43,6 +49,9 @@ export const defaultTheme: Theme = {
   accentDeep: '#8FC21F',
   onAccent: '#111111',
   accentTint: '#1F2418',
+  danger: '#FF8F8F',
+  dangerOnLight: '#B3261E',
+  logoPlate: '#FFFFFF',
 }
 
 const hexToRgb = (hex: string): string => {

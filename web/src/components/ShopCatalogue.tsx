@@ -32,6 +32,11 @@ export function ShopCatalogue({ products }: { products: Product[] }) {
             <Link href={`/shop/${p.slug}/`} className={styles.itemLink}>
               <ProductArt product={p} />
               {p.tag && <span className={`badge ${styles.itemTag}`}>{p.tag}</span>}
+              {p.stock === 0 ? (
+                <span className={`${styles.soldOut} ${styles.itemStock}`}>Sold out</span>
+              ) : typeof p.stock === 'number' && p.stock <= 5 ? (
+                <span className={`${styles.lowStock} ${styles.itemStock}`}>Only {p.stock} left</span>
+              ) : null}
               <span className={styles.itemHead}>
                 <span>
                   <strong>{p.name}</strong>
@@ -42,13 +47,15 @@ export function ShopCatalogue({ products }: { products: Product[] }) {
             </Link>
             <button
               className="btn btn-line btn-sm btn-block"
+              disabled={p.stock === 0}
               onClick={() => {
+                if (p.stock === 0) return
                 add({ slug: p.slug, name: p.name, variant: p.options?.[0]?.values[1] ?? p.sub, unit: p.price })
                 setAdded(p.slug)
                 setTimeout(() => setAdded(null), 1600)
               }}
             >
-              {added === p.slug ? 'Added to cart' : 'Add to cart'}
+              {p.stock === 0 ? 'Sold out' : added === p.slug ? 'Added to cart' : 'Add to cart'}
             </button>
           </li>
         ))}

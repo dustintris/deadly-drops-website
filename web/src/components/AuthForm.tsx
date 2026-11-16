@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { EMAIL_ERROR, focusFirstError, isEmail } from '@/lib/forms'
 import styles from './auth.module.css'
 
 const LEVELS = ['New', '2.5', '3.0', '3.5', '4.0+']
@@ -43,28 +44,29 @@ export function AuthForm({ initial }: { initial: 'login' | 'signup' }) {
           e.preventDefault()
           const x: Record<string, string> = {}
           if (signup && !f.name.trim()) x.name = 'Enter your full name.'
-          if (!/^\S+@\S+\.\S+$/.test(f.email)) x.email = 'Enter an email like name@example.com.'
+          if (!isEmail(f.email)) x.email = EMAIL_ERROR
           if (f.password.length < (signup ? 8 : 1)) x.password = signup ? 'Use at least 8 characters.' : 'Enter your password.'
           setErr(x)
+          focusFirstError(x, [['name', 'a-name'], ['email', 'a-email'], ['password', 'a-pass']])
           if (!Object.keys(x).length) router.push('/me/')
         }}
       >
         {signup && (
           <div className="field">
             <label htmlFor="a-name">Full name</label>
-            <input id="a-name" className="input" value={f.name} onChange={(e) => set('name', e.target.value)} aria-invalid={!!err.name} aria-describedby="a-name-e" autoComplete="name" />
+            <input id="a-name" required aria-required="true" className="input" value={f.name} onChange={(e) => set('name', e.target.value)} aria-invalid={!!err.name} aria-describedby="a-name-e" autoComplete="name" />
             {err.name && <p id="a-name-e" className="error">{err.name}</p>}
           </div>
         )}
         <div className="field">
           <label htmlFor="a-email">Email</label>
-          <input id="a-email" type="email" className="input" placeholder="you@email.com" value={f.email} onChange={(e) => set('email', e.target.value)} aria-invalid={!!err.email} aria-describedby="a-email-e" autoComplete="email" />
+          <input id="a-email" required aria-required="true" type="email" inputMode="email" className="input" placeholder="you@email.com" value={f.email} onChange={(e) => set('email', e.target.value)} onBlur={() => f.email && !isEmail(f.email) && setErr((x) => ({ ...x, email: EMAIL_ERROR }))} aria-invalid={!!err.email} aria-describedby="a-email-e" autoComplete="email" />
           {err.email && <p id="a-email-e" className="error">{err.email}</p>}
         </div>
         <div className="field">
           <label htmlFor="a-pass">Password</label>
           <div className={styles.pass}>
-            <input id="a-pass" type={show ? 'text' : 'password'} className="input" value={f.password} onChange={(e) => set('password', e.target.value)} aria-invalid={!!err.password} aria-describedby="a-pass-e" autoComplete={signup ? 'new-password' : 'current-password'} />
+            <input id="a-pass" required aria-required="true" type={show ? 'text' : 'password'} className="input" value={f.password} onChange={(e) => set('password', e.target.value)} aria-invalid={!!err.password} aria-describedby="a-pass-e" autoComplete={signup ? 'new-password' : 'current-password'} />
             <button type="button" onClick={() => setShow((s) => !s)} aria-pressed={show}>{show ? 'Hide' : 'Show'}</button>
           </div>
           {err.password && <p id="a-pass-e" className="error">{err.password}</p>}

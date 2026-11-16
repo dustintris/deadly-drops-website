@@ -3,50 +3,88 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import type { ClubEvent } from '@/lib/types'
-import { money } from '@/lib/utils'
+import { eventCta, type EventState } from '@/lib/events'
+import { asset, cx, money } from '@/lib/utils'
 import { Monogram } from './Monogram'
 import type { Member } from '@/lib/types'
+import page from './tournament.module.css'
 import styles from './tournaments.module.css'
 
 type Champion = { event: string; pair: string; detail: string; lead: Member }
 
-export function SeasonList({ events, champions }: { events: ClubEvent[]; champions: Champion[] }) {
-  const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming')
+export function SeasonList({ events, states, champions }: { events: ClubEvent[]; states: Record<string, EventState>; champions: Champion[] }) {
+  const withState = events.map((e) => ({ e, st: states[e.slug] ?? 'tba' }))
+  const upcoming = withState.filter((x) => x.st !== 'past')
+  const past = withState.filter((x) => x.st === 'past').sort((a, b) => (b.e.date ?? '').localeCompare(a.e.date ?? ''))
+  const [tab, setTab] = useState<'upcoming' | 'past'>(upcoming.length ? 'upcoming' : 'past')
   return (
     <>
       <div className="head-row">
         <div className="stack-8">
-          <p className="eyebrow">Season 2026</p>
-          <h2 className="display d-m">Pick your weekend</h2>
+          <p className="eyebrow">Tournaments</p>
+          <h2 className="display d-m">{tab === 'upcoming' ? 'Pick your weekend' : 'Past tournaments'}</h2>
         </div>
         <div className="chips" role="group" aria-label="Show">
           <button className="chip" aria-pressed={tab === 'upcoming'} onClick={() => setTab('upcoming')}>Upcoming</button>
-          <button className="chip" aria-pressed={tab === 'past'} onClick={() => setTab('past')}>Past results</button>
+          <button className="chip" aria-pressed={tab === 'past'} onClick={() => setTab('past')}>Past tournaments</button>
         </div>
       </div>
 
       {tab === 'upcoming' ? (
         <ul className={styles.season}>
-          {events.map((e) => {
-            const d = e.date ? new Date(e.date) : null
+          {upcoming.map(({ e, st }) => {
+            const d = e.date ? new Date(`${e.date}T12:00:00`) : null
+            const cta = eventCta(e, st)
             return (
               <li key={e.slug} className="card">
                 <div className={styles.date}>
                   <strong>{d ? String(d.getDate()).padStart(2, '0') : 'TBA'}</strong>
-                  <span>{d ? d.toLocaleString('en-US', { month: 'short' }) : '2026'}</span>
+                  <span>{d ? d.toLocaleString('en-US', { month: 'short' }) : 'Date soon'}</span>
                 </div>
-                <div className={styles.seasonBody}>
-                  <h3>{e.name}</h3>
-                  <p>{e.format} · {e.includes.join(' · ')}</p>
+                <div className={cx(styles.seasonBody, e.logo && page.withBadge)}>
+                  {e.logo && <img className={page.logoBadge} src={asset(e.logo.src)} alt="" width={48} height={48} />}
+                  <div>
+                    <h3><Link href={`/tournaments/${e.slug}/`} className={page.nameLink}>{e.name}</Link></h3>
+                    <p>{e.format} · {e.includes.join(' · ')}</p>
+                  </div>
                 </div>
                 <span className="tag">{money(e.entryFee)}{e.entryFeeWithMeal ? ` / ${money(e.entryFeeWithMeal)}` : ''}</span>
-                <Link href="#register" className="btn btn-accent btn-sm">Enter</Link>
+                {cta.external ? (
+                  <a href={cta.href} className="btn btn-accent btn-sm" target="_blank" rel="noopener noreferrer">{st === 'open' ? 'Enter' : cta.label} <span className="sr">{e.name}, opens in a new tab</span></a>
+                ) : (
+                  <Link href={cta.href} className="btn btn-accent btn-sm">{st === 'open' ? 'Enter' : cta.label}<span className="sr"> for {e.name}</span></Link>
+                )}
               </li>
             )
           })}
-          <li className={styles.more}>More 2026 events are announced by email. Join the list in the footer to hear first.</li>
+          {!upcoming.length && <li className={styles.more}>No tournament is scheduled right now.</li>}
+          <li className={styles.more}>New tournaments are announced by email. Join the list in the footer to hear first.</li>
         </ul>
       ) : (
+        <>
+        <ul className={styles.season}>
+          {past.map(({ e }) => {
+            const d = e.date ? new Date(`${e.date}T12:00:00`) : null
+            return (
+              <li key={e.slug} className="card">
+                <div className={styles.date}>
+                  <strong>{d ? String(d.getDate()).padStart(2, '0') : '–'}</strong>
+                  <span>{d ? d.toLocaleString('en-US', { month: 'short', year: 'numeric' }) : ''}</span>
+                </div>
+                <div className={cx(styles.seasonBody, e.logo && page.withBadge)}>
+                  {e.logo && <img className={page.logoBadge} src={asset(e.logo.src)} alt="" width={48} height={48} />}
+                  <div>
+                    <h3><Link href={`/tournaments/${e.slug}/`} className={page.nameLink}>{e.name}</Link></h3>
+                    <p>{e.dateLabel}{e.location ? ` · ${e.location}` : ''}</p>
+                  </div>
+                </div>
+                <span className="tag">{money(e.entryFee)}{e.prizes.length ? ` · Gold ${money(e.prizes[0].amount)}` : ''}</span>
+                <Link href="/community/" className="btn btn-line btn-sm">Photos &amp; stories<span className="sr"> from {e.name}</span></Link>
+              </li>
+            )
+          })}
+        </ul>
+        <p className="eyebrow" style={{ margin: '32px 0 12px' }}>Division champions</p>
         <ul className={styles.champs}>
           {champions.map((c) => (
             <li key={c.event} className="card">
@@ -59,6 +97,7 @@ export function SeasonList({ events, champions }: { events: ClubEvent[]; champio
             </li>
           ))}
         </ul>
+        </>
       )}
     </>
   )

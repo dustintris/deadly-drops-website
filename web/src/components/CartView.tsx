@@ -17,7 +17,7 @@ export function CartView({ discount }: { discount: number }) {
     return (
       <div className={styles.placed} role="status">
         <p className="eyebrow">Order placed · preview</p>
-        <h2 className="display d-m">See you at the courts</h2>
+        <h1 className="display d-m">See you at the courts</h1>
         <p className="muted">
           In the live site this is where payment happens. Nothing was charged: this preview has no checkout connected.
         </p>
@@ -29,7 +29,7 @@ export function CartView({ discount }: { discount: number }) {
   if (!lines.length) {
     return (
       <div className={styles.placed}>
-        <h2 className="display d-m">Your cart is empty</h2>
+        <h1 className="display d-m">Your cart is empty</h1>
         <p className="muted">Paddles, club kit and the small stuff you forgot in the car.</p>
         <Link href="/shop/" className="btn btn-accent">Browse the shop</Link>
       </div>
@@ -39,7 +39,7 @@ export function CartView({ discount }: { discount: number }) {
   return (
     <div className={styles.cart}>
       <div>
-        <h2 className="display d-m">Your cart <small className="mono muted">{count} items</small></h2>
+        <h1 className="display d-m">Your cart <small className="mono muted">{count} items</small></h1>
         <ul className={styles.lines}>
           {lines.map((l) => (
             <li key={l.slug + l.variant} className="card">
@@ -65,7 +65,7 @@ export function CartView({ discount }: { discount: number }) {
         <dl>
           <div><dt>Subtotal</dt><dd>{money(subtotal, true)}</dd></div>
           <div className={styles.disc}><dt>Member discount ({Math.round(discount * 100)}%)</dt><dd>{member ? `−${money(off, true)}` : '—'}</dd></div>
-          <div><dt>Pickup at the courts</dt><dd>Free</dd></div>
+          <div><dt>Pickup or delivery</dt><dd>Arranged with the club</dd></div>
         </dl>
         <label className={styles.memberToggle}>
           <input type="checkbox" checked={member} onChange={(e) => setMember(e.target.checked)} />

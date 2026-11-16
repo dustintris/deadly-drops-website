@@ -1,36 +1,49 @@
 import Link from 'next/link'
 import type { ClubEvent, LadderEntry } from '@/lib/types'
-import { money } from '@/lib/utils'
+import { eventCta, eventEyebrow, eventState } from '@/lib/events'
+import { asset, money } from '@/lib/utils'
 import { Monogram } from './Monogram'
 import styles from './events.module.css'
+import page from './tournament.module.css'
 
 export function eventTags(e: ClubEvent) {
   return [
     `${money(e.entryFee)} / player`,
     e.entryFeeWithMeal ? `${money(e.entryFeeWithMeal)} with meal` : null,
-    ...e.includes.slice(0, 1),
+    ...e.includes.slice(0, 2),
   ].filter(Boolean) as string[]
 }
 
 export function NextEventBlock({ event }: { event: ClubEvent }) {
+  const state = eventState(event)
+  const cta = eventCta(event, state)
   return (
     <div className={styles.next}>
-      <p className="eyebrow">Next up · {event.registrationOpen ? 'registration open' : 'coming soon'}</p>
-      <h2 className="display d-l">{event.name}</h2>
+      {event.logo && <img className={page.logoBadgeLg} src={asset(event.logo.src)} alt="" width={72} height={72} />}
+      <p className="eyebrow">{eventEyebrow(state)}</p>
+      <h2 className="display d-l"><Link href={`/tournaments/${event.slug}/`} className={page.titleLink}>{event.name}</Link></h2>
       <p className={styles.when}>{event.dateLabel}</p>
       <p className="lede">{event.summary}</p>
       <ul className={styles.tags}>
         {eventTags(event).map((t) => <li key={t} className="tag">{t}</li>)}
       </ul>
-      <div className={styles.prizeRow}>
+      {event.location && <p className="small muted">{event.location}</p>}
+      {event.prizes.length > 0 && <div className={styles.prizeRow}>
         {event.prizes.map((p) => (
           <div key={p.place} data-place={p.place}>
             <strong>{money(p.amount)}</strong>
             <span>{p.place}</span>
           </div>
         ))}
+      </div>}
+      <div className={page.ctaRow}>
+        {cta.external ? (
+          <a href={cta.href} className="btn btn-accent" target="_blank" rel="noopener noreferrer">{cta.label} <span className="sr">(opens in a new tab)</span></a>
+        ) : (
+          <Link href={cta.href} className="btn btn-accent">{cta.label}</Link>
+        )}
+        <Link href={`/tournaments/${event.slug}/`} className="link-arrow">Schedule &amp; rules →<span className="sr"> for {event.name}</span></Link>
       </div>
-      <Link href="/tournaments/#register" className="btn btn-accent">Reserve your spot</Link>
     </div>
   )
 }

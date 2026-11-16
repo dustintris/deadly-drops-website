@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { ClubEvent } from '@/lib/types'
+import { EMAIL_ERROR, focusFirstError, isEmail } from '@/lib/forms'
 import { money } from '@/lib/utils'
 import styles from './tournaments.module.css'
 
@@ -12,7 +13,7 @@ const TYPES = ['Mixed doubles', "Men's doubles", "Women's doubles"]
 /**
  * Three-step tournament entry. Steps 1–2 work fully in the preview; step 3
  * (payment) is a stub. Production: POST the entry to the registration API,
- * take payment, then email the QR check-in ticket.
+ * take payment, then email a confirmation.
  */
 export function RegistrationForm({ event }: { event: ClubEvent }) {
   const [step, setStep] = useState(1)
@@ -25,8 +26,9 @@ export function RegistrationForm({ event }: { event: ClubEvent }) {
     if (step === 1) {
       const e: Record<string, string> = {}
       if (!form.name.trim()) e.name = 'Enter your full name.'
-      if (!/^\S+@\S+\.\S+$/.test(form.email)) e.email = 'Enter an email like name@example.com. Your QR ticket goes here.'
+      if (!isEmail(form.email)) e.email = `${EMAIL_ERROR} Your confirmation goes here.`
       setErrors(e)
+      focusFirstError(e, [['name', 'reg-name'], ['email', 'reg-email']])
       if (Object.keys(e).length) return
     }
     setStep((s) => s + 1)
@@ -46,12 +48,12 @@ export function RegistrationForm({ event }: { event: ClubEvent }) {
         <div className={styles.regGrid}>
           <div className="field">
             <label htmlFor="reg-name">Full name</label>
-            <input id="reg-name" className="input" value={form.name} onChange={(e) => set('name', e.target.value)} aria-invalid={!!errors.name} aria-describedby="reg-name-err" autoComplete="name" />
+            <input id="reg-name" required aria-required="true" className="input" value={form.name} onChange={(e) => set('name', e.target.value)} aria-invalid={!!errors.name} aria-describedby="reg-name-err" autoComplete="name" />
             {errors.name && <p id="reg-name-err" className="error">{errors.name}</p>}
           </div>
           <div className="field">
             <label htmlFor="reg-email">Email</label>
-            <input id="reg-email" type="email" className="input" value={form.email} onChange={(e) => set('email', e.target.value)} aria-invalid={!!errors.email} aria-describedby="reg-email-err" autoComplete="email" placeholder="you@email.com" />
+            <input id="reg-email" required aria-required="true" type="email" inputMode="email" className="input" value={form.email} onChange={(e) => set('email', e.target.value)} onBlur={() => form.email && !isEmail(form.email) && setErrors((x) => ({ ...x, email: `${EMAIL_ERROR} Your confirmation goes here.` }))} aria-invalid={!!errors.email} aria-describedby="reg-email-err" autoComplete="email" placeholder="you@email.com" />
             {errors.email && <p id="reg-email-err" className="error">{errors.email}</p>}
           </div>
         </div>
@@ -99,7 +101,7 @@ export function RegistrationForm({ event }: { event: ClubEvent }) {
             {form.meal ? ', meal included' : ''}.
           </p>
           <p className="muted small">
-            Preview only: nothing was charged or sent. On the live site you pay here and your QR check-in ticket is emailed
+            Preview only: nothing was charged or sent. On the live site you pay here and your confirmation is emailed
             to {form.email || 'you'}.
           </p>
         </div>

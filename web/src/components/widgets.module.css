@@ -1,5 +1,19 @@
+/*
+ * CSS Modules scope animation names, so `animation: marquee` here compiles to a hashed name.
+ * Keyframes used in this file must be declared in this file, not in globals.css.
+ */
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+
 /* ---------- ticker ---------- */
-.ticker { background: var(--accent); color: var(--on-accent); overflow: hidden; border-block: 1px solid var(--accent); }
+.ticker { position: relative; background: var(--accent); color: var(--on-accent); overflow: hidden; border-block: 1px solid var(--accent); }
+.ticker[data-paused='true'] .tickTrack { animation-play-state: paused; }
+.tickPause {
+  position: absolute; right: 0; top: 0; bottom: 0; min-width: 52px; padding: 0 14px;
+  background: var(--accent); color: var(--on-accent); font-size: 12px;
+  box-shadow: -16px 0 16px var(--accent);
+}
+.tickPause:hover { background: var(--accent-soft); }
 .tickTrack { display: flex; width: max-content; animation: marquee 38s linear infinite; }
 .tickTrack > div { display: flex; align-items: center; gap: 28px; padding: 12px 14px; white-space: nowrap; }
 .tickTrack span { font-family: var(--font-display); font-size: 20px; text-transform: uppercase; letter-spacing: .02em; }
@@ -14,11 +28,11 @@
 }
 .score header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .score header .eyebrow { display: inline-flex; align-items: center; gap: 8px; }
-.scoreDiv { font-family: var(--font-mono); font-size: 10px; letter-spacing: .16em; color: rgb(var(--ink-rgb) / .45); text-transform: uppercase; }
+.scoreDiv { font-family: var(--font-mono); font-size: 10px; letter-spacing: .16em; color: rgb(var(--ink-rgb) / .68); text-transform: uppercase; }
 .scoreRow { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgb(var(--ink-rgb) / .08); font-weight: 600; font-size: 15px; }
 .scoreRow strong { margin-left: auto; font-family: var(--font-display); font-weight: 400; font-size: 34px; line-height: 1; transition: color .3s ease; }
 .scoreRow[data-lead='true'] strong { color: var(--accent); }
-.score footer { margin-top: 12px; padding-top: 10px; border-top: 1px dashed rgb(var(--ink-rgb) / .14); font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; color: rgb(var(--ink-rgb) / .5); }
+.score footer { margin-top: 12px; padding-top: 10px; border-top: 1px dashed rgb(var(--ink-rgb) / .14); font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; color: rgb(var(--ink-rgb) / .66); }
 .scoreCompact { max-width: none; background: var(--surface2); }
 .scoreCompact .scoreRow { padding: 6px 0; border: 0; font-size: 14px; }
 .scoreCompact .scoreRow strong { font-size: 26px; }
@@ -41,7 +55,7 @@
 .spotStats { display: flex; gap: 40px; margin-top: 28px; flex-wrap: wrap; }
 .spotStats dd { margin: 0; }
 .dots { display: flex; gap: 8px; margin-top: 32px; }
-.dots button { width: 34px; height: 24px; position: relative; }
+.dots button { width: 34px; height: 44px; position: relative; }
 .dots button::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 5px; margin-top: -2.5px; border-radius: 100px; background: rgb(var(--accent-rgb) / .25); transition: background-color .3s ease; }
 .dots button[aria-pressed='true'] { width: 56px; }
 .dots button[aria-pressed='true']::before { background: var(--accent); }
