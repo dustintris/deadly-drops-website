@@ -55,7 +55,7 @@ type Props = {
   onSaved: (m: Match) => void
   /** the pad closes; `unsaved` is a typed score that isn't saved yet (keyed by this pad's match, never the board's current one) */
   onClose: (matchId: number, unsaved: PadDraft | null) => void
-  /** the match left the schedule while the pad was open (it was cleared or redone): keep the score, block saving */
+  /** the match left the schedule while the pad was open (it was cleared or redone): keep the score on screen, block saving */
   gone?: boolean
 }
 
@@ -173,7 +173,7 @@ export function ScorePad({ match, teamA, teamB, title, subtitle, gamesTo, winBy2
 
         {gone && (
           <p className="adm-locknote" role="alert">
-            This match was removed from the schedule. Your score {scoreA}–{scoreB} is kept on this device when you close.
+            This match was removed from the schedule, so it can’t be saved. Note the score: {scoreA}–{scoreB}.
           </p>
         )}
 

@@ -67,3 +67,4 @@
   .main[data-courts='true'] { grid-template-columns: 1fr; }
   .control { display: none; }
 }
+.paused { align-self: center; padding: 0 .6em; font-family: var(--font-mono); font-size: .65em; letter-spacing: .16em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .6); }

@@ -38,9 +38,17 @@ export function CheckinDesk({ tournamentId, days, todayIndex, divisions, canEdit
   const counts = rosterCounts(current)
   const multiDay = days.length > 1
 
-  const toggle = async (ps: RosterPlayer[], checkedIn: boolean, label: string) => {
-    if (!canEdit || !ps.length || ps.some((p) => pending[p.id])) return
+  const toggle = async (ps: RosterPlayer[], checkedIn: boolean, label: string, team?: RosterTeam) => {
+    if (!canEdit || !ps.length || [...ps, ...(team?.players ?? [])].some((p) => pending[p.id])) return
     const ids = ps.map((p) => p.id)
+    const before = Object.fromEntries(ps.map((p) => [p.id, p.checkedInAt]))
+    const setMineFor = (value: (id: number) => string | null) => setMine((prev) => {
+      const next = { ...prev }
+      for (const id of ids) next[id] = value(id)
+      return next
+    })
+    // shown at once; the server's time replaces it, a refusal puts it back
+    setMineFor(() => (checkedIn ? new Date().toISOString() : null))
     const mark = (on: boolean) => setPending((prev) => {
       const next = { ...prev }
       for (const id of ids) on ? (next[id] = true) : delete next[id]
@@ -51,6 +59,7 @@ export function CheckinDesk({ tournamentId, days, todayIndex, divisions, canEdit
     try {
       const res = await setCheckedInAction({ tournamentId, playerIds: ids, checkedIn })
       if (!res.ok) {
+        setMineFor((id) => before[id])
         setError(res.message)
         return
       }
@@ -61,6 +70,7 @@ export function CheckinDesk({ tournamentId, days, todayIndex, divisions, canEdit
       })
       say(checkedIn ? `${label} checked in.` : `${label}: check-in undone.`)
     } catch {
+      setMineFor((id) => before[id])
       setError('Couldn’t reach the server. Check the connection and tap again.')
     } finally {
       mark(false)
@@ -125,7 +135,7 @@ function TeamCard({ t, canEdit, pending, onToggle }: {
   t: RosterTeam
   canEdit: boolean
   pending: Record<number, boolean>
-  onToggle: (ps: RosterPlayer[], checkedIn: boolean, label: string) => void
+  onToggle: (ps: RosterPlayer[], checkedIn: boolean, label: string, team?: RosterTeam) => void
 }) {
   const complete = teamComplete(t)
   const missing = t.players.filter((p) => !p.checkedInAt)
@@ -163,7 +173,7 @@ function TeamCard({ t, canEdit, pending, onToggle }: {
       </ul>
       {canEdit && missing.length > 1 && (
         <button type="button" className="adm-btn primary" style={{ minHeight: 48 }} aria-disabled={busy}
-          onClick={() => onToggle(missing, true, t.name)}>
+          onClick={() => { if (!busy) onToggle(missing, true, t.name, t) }}>
           Check in the whole team
         </button>
       )}

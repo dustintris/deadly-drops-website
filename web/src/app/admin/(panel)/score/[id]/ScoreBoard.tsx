@@ -118,7 +118,7 @@ export function ScoreBoard({ tournamentId, days, todayIndex, playoffGamesTo, win
   const onDay = multiDay ? divisions.filter((d) => d.dayIndex === day) : divisions
   const shown = divId === 'all' ? onDay : onDay.filter((d) => d.id === divId)
 
-  const cards: Card[] = shown.flatMap((div) => {
+  const toCards = (divs: BoardDivision[]): Card[] => divs.flatMap((div) => {
     const teams = new Map(div.teams.map((t) => [t.id, t]))
     const team = (tid: number | null): PadTeam | null => {
       const t = tid === null ? undefined : teams.get(tid)
@@ -130,14 +130,16 @@ export function ScoreBoard({ tournamentId, days, todayIndex, playoffGamesTo, win
       return { m, div, a: team(m.teamAId), b: team(m.teamBId), gamesTo: m.stage === 'pool' ? div.gamesTo : playoffGamesTo }
     })
   })
+  const cards = toCards(shown)
   const live = bySlot(cards.filter((c) => c.m.status === 'live'))
   const next = bySlot(cards.filter((c) => c.m.status === 'scheduled'))
   const finished = bySlot(cards.filter((c) => c.m.status === 'final'), true)
   const count = (g: { cards: Card[] }[]) => g.reduce((n, s) => n + s.cards.length, 0)
   const nextShown = allNext ? next : next.slice(0, NEXT_SLOTS)
-  const current = openId === null ? undefined : cards.find((c) => c.m.id === openId)
+  // the open match from every division (a refresh may move it out of the current filter); the pinned copy only once it's gone
+  const current = openId === null ? undefined : toCards(divisions.filter((d) => d.matches.some((m) => m.id === openId))).find((c) => c.m.id === openId)
   const open = current ?? (pinned && pinned.m.id === openId ? pinned : undefined)
-  const gone = open !== undefined && current === undefined && !divisions.some((d) => d.matches.some((m) => m.id === openId))
+  const gone = open !== undefined && current === undefined
   const openMatch = (id: number) => {
     setPinned(cards.find((c) => c.m.id === id) ?? null)
     setOpenId(id)
@@ -162,7 +164,11 @@ export function ScoreBoard({ tournamentId, days, todayIndex, playoffGamesTo, win
   const closePad = (id: number, unsaved: PadDraft | null) => {
     setOpenId((cur) => (cur === id ? null : cur))
     setPinned((p) => (p?.m.id === id ? null : p))
-    if (unsaved) {
+    const removed = !divisions.some((d) => d.matches.some((m) => m.id === id))
+    if (unsaved && removed) {
+      setDrafts((prev) => (prev[id] ? without(prev, id) : prev))
+      say(`That match was removed from the schedule. Your score was ${unsaved.a}–${unsaved.b}; it was not saved.`)
+    } else if (unsaved) {
       setDrafts((prev) => ({ ...prev, [id]: unsaved }))
       say(`Not saved: ${unsaved.a}–${unsaved.b} is kept on this device. Open the match again to save it.`)
     } else {
