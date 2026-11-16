@@ -2,7 +2,7 @@ import 'server-only'
 import { and, asc, eq, inArray, ne, notInArray, or, sql } from 'drizzle-orm'
 import { events as seedEvents } from '@/content/club'
 import { getDb, type Db } from '@/db/client'
-import { appMeta, divisions, siteDocuments, tournaments } from '@/db/schema'
+import { appMeta, divisions, siteDocuments, teams, tournaments } from '@/db/schema'
 import { slugify, type ClubEventT } from '@/lib/content-schema'
 import { addDaysIso, autoDateLabel, normalizeDays } from './days'
 import { DEFAULT_RULES, type DivisionFormat, type DivisionInputT, type InfoT, type RulesT, type TournamentInputT } from './schema'
@@ -39,6 +39,12 @@ export class StaleTournamentError extends Error {
 export class SlugTakenError extends Error {
   constructor() {
     super('Another tournament already uses that web address.')
+  }
+}
+
+export class DivisionInUseError extends Error {
+  constructor(names: string[]) {
+    super(`${names.join(', ')} ${names.length === 1 ? 'has' : 'have'} teams or matches, so ${names.length === 1 ? 'it' : 'they'} can’t be removed. Clear the teams first.`)
   }
 }
 
@@ -208,6 +214,15 @@ export async function saveTournament(id: number, input: TournamentInputT, expect
       // divisions: keep the ones still listed (by id, only this tournament's), add new ones, drop the rest
       const ownIds = new Set((await tx.select({ id: divisions.id }).from(divisions).where(eq(divisions.tournamentId, id))).map((d) => d.id))
       const keep = input.divisions.flatMap((d) => (d.id !== undefined && ownIds.has(d.id) ? [d.id] : []))
+      // a division that already has teams or matches can't be dropped by a save (that would wipe its play)
+      const dropping = [...ownIds].filter((d) => !keep.includes(d))
+      if (dropping.length) {
+        const inUse = await tx
+          .selectDistinct({ name: divisions.name })
+          .from(divisions)
+          .where(and(inArray(divisions.id, dropping), sql`exists (select 1 from ${teams} where ${teams.divisionId} = ${divisions.id})`))
+        if (inUse.length) throw new DivisionInUseError(inUse.map((r) => r.name))
+      }
       await tx.delete(divisions).where(keep.length ? and(eq(divisions.tournamentId, id), notInArray(divisions.id, keep)) : eq(divisions.tournamentId, id))
       for (const [sort, d] of input.divisions.entries()) {
         const { id: divisionId, ...fields } = d

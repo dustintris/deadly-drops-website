@@ -22,7 +22,10 @@ export default async function TournamentAdmin({ params }: { params: Promise<{ id
     <MediaLibraryProvider initial={library}>
       <div className="adm-head">
         <div style={{ display: 'grid', gap: 8 }}>
-          <p><LeaveLink href="/admin/tournaments/">← All tournaments</LeaveLink></p>
+          <p style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 20px' }}>
+            <LeaveLink href="/admin/tournaments/">← All tournaments</LeaveLink>
+            <LeaveLink href={`/admin/tournaments/${tournament.id}/play/`}>Teams &amp; schedule →</LeaveLink>
+          </p>
           <h1>{tournament.name}</h1>
           <p className="adm-muted">Saved changes show on the website straight away while “Show on the website” is ticked.</p>
         </div>

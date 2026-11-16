@@ -1,12 +1,14 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { LiveRefresh } from '@/components/LiveRefresh'
 import { LiveScore } from '@/components/LiveScore'
+import live from '@/components/live.module.css'
 import { Monogram } from '@/components/Monogram'
 import { Spotlight } from '@/components/Spotlight'
 import { Ticker } from '@/components/Ticker'
 import { NextEventBlock, LadderBoard } from '@/components/EventBits'
 import { AccentTitle } from '@/components/AccentTitle'
-import { getClub, getLadder, getLiveMatch, getMemberCount, getMembers, getNextEvent, getPageCopy, getSpotlights, getTicker } from '@/lib/data'
+import { getClub, getLadder, getLiveFeed, getLiveMatch, getMemberCount, getMembers, getNextEvent, getPageCopy, getSpotlights, getTicker } from '@/lib/data'
 import { eventCta, eventState } from '@/lib/events'
 import { asset } from '@/lib/utils'
 import s from './home.module.css'
@@ -15,8 +17,8 @@ import { pageMeta } from '@/lib/seo'
 export const metadata: Metadata = pageMeta(undefined, 'Deadly Drops Pickleball: charity tournaments, social play and a welcoming community for players of every level in Chula Vista, CA.', '/')
 
 export default async function Home() {
-  const [club, members, count, live, spotlights, event, ladder, ticker, copy] = await Promise.all([
-    getClub(), getMembers(), getMemberCount(), getLiveMatch(), getSpotlights(), getNextEvent(), getLadder(), getTicker(), getPageCopy('home'),
+  const [club, members, count, match, feed, spotlights, event, ladder, ticker, copy] = await Promise.all([
+    getClub(), getMembers(), getMemberCount(), getLiveMatch(), getLiveFeed(), getSpotlights(), getNextEvent(), getLadder(), getTicker(), getPageCopy('home'),
   ])
   const state = event ? eventState(event) : 'tba'
   const cta = event ? eventCta(event, state) : { label: 'Get notified', href: '#join-email', external: false }
@@ -43,9 +45,15 @@ export default async function Home() {
               )}
               <Link href="/tournaments/" className="btn btn-ghost">{state === 'past' ? 'Tournaments' : 'See the next event'}</Link>
             </div>
+            {/* on tournament day the page follows the tournament, so the live card updates, appears and goes by itself */}
+            {feed && (
+              <div className={live.feed}>
+                <LiveRefresh tournamentId={feed.tournamentId} version={feed.version} />
+              </div>
+            )}
           </div>
           <div className={s.heroSide}>
-            <LiveScore {...live} />
+            {match && <LiveScore match={match} />}
           </div>
         </div>
         <span className={s.scrollCue} aria-hidden="true">Scroll</span>
@@ -72,9 +80,11 @@ export default async function Home() {
               </li>
             ))}
           </ul>
-          <div className={s.mobileScore}>
-            <LiveScore {...live} compact />
-          </div>
+          {match && (
+            <div className={s.mobileScore}>
+              <LiveScore match={match} compact />
+            </div>
+          )}
         </div>
       </section>
 

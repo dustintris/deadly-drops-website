@@ -118,6 +118,76 @@ export const divisions = pgTable(
   ],
 )
 
+/*
+ * Play (Pickle Match). Teams and matches hang off a division; their division link is NO ACTION
+ * (checked at the end of the statement), so a division with teams or matches can't vanish on its
+ * own, while deleting a whole tournament still cascades through tournament_id.
+ */
+
+/** A doubles team in a division. */
+export const teams = pgTable(
+  'teams',
+  {
+    id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+    tournamentId: bigint('tournament_id', { mode: 'number' }).notNull().references(() => tournaments.id, { onDelete: 'cascade' }),
+    divisionId: bigint('division_id', { mode: 'number' }).notNull().references(() => divisions.id),
+    sort: integer('sort').notNull().default(0),
+    name: text('name').notNull(),
+  },
+  (t) => [index('teams_division_idx').on(t.divisionId, t.sort), index('teams_tournament_idx').on(t.tournamentId)],
+)
+
+/** A player on a team; check-in happens at the desk on the day. */
+export const players = pgTable(
+  'players',
+  {
+    id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+    teamId: bigint('team_id', { mode: 'number' }).notNull().references(() => teams.id, { onDelete: 'cascade' }),
+    sort: integer('sort').notNull().default(0),
+    name: text('name').notNull(),
+    dupr: text('dupr').notNull().default(''),
+    checkedInAt: timestamp('checked_in_at', { withTimezone: true }),
+    checkedInBy: text('checked_in_by'),
+  },
+  (t) => [index('players_team_idx').on(t.teamId)],
+)
+
+/**
+ * One game between two teams. Pool matches come from the schedule; playoff matches (qf/sf/final/
+ * bronze) start with empty teams that fill in as earlier rounds finish. `version` guards a score
+ * against being overwritten by a phone holding an older copy.
+ */
+export const matches = pgTable(
+  'matches',
+  {
+    id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+    tournamentId: bigint('tournament_id', { mode: 'number' }).notNull().references(() => tournaments.id, { onDelete: 'cascade' }),
+    divisionId: bigint('division_id', { mode: 'number' }).notNull().references(() => divisions.id),
+    stage: text('stage').notNull().default('pool'),
+    round: integer('round').notNull(),
+    slot: integer('slot').notNull(),
+    court: integer('court'),
+    startsAt: text('starts_at'),
+    teamAId: bigint('team_a_id', { mode: 'number' }).references(() => teams.id),
+    teamBId: bigint('team_b_id', { mode: 'number' }).references(() => teams.id),
+    scoreA: integer('score_a'),
+    scoreB: integer('score_b'),
+    status: text('status').notNull().default('scheduled'),
+    version: integer('version').notNull().default(1),
+    updatedBy: text('updated_by'),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('matches_division_idx').on(t.divisionId, t.stage, t.round, t.slot),
+    index('matches_tournament_idx').on(t.tournamentId),
+    index('matches_team_a_idx').on(t.teamAId),
+    index('matches_team_b_idx').on(t.teamBId),
+    check('matches_stage_check', sql`${t.stage} in ('pool', 'qf', 'sf', 'final', 'bronze')`),
+    check('matches_status_check', sql`${t.status} in ('scheduled', 'live', 'final')`),
+    check('matches_score_check', sql`coalesce(${t.scoreA}, 0) between 0 and 99 and coalesce(${t.scoreB}, 0) between 0 and 99`),
+  ],
+)
+
 /** Small one-off markers, e.g. that the old tournaments were imported. */
 export const appMeta = pgTable('app_meta', {
   key: text('key').primaryKey(),

@@ -81,6 +81,9 @@ function TournamentCard({ t, canEdit, onDeleted }: { t: TournamentRow; canEdit: 
           <Link className="adm-btn small" href={`/admin/tournaments/${t.id}/`}>
             {canEdit ? 'Edit' : 'View'}<span className="sr"> {t.name}</span>
           </Link>
+          <Link className="adm-btn small" href={`/admin/tournaments/${t.id}/play/`}>
+            Teams &amp; schedule<span className="sr"> for {t.name}</span>
+          </Link>
           {canEdit && (
             <button type="button" className="adm-btn small danger" aria-disabled={busy} onClick={remove}>
               {busy ? 'Deleting…' : 'Delete'}<span className="sr"> {t.name}</span>

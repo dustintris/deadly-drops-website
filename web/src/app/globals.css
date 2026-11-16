@@ -150,3 +150,6 @@ textarea.input { padding: 14px 16px; min-height: 140px; resize: vertical; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); display: inline-block; animation: pulse 1.6s ease-in-out infinite; }
+
+/* live updates: shown while the connection to the live channel is down (LiveRefresh) */
+.live-offline { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 50; margin: 0; padding: 8px 14px; border-radius: 999px; background: var(--surface2); color: var(--ink); border: 1px solid rgb(var(--accent-rgb) / .4); font-size: 13px; box-shadow: 0 4px 16px rgb(0 0 0 / .35); }
