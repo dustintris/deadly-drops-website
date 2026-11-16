@@ -1,7 +1,7 @@
 import { AdminNav } from '@/components/admin/AdminNav'
 import { PublishBar } from '@/components/admin/PublishBar'
 import { requireAdmin } from '@/lib/auth/session'
-import { unpublishedSections } from '@/lib/store/file-store'
+import { unpublishedSections } from '@/lib/store/content-store'
 
 export const dynamic = 'force-dynamic'
 

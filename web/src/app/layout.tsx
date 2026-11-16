@@ -19,6 +19,10 @@ export const metadata: Metadata = {
   twitter: { card: 'summary', title: 'Deadly Drops Pickleball', description: 'Tournaments and community events in Chula Vista, CA.' },
 }
 
+// Every page (public, admin, not-found) reads the club info and theme from PostgreSQL, so render per
+// request: a publish shows at once, and the Docker build (no database) never bakes stale content into the image.
+export const dynamic = 'force-dynamic'
+
 export const viewport: Viewport = { themeColor: defaultTheme.bg, width: 'device-width', initialScale: 1, viewportFit: 'cover' }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

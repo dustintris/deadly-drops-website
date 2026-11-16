@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { recentAudit } from '@/lib/audit'
-import { readDraft, readPublished } from '@/lib/store/file-store'
+import { readDraft, readPublished } from '@/lib/store/content-store'
 import { money } from '@/lib/utils'
 import { requireAdmin } from '@/lib/auth/session'
 

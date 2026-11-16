@@ -9,7 +9,7 @@ import { clearFailures, clientIp, recordFailure, waitFor, withHashSlot } from '@
 import { adminConfigured, createSession, destroySession, requireAdmin, revokeAllSessions } from '@/lib/auth/session'
 import { MediaAsset, SECTIONS, sectionHash, type SectionKey, type SiteContent } from '@/lib/content-schema'
 import { findUsage } from '@/lib/media-usage'
-import { discardDraft, publish, readPublished, saveDraftSection, StaleRevisionError, updateDraft } from '@/lib/store/file-store'
+import { discardDraft, publish, readPublished, saveDraftSection, StaleRevisionError, updateDraft } from '@/lib/store/content-store'
 import { removeImage } from '@/lib/store/media-store'
 
 export type ActionResult = { ok: boolean; message: string; errors?: Record<string, string>; rev?: number; email?: string; hash?: string }

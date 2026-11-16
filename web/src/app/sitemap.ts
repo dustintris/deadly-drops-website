@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next'
 import { getCommunityPosts, getMembers, getProducts } from '@/lib/data'
 
-export const dynamic = 'force-static'
+// built per request from the database, so new products and posts appear without a rebuild
+export const dynamic = 'force-dynamic'
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://deadlydropspickleball.com') + (process.env.NEXT_PUBLIC_BASE_PATH || '')
 

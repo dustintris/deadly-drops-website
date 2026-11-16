@@ -1,4 +1,4 @@
-import { readDraft } from '@/lib/store/file-store'
+import { readDraft } from '@/lib/store/content-store'
 import { FaqEditor } from './FaqEditor'
 import { requireAdmin } from '@/lib/auth/session'
 

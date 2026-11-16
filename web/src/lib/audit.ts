@@ -1,38 +1,27 @@
 import 'server-only'
-import { promises as fs } from 'node:fs'
-import path from 'node:path'
-import { DATA_DIR } from './store/file-store'
+import { desc } from 'drizzle-orm'
+import { getDb } from '@/db/client'
+import { auditLog } from '@/db/schema'
 
-const LOG = path.join(DATA_DIR, 'audit.log')
+export type AuditEntry = { at: string; who: string; action: string; detail: string }
 
-/** Append-only record of every admin action (JSON lines). */
-export async function audit(who: string, action: string, detail = '') {
-  await fs.mkdir(DATA_DIR, { recursive: true, mode: 0o700 })
-  // keep the log bounded: past 5 MB it rolls over to audit.log.1
+/**
+ * Append-only record of every admin action. Field lengths are capped so one entry can't bloat the log.
+ * Best-effort: it runs after the action has already happened (a save is committed, a login has failed),
+ * so a logging failure is reported to the server log instead of turning a done action into an error.
+ */
+export async function audit(who: string, action: string, detail = ''): Promise<void> {
   try {
-    if ((await fs.stat(LOG)).size > 5 * 1024 * 1024) await fs.rename(LOG, `${LOG}.1`)
-  } catch { /* no log yet */ }
-  const entry = { at: new Date().toISOString(), who: who.slice(0, 254), action: action.slice(0, 40), detail: detail.slice(0, 300) }
-  await fs.appendFile(LOG, JSON.stringify(entry) + '\n', { mode: 0o600 })
+    await getDb()
+      .insert(auditLog)
+      .values({ who: who.slice(0, 254), action: action.slice(0, 40), detail: detail.slice(0, 300) })
+  } catch (e) {
+    console.error('[audit] could not record', action, e)
+  }
 }
 
-export async function recentAudit(n = 10): Promise<{ at: string; who: string; action: string; detail: string }[]> {
-  try {
-    // read only the end of the file
-    const handle = await fs.open(LOG, 'r')
-    try {
-      const { size } = await handle.stat()
-      const len = Math.min(size, 64 * 1024)
-      const buf = Buffer.alloc(len)
-      await handle.read(buf, 0, len, size - len)
-      let lines = buf.toString('utf8').split('\n').filter(Boolean)
-      if (len < size) lines = lines.slice(1) // the first line may be cut in half
-      lines = lines.slice(-n).reverse()
-      return lines.flatMap((l) => { try { return [JSON.parse(l)] } catch { return [] } })
-    } finally {
-      await handle.close()
-    }
-  } catch {
-    return []
-  }
+/** The newest n entries, newest first. */
+export async function recentAudit(n = 10): Promise<AuditEntry[]> {
+  const rows = await getDb().select().from(auditLog).orderBy(desc(auditLog.id)).limit(n)
+  return rows.map((r) => ({ at: r.at.toISOString(), who: r.who, action: r.action, detail: r.detail }))
 }
