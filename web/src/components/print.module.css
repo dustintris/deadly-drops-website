@@ -1,0 +1,34 @@
+/* Printable results (/display/<slug>/print/): dark ink on white paper. The results' own colours are
+   theme tokens, so re-pointing them here turns the whole sheet light without touching their styles. */
+.sheet {
+  --ink: var(--ink-dark); --ink-rgb: var(--ink-dark-rgb);
+  --accent: var(--ink-dark); --accent-rgb: var(--ink-dark-rgb);
+  --surface2: #fff; --bg: #fff;
+  min-height: 100vh; padding: 32px max(20px, 4vw) 48px; background: #fff; color: var(--ink-dark);
+  max-width: 1100px; margin: 0 auto;
+}
+:global(html):has(.sheet), :global(html):has(.sheet) :global(body) { background: #fff; }
+
+.head { display: flex; align-items: center; gap: 16px 24px; flex-wrap: wrap; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--ink-dark); }
+.logo { width: 64px; height: 64px; object-fit: contain; }
+.title { flex: 1; min-width: 0; }
+.title h1 { font-family: var(--font-display); font-weight: 400; font-size: 34px; line-height: 1.05; }
+.title p { margin-top: 4px; font-size: 14px; color: rgb(var(--ink-dark-rgb) / .75); }
+.actions { display: flex; gap: 10px; }
+.btn {
+  min-height: 44px; padding: 0 18px; border-radius: 100px; border: 1px solid var(--ink-dark); background: var(--ink-dark); color: #fff;
+  font: inherit; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center;
+}
+.btn.ghost { background: transparent; color: var(--ink-dark); }
+.day { margin: 28px 0 12px; font-family: var(--font-display); font-weight: 400; font-size: 24px; }
+.list { display: grid; gap: 18px; }
+.empty { font-size: 16px; color: rgb(var(--ink-dark-rgb) / .75); }
+.printed { margin-top: 24px; font-size: 12px; color: rgb(var(--ink-dark-rgb) / .7); }
+
+@page { margin: 12mm; }
+@media print {
+  .sheet { padding: 0; max-width: none; font-size: 11pt; }
+  .actions { display: none; }
+  .head { margin-bottom: 12pt; }
+  .day { break-after: avoid; }
+}

@@ -92,6 +92,8 @@ export function ScoreBoard({ tournamentId, days, todayIndex, playoffGamesTo, win
   })
   const [divId, setDivId] = useState<number | 'all'>('all')
   const [openId, setOpenId] = useState<number | null>(null)
+  /** the card the pad opened with: a live refresh that drops the match (schedule cleared) must not unmount the pad and lose a typed score */
+  const [pinned, setPinned] = useState<Card | null>(null)
   const [overrides, setOverrides] = useState<Record<number, Match>>({})
   const [drafts, setDrafts] = useState<Drafts>({})
   const [announce, setAnnounce] = useState('')
@@ -116,7 +118,7 @@ export function ScoreBoard({ tournamentId, days, todayIndex, playoffGamesTo, win
   const onDay = multiDay ? divisions.filter((d) => d.dayIndex === day) : divisions
   const shown = divId === 'all' ? onDay : onDay.filter((d) => d.id === divId)
 
-  const cards: Card[] = shown.flatMap((div) => {
+  const toCards = (divs: BoardDivision[]): Card[] => divs.flatMap((div) => {
     const teams = new Map(div.teams.map((t) => [t.id, t]))
     const team = (tid: number | null): PadTeam | null => {
       const t = tid === null ? undefined : teams.get(tid)
@@ -128,12 +130,20 @@ export function ScoreBoard({ tournamentId, days, todayIndex, playoffGamesTo, win
       return { m, div, a: team(m.teamAId), b: team(m.teamBId), gamesTo: m.stage === 'pool' ? div.gamesTo : playoffGamesTo }
     })
   })
+  const cards = toCards(shown)
   const live = bySlot(cards.filter((c) => c.m.status === 'live'))
   const next = bySlot(cards.filter((c) => c.m.status === 'scheduled'))
   const finished = bySlot(cards.filter((c) => c.m.status === 'final'), true)
   const count = (g: { cards: Card[] }[]) => g.reduce((n, s) => n + s.cards.length, 0)
   const nextShown = allNext ? next : next.slice(0, NEXT_SLOTS)
-  const open = openId === null ? undefined : cards.find((c) => c.m.id === openId)
+  // the open match from every division (a refresh may move it out of the current filter); the pinned copy only once it's gone
+  const current = openId === null ? undefined : toCards(divisions.filter((d) => d.matches.some((m) => m.id === openId))).find((c) => c.m.id === openId)
+  const open = current ?? (pinned && pinned.m.id === openId ? pinned : undefined)
+  const gone = open !== undefined && current === undefined
+  const openMatch = (id: number) => {
+    setPinned(cards.find((c) => c.m.id === id) ?? null)
+    setOpenId(id)
+  }
 
   const pickDay = (i: number) => {
     setDay(i)
@@ -150,11 +160,15 @@ export function ScoreBoard({ tournamentId, days, todayIndex, playoffGamesTo, win
     }
   }
 
-  const closePad = (unsaved: PadDraft | null) => {
-    const id = openId
-    setOpenId(null)
-    if (id === null) return
-    if (unsaved) {
+  /** `id` is the pad's own match: a late close from an earlier pad never clears or files a draft under another match */
+  const closePad = (id: number, unsaved: PadDraft | null) => {
+    setOpenId((cur) => (cur === id ? null : cur))
+    setPinned((p) => (p?.m.id === id ? null : p))
+    const removed = !divisions.some((d) => d.matches.some((m) => m.id === id))
+    if (unsaved && removed) {
+      setDrafts((prev) => (prev[id] ? without(prev, id) : prev))
+      say(`That match was removed from the schedule. Your score was ${unsaved.a}–${unsaved.b}; it was not saved.`)
+    } else if (unsaved) {
       setDrafts((prev) => ({ ...prev, [id]: unsaved }))
       say(`Not saved: ${unsaved.a}–${unsaved.b} is kept on this device. Open the match again to save it.`)
     } else {
@@ -201,11 +215,11 @@ export function ScoreBoard({ tournamentId, days, todayIndex, playoffGamesTo, win
       ) : (
         <>
           <Section title="Live" count={count(live)} empty="No game is in progress.">
-            {live.map((g) => <Slot key={g.key} label={g.label} cards={g.cards} canEdit={canEdit} drafts={drafts} onOpen={setOpenId} />)}
+            {live.map((g) => <Slot key={g.key} label={g.label} cards={g.cards} canEdit={canEdit} drafts={drafts} onOpen={openMatch} />)}
           </Section>
 
           <Section title="Up next" count={count(next)} empty="Nothing left to play.">
-            {nextShown.map((g) => <Slot key={g.key} label={g.label} cards={g.cards} canEdit={canEdit} drafts={drafts} onOpen={setOpenId} />)}
+            {nextShown.map((g) => <Slot key={g.key} label={g.label} cards={g.cards} canEdit={canEdit} drafts={drafts} onOpen={openMatch} />)}
             {next.length > NEXT_SLOTS && (
               <button type="button" className="adm-btn" style={{ minHeight: 48 }} aria-expanded={allNext} onClick={() => setAllNext((v) => !v)}>
                 {allNext ? 'Show only the next few' : `Show later games (${count(next.slice(NEXT_SLOTS))})`}
@@ -221,7 +235,7 @@ export function ScoreBoard({ tournamentId, days, todayIndex, playoffGamesTo, win
               </button>
             )}
             <div id="score-finished" hidden={!showFinished} style={{ display: showFinished ? 'grid' : 'none', gap: 14 }}>
-              {finished.map((g) => <Slot key={g.key} label={g.label} cards={g.cards} canEdit={canEdit} drafts={drafts} onOpen={setOpenId} />)}
+              {finished.map((g) => <Slot key={g.key} label={g.label} cards={g.cards} canEdit={canEdit} drafts={drafts} onOpen={openMatch} />)}
             </div>
           </Section>
         </>
@@ -240,6 +254,7 @@ export function ScoreBoard({ tournamentId, days, todayIndex, playoffGamesTo, win
           draft={drafts[open.m.id]}
           onSaved={onSaved}
           onClose={closePad}
+          gone={gone}
         />
       )}
     </div>

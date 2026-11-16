@@ -21,6 +21,8 @@ export default async function setup(project: TestProject) {
     user: 'ddp',
     password: 'ddp-test',
     persistent: false,
+    // Postgres refuses to run as root (some containers): run it as the postgres user and give it the data dir.
+    createPostgresUser: process.getuid?.() === 0,
     // Windows defaults to a legacy code page; the site's copy needs UTF-8 (same as the server).
     initdbFlags: ['--encoding=UTF8', '--locale=C'],
     onLog: () => {},

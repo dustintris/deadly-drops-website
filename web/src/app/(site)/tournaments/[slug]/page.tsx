@@ -4,12 +4,12 @@ import { notFound } from 'next/navigation'
 import { LiveRefresh } from '@/components/LiveRefresh'
 import { PageHero } from '@/components/PageHero'
 import l from '@/components/live.module.css'
+import { DivisionResults } from '@/components/results/Results'
 import x from '@/components/tournament.module.css'
 import ts from '@/components/tournaments.module.css'
 import { getClub, getEvents, getNextEvent, getTournamentLive, getTournamentPage } from '@/lib/data'
 import { eventState, type EventState } from '@/lib/events'
-import { divisionBoard } from '@/lib/match/board'
-import { formatTime12 } from '@/lib/match/schedule'
+import { hasPlay, plural } from '@/lib/match/present'
 import { pageMeta } from '@/lib/seo'
 import { dayLabel } from '@/lib/tournaments/days'
 import { BRONZE_LABELS, FORMAT_LABELS, PLAYOFF_LABELS, TIEBREAKER_LABELS } from '@/lib/tournaments/schema'
@@ -19,10 +19,6 @@ import { asset, money } from '@/lib/utils'
 type Params = { params: Promise<{ slug: string }> }
 type Tournament = NonNullable<Awaited<ReturnType<typeof getTournamentPage>>>
 type Division = Tournament['divisions'][number]
-type Play = NonNullable<Awaited<ReturnType<typeof getTournamentLive>>>
-type PlayDivision = Play['divisions'][number]
-type PlayMatch = PlayDivision['matches'][number]
-type Tiebreakers = Play['rules']['tiebreakers']
 
 const ORIGIN = process.env.NEXT_PUBLIC_SITE_URL || 'https://deadlydropspickleball.com'
 const SITE = ORIGIN + (process.env.NEXT_PUBLIC_BASE_PATH || '')
@@ -67,7 +63,6 @@ function clock(hhmm: string): [string, string] {
 }
 const clockText = (hhmm: string) => clock(hhmm).join(' ')
 const courts = (d: Division) => (d.courtCount === 1 ? `Court ${d.firstCourt}` : `Courts ${d.firstCourt}–${d.firstCourt + d.courtCount - 1}`)
-const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? '' : 's'}`
 const fee = (n: number) => (n === 0 ? 'Free' : money(n))
 
 /** The same state the tournament list shows, so this page and the list never disagree. */
@@ -138,165 +133,6 @@ function DivisionList({ divisions, day, rules, level: H }: { divisions: Division
   )
 }
 
-/* ---------- live results (Pickle Match play) ---------- */
-
-const STAGE_ORDER: Record<PlayMatch['stage'], number> = { pool: 0, qf: 1, sf: 2, bronze: 3, final: 4 }
-const STAGE_LABELS: Record<Exclude<PlayMatch['stage'], 'pool'>, string> = { qf: 'Quarterfinals', sf: 'Semifinals', bronze: 'Bronze match', final: 'Final' }
-const playerLine = (names: string[]) => names.join(names.length === 2 ? ' & ' : ', ')
-const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0')
-const boardMatches = (ms: PlayMatch[]) =>
-  ms.map((m) => ({ round: m.round, teamA: m.teamAId, teamB: m.teamBId, scoreA: m.scoreA, scoreB: m.scoreB, status: m.status }))
-const hasPlay = (d: PlayDivision) => d.teams.length > 0 || d.matches.length > 0
-
-/** Matches in playing order: each pool round, then each playoff stage. */
-function matchGroups(matches: PlayMatch[]) {
-  const sorted = [...matches].sort(
-    (a, b) => STAGE_ORDER[a.stage] - STAGE_ORDER[b.stage] || a.round - b.round || a.slot - b.slot || (a.court ?? 0) - (b.court ?? 0) || a.id - b.id,
-  )
-  const groups: { key: string; label: string; matches: PlayMatch[] }[] = []
-  for (const m of sorted) {
-    const key = m.stage === 'pool' ? `r${m.round}` : m.stage
-    const last = groups[groups.length - 1]
-    if (last?.key === key) last.matches.push(m)
-    else groups.push({ key, label: m.stage === 'pool' ? `Round ${m.round}` : STAGE_LABELS[m.stage], matches: [m] })
-  }
-  return groups
-}
-
-function MatchCard({ m, names, day }: { m: PlayMatch; names: Map<number, string>; day?: string }) {
-  const a = m.scoreA ?? 0
-  const b = m.scoreB ?? 0
-  const final = m.status === 'final'
-  const sides = [
-    { key: 'a', id: m.teamAId, score: a, won: final && a > b },
-    { key: 'b', id: m.teamBId, score: b, won: final && b > a },
-  ]
-  return (
-    <li className={l.match} data-status={m.status}>
-      <p className={l.matchMeta}>
-        {m.startsAt && <time dateTime={day ? `${day}T${m.startsAt}` : m.startsAt}>{formatTime12(m.startsAt)}</time>}
-        {m.court !== null && <span>Court {m.court}</span>}
-        {m.status !== 'scheduled' && (
-          <span className={l.badge} data-status={m.status}>
-            {m.status === 'live' && <span className="live-dot" aria-hidden="true" />}
-            {m.status === 'live' ? 'Live' : 'Final'}
-          </span>
-        )}
-      </p>
-      {sides.map((s) => {
-        const name = s.id !== null ? names.get(s.id) : undefined
-        return (
-          <p key={s.key} className={l.side} data-win={s.won}>
-            <span className={name ? undefined : l.tbd}>{name ?? 'To be decided'}</span>
-            {m.status !== 'scheduled' && (
-              <strong>
-                <span className="sr">: </span>
-                {s.score}
-                {s.won && <span className="sr"> (won)</span>}
-              </strong>
-            )}
-          </p>
-        )
-      })}
-    </li>
-  )
-}
-
-/** One division's status, standings and matches, or its teams while there's no schedule yet. */
-function DivisionResults({ d, tiebreakers, day, level }: { d: PlayDivision; tiebreakers: Tiebreakers; day?: string; level: 3 | 4 }) {
-  const H = level === 3 ? 'h3' : 'h4'
-  const Sub = level === 3 ? 'h4' : 'h5'
-  const id = `results-${d.id}`
-  const pool = d.matches.filter((m) => m.stage === 'pool')
-  // standings are the round robin's; playoff games only move the status
-  const board = divisionBoard({ teams: d.teams, matches: boardMatches(pool), tiebreakers })
-  const overall = pool.length === d.matches.length ? board : divisionBoard({ teams: d.teams, matches: boardMatches(d.matches), tiebreakers })
-  const state = d.matches.length ? overall.state : 'setup'
-  const status =
-    state === 'final' ? 'Final'
-    : state === 'live' ? (board.liveRound !== null ? `Live · Round ${board.liveRound}` : 'Live · Playoffs')
-    : `Starts ${formatTime12(d.startTime)}`
-  const ranked = pool.some((m) => m.status === 'final')
-  const names = new Map(d.teams.map((t) => [t.id, t.name]))
-  const players = new Map(d.teams.map((t) => [t.id, playerLine(t.players.map((p) => p.name))]))
-
-  return (
-    <article className={`card ${l.division}`} data-state={state} aria-labelledby={id}>
-      <header className={l.divHead}>
-        <H id={id} className={l.divName}>{d.name}</H>
-        <p className={l.status} data-state={state}>
-          {state === 'live' && <span className="live-dot" aria-hidden="true" />}
-          {status}
-        </p>
-        <p className={l.divMeta}>
-          {FORMAT_LABELS[d.format]} · {plural(d.teams.length, 'team')} · Games to {d.gamesTo}{d.winBy2 ? ', win by 2' : ''}
-        </p>
-      </header>
-
-      {d.matches.length > 0 ? (
-        <div className={l.body}>
-          <div className={l.tableWrap} role="region" aria-labelledby={`${id}-standings`} tabIndex={0}>
-            <table className={l.table}>
-              <caption id={`${id}-standings`}>Standings<span className="sr">, {d.name}</span></caption>
-              <thead>
-                <tr>
-                  <th scope="col">Rank</th>
-                  <th scope="col">Team</th>
-                  <th scope="col" className={l.num}><span aria-hidden="true">W–L</span><span className="sr">Wins and losses</span></th>
-                  <th scope="col" className={l.num}><span aria-hidden="true">+/−</span><span className="sr">Point difference</span></th>
-                </tr>
-              </thead>
-              <tbody>
-                {board.standings.map((s) => {
-                  const who = players.get(s.teamId)
-                  return (
-                    <tr key={s.teamId} data-top={ranked && s.rank === 1}>
-                      <td className={l.rank}>{ranked ? s.rank : <><span aria-hidden="true">–</span><span className="sr">Not ranked yet</span></>}</td>
-                      <th scope="row">
-                        {s.name}
-                        {who && who !== s.name && <span className={l.players}>{who}</span>}
-                      </th>
-                      <td className={l.num}>
-                        <span aria-hidden="true">{s.wins}–{s.losses}</span>
-                        <span className="sr">{plural(s.wins, 'win')}, {s.losses} {s.losses === 1 ? 'loss' : 'losses'}</span>
-                      </td>
-                      <td className={l.num}>{signed(s.pointDiff)}</td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-          <div className={l.rounds}>
-            {matchGroups(d.matches).map((g) => (
-              <div key={g.key}>
-                <Sub id={`${id}-${g.key}`} className={l.roundName}>{g.label}</Sub>
-                <ol className={l.matches} aria-labelledby={`${id}-${g.key}`}>
-                  {g.matches.map((m) => <MatchCard key={m.id} m={m} names={names} day={day} />)}
-                </ol>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : d.teams.length > 0 ? (
-        <ul className={l.teams} aria-label={`${d.name} teams`}>
-          {d.teams.map((team) => {
-            const who = players.get(team.id)
-            return (
-              <li key={team.id}>
-                <strong>{team.name}</strong>
-                {who && who !== team.name && <span>{who}</span>}
-              </li>
-            )
-          })}
-        </ul>
-      ) : (
-        <p className={l.empty}>Teams will be announced.</p>
-      )}
-    </article>
-  )
-}
-
 export default async function TournamentPage({ params }: Params) {
   const slug = (await params).slug
   const [t, events, next, club] = await Promise.all([getTournamentPage(slug), getEvents(), getNextEvent(), getClub()])
@@ -345,6 +181,7 @@ export default async function TournamentPage({ params }: Params) {
               Updates automatically
             </p>
           )}
+          <p className="mono small"><Link href={`/display/${t.slug}/print/`} className="link-arrow">Printable results</Link></p>
         </div>
         {multiDay ? (
           days.map((iso, i) =>

@@ -50,44 +50,10 @@ tar -C web -czf - \
   . | ssh "$HOST" "tar -xzf - --no-same-owner -C $REMOTE/app.new"
 # Swap the new tree in. Two renames, but nothing reads app/ until the build below
 ssh "$HOST" "cd $REMOTE && rm -rf app.old && { [ ! -d app ] || mv app app.old; } && mv app.new app && rm -rf app.old"
-scp -q deploy/vps/docker-compose.yml deploy/vps/backup.sh "$HOST:$REMOTE/"
+scp -q deploy/vps/docker-compose.yml deploy/vps/backup.sh deploy/vps/server-steps.sh deploy/vps/ci-deploy.sh "$HOST:$REMOTE/"
+ssh "$HOST" "chmod 755 $REMOTE/ci-deploy.sh $REMOTE/server-steps.sh"
 
 echo "==> Building and starting on $HOST"
-ssh "$HOST" "SITE_URL='$SITE_URL' bash -s" <<'REMOTE_SCRIPT'
-set -euo pipefail
-cd /root/deadly-drops
-chmod 600 .env
-chmod 755 backup.sh
-mkdir -p data/uploads backups
-chmod 700 backups
-chown -Rh 1000:1000 data   # the image's node user (uid 1000) writes the uploads; -h: never follow symlinks
-
-if docker image inspect deadly-drops-web:latest >/dev/null 2>&1; then
-  docker tag deadly-drops-web:latest deadly-drops-web:previous
-fi
-NEXT_PUBLIC_SITE_URL="$SITE_URL" docker compose build web
-if ! docker compose up -d --remove-orphans; then
-  docker compose ps
-  docker compose logs --tail=80 db web >&2
-  exit 1
-fi
-
-echo "Waiting up to 90 s for web to report healthy..."
-status=starting
-for _ in $(seq 1 45); do
-  status="$(docker inspect -f '{{.State.Health.Status}}' "$(docker compose ps -q web)" 2>/dev/null || echo missing)"
-  case "$status" in healthy|unhealthy) break ;; esac
-  sleep 2
-done
-docker compose ps
-if [ "$status" != healthy ]; then
-  echo "ERROR: web is '$status', not healthy. Last log lines:" >&2
-  docker compose logs --tail=80 web >&2
-  exit 1
-fi
-
-# Only this project's dangling images: other sites share this Docker host
-docker image prune -f --filter label=com.docker.compose.project=deadly-drops >/dev/null
-REMOTE_SCRIPT
+ssh "$HOST" "cd $REMOTE && SITE_URL='$SITE_URL' flock -w 600 /var/lock/ddp-deploy.lock bash ./server-steps.sh"
 
 echo "==> Live: $SITE_URL"

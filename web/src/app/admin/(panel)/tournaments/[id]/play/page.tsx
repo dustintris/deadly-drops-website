@@ -1,3 +1,4 @@
+import { asset } from '@/lib/utils'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { LiveRefresh } from '@/components/LiveRefresh'
@@ -23,6 +24,7 @@ export default async function TournamentPlayAdmin({ params }: { params: Promise<
   if (!play || !tournament) notFound()
   const canEdit = can(s, 'tournaments', 'edit')
   const canScore = can(s, 'scoring', 'view')
+  const canCheckin = can(s, 'checkin', 'view')
 
   const setup = new Map(tournament.divisions.map((d) => [d.id, d]))
   const divisions: PlayDivision[] = play.divisions.map((d) => {
@@ -53,6 +55,9 @@ export default async function TournamentPlayAdmin({ params }: { params: Promise<
           <p style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 20px' }}>
             <LeaveLink href={`/admin/tournaments/${play.id}/`}>← Tournament details</LeaveLink>
             {canScore && <LeaveLink href={`/admin/score/${play.id}/`}>Scoring →</LeaveLink>}
+            {canCheckin && <LeaveLink href={`/admin/checkin/${play.id}/`}>Check-in →</LeaveLink>}
+            <a href={asset(`/display/${play.slug}/`)} target="_blank" rel="noopener">Venue screen ↗</a>
+            <a href={asset(`/display/${play.slug}/print/`)} target="_blank" rel="noopener">Printable results ↗</a>
           </p>
           <h1>{play.name}: teams &amp; schedule</h1>
           <p className="adm-muted">

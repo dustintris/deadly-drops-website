@@ -1,0 +1,70 @@
+/* The venue screen (/display/<slug>/): a projector or TV across the room. One screen, no scrolling,
+   type sized from the viewport so it reads at distance. Colours come from theme tokens. */
+.screen {
+  height: 100dvh; overflow: hidden; display: grid; grid-template-rows: auto minmax(0, 1fr);
+  background: var(--bg); color: var(--ink); font-size: clamp(14px, 1.15vw, 28px);
+}
+
+.head {
+  display: flex; align-items: center; gap: 1em 1.4em; padding: .8em 1.6em;
+  border-bottom: 1px solid rgb(var(--accent-rgb) / .25); background: var(--surface);
+}
+.logo { width: 3.6em; height: 3.6em; object-fit: contain; flex: none; }
+.title { flex: 1; min-width: 0; }
+.title h1 { font-family: var(--font-display); font-weight: 400; font-size: 2.2em; line-height: 1; letter-spacing: .01em; overflow-wrap: anywhere; }
+.title p { margin-top: .3em; font-size: .9em; color: rgb(var(--ink-rgb) / .72); }
+.clock { font-family: var(--font-display); font-size: 2.4em; line-height: 1; font-variant-numeric: tabular-nums; color: var(--accent); }
+.feed { display: contents; }
+.feed :global(.live-offline) { font-size: .8em; color: var(--danger); }
+.control {
+  min-height: 44px; padding: 0 1em; border-radius: 100px; border: 1px solid rgb(var(--ink-rgb) / .3); background: transparent;
+  color: rgb(var(--ink-rgb) / .8); font: inherit; font-size: .75em; cursor: pointer;
+}
+.control:hover, .control:focus-visible { border-color: var(--accent); color: var(--ink); }
+/* the controls stay out of the way on the big screen until a mouse moves */
+@media (hover: hover) { .control { opacity: .35; } .screen:hover .control { opacity: 1; } }
+
+.label { display: flex; align-items: center; gap: .5em; font-family: var(--font-mono); font-size: .7em; letter-spacing: .18em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .72); }
+
+.main { display: grid; gap: 1.2em; padding: 1.2em 1.6em; min-height: 0; }
+.main[data-courts='true'] { grid-template-columns: minmax(15em, 23em) minmax(0, 1fr); }
+.waiting { display: grid; place-items: center; font-size: 1.6em; color: rgb(var(--ink-rgb) / .72); }
+
+/* every court: the game on it now and the next one */
+.courts { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: .6em; min-height: 0; }
+.courts ol { list-style: none; padding: 0; display: grid; gap: .6em; align-content: start; overflow: hidden; }
+.court { display: grid; gap: .3em; padding: .55em .9em; border-radius: 12px; background: var(--surface2); border: 1px solid rgb(var(--ink-rgb) / .1); }
+.court[data-live='true'] { border-color: var(--accent); box-shadow: inset 4px 0 0 var(--accent); }
+.courtNo { display: flex; align-items: baseline; gap: .3em; font-family: var(--font-display); font-size: 1.5em; line-height: 1; }
+.courtNo em { margin-left: auto; font-style: normal; font-size: .45em; }
+.main[data-many='true'] { grid-template-columns: minmax(28em, 40em) minmax(0, 1fr); }
+.main[data-many='true'] .courts ol { grid-template-columns: 1fr 1fr; }
+.courtNo span { font-family: var(--font-mono); font-size: .45em; letter-spacing: .18em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .72); }
+.game { display: grid; gap: .15em; }
+.team { display: flex; align-items: baseline; gap: .6em; font-weight: 600; }
+.team span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.team strong { font-family: var(--font-display); font-weight: 400; font-size: 1.6em; line-height: 1; font-variant-numeric: tabular-nums; color: var(--accent); }
+.next { display: grid; gap: .1em; padding-top: .4em; border-top: 1px solid rgb(var(--ink-rgb) / .1); font-size: .85em; }
+.nextTeams { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: rgb(var(--ink-rgb) / .85); }
+.nextTeams i { font-style: normal; color: rgb(var(--ink-rgb) / .55); }
+
+/* one division at a time */
+.results { min-height: 0; display: grid; }
+.rotator { display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: .8em; min-height: 0; }
+.slide { min-height: 0; overflow: hidden; }
+.slide[hidden] { display: none; }
+@media (prefers-reduced-motion: no-preference) { .slide:not([hidden]) { animation: show .5s ease both; } }
+@keyframes show { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.dots { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: .4em; justify-content: center; }
+.dots button {
+  min-height: 36px; padding: 0 .9em; border-radius: 100px; border: 1px solid rgb(var(--ink-rgb) / .2); background: transparent;
+  color: rgb(var(--ink-rgb) / .7); font: inherit; font-size: .7em; cursor: pointer;
+}
+.dots li[data-on='true'] button { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+
+@media (max-width: 900px) {
+  .screen { height: auto; min-height: 100dvh; overflow: visible; }
+  .main[data-courts='true'] { grid-template-columns: 1fr; }
+  .control { display: none; }
+}
+.paused { align-self: center; padding: 0 .6em; font-family: var(--font-mono); font-size: .65em; letter-spacing: .16em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .6); }

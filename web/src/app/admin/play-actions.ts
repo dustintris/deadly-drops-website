@@ -16,18 +16,21 @@ import {
   saveScore,
   ScheduleExistsError,
   ScoresExistError,
+  setCheckedIn,
   setTeams,
   StaleMatchError,
   TiedGameError,
   type Match,
+  type Player,
 } from '@/lib/play/repo'
 
 /**
  * Pickle Match actions. Teams and schedules need `tournaments: edit`; entering scores needs
- * `scoring: edit` (so a scorekeeper can score without changing the setup). Checked here, on the server.
+ * `scoring: edit` (so a scorekeeper can score without changing the setup); the check-in desk needs
+ * `checkin: edit`. Checked here, on the server.
  */
 
-export type PlayResult = { ok: boolean; message: string; errors?: Record<string, string>; match?: Match; count?: number }
+export type PlayResult = { ok: boolean; message: string; errors?: Record<string, string>; match?: Match; count?: number; players?: Pick<Player, 'id' | 'checkedInAt'>[] }
 
 const Id = z.number().int().positive()
 const TeamsInput = z
@@ -51,12 +54,23 @@ const ScoreInput = z.object({
   force: z.boolean().optional(),
 })
 
+const CheckinInput = z.object({
+  tournamentId: Id,
+  playerIds: z.array(Id).min(1).max(8),
+  checkedIn: z.boolean(),
+})
+
 const KNOWN = [ScheduleExistsError, ScoresExistError, NotEnoughTeamsError, GameNotFinishedError, TiedGameError, MatchNotReadyError, NotFoundError]
+
+const DENIED: Partial<Record<Area, string>> = {
+  scoring: 'Your login can’t enter scores.',
+  checkin: 'Your login can’t check players in.',
+}
 
 async function allowed(area: Area): Promise<Session | PlayResult> {
   const s = await getSession()
   if (!s) return { ok: false, message: 'Your session ended. Sign in again.' }
-  if (!can(s, area, 'edit')) return { ok: false, message: area === 'scoring' ? 'Your login can’t enter scores.' : 'Your login can’t change teams or schedules.' }
+  if (!can(s, area, 'edit')) return { ok: false, message: DENIED[area] ?? 'Your login can’t change teams or schedules.' }
   return s
 }
 const refused = (x: Session | PlayResult): x is PlayResult => 'ok' in x
@@ -136,5 +150,25 @@ export async function saveScoreAction(input: unknown): Promise<PlayResult> {
     return { ok: true, message: status === 'final' ? `Final: ${scoreA}–${scoreB}.` : 'Saved.', match }
   } catch (e) {
     return failure(e, 'Saving the score failed on the server. Try again.')
+  }
+}
+
+/** Check players in at the desk, or undo it. Every open screen follows through the live feed. */
+export async function setCheckedInAction(input: unknown): Promise<PlayResult> {
+  const s = await allowed('checkin')
+  if (refused(s)) return s
+  const parsed = CheckinInput.safeParse(input)
+  if (!parsed.success) return { ok: false, message: 'Pick up to 8 players at a time.' }
+  const { tournamentId, playerIds, checkedIn } = parsed.data
+  try {
+    const out = await setCheckedIn({ tournamentId, playerIds, checkedIn, who: s.email })
+    await audit(s.email, checkedIn ? 'checkin' : 'checkin_undo', `tournament ${tournamentId}: players ${playerIds.join(', ')}`)
+    return {
+      ok: true,
+      message: checkedIn ? `Checked in ${out.length === 1 ? '1 player' : `${out.length} players`}.` : 'Check-in undone.',
+      players: out.map((p) => ({ id: p.id, checkedInAt: p.checkedInAt })),
+    }
+  } catch (e) {
+    return failure(e, 'Checking in failed on the server. Try again.')
   }
 }

@@ -1,0 +1,60 @@
+# Test, then deploy web/ to the VPS (https://ddptournament.com) on every push to main or the working
+# branch, or by hand: GitHub → Actions → deploy-vps → Run workflow (any branch).
+# The deploy key can only run /root/deadly-drops/ci-deploy.sh on the server (forced command).
+# Secrets: VPS_HOST, VPS_SSH_KEY (private deploy key), VPS_KNOWN_HOSTS (ssh-keyscan of the host).
+name: deploy-vps
+
+on:
+  push:
+    branches: [main, ccr-fffcb32a-715c27]
+    paths: ['web/**', 'deploy/vps/**', '.github/workflows/deploy-vps.yml']
+  workflow_dispatch:
+
+# one deploy at a time; a newer push waits for the running one instead of cutting it off
+concurrency:
+  group: deploy-vps
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ship to the VPS and rebuild
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+          HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          tar -czf - --exclude=web/node_modules --exclude=web/.next --exclude=web/out --exclude=web/data \
+            --exclude=web/.pgdata --exclude='web/.env*' web deploy/vps \
+            | ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=30 "root@$HOST" deploy
+      - name: Check the live site
+        run: |
+          for p in /robots.txt / /tournaments/; do
+            curl -fsS -o /dev/null -w "$p %{http_code}\n" "https://ddptournament.com$p"
+          done

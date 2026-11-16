@@ -11,7 +11,7 @@ https://ddptournament.com. Read `web/README.md` first (setup, tests, deploy, cod
 | P1 | Staff logins with per-area access (none/view/edit), owner from server env | live |
 | P2 | Tournaments in the DB: days (multi-day), divisions, game rules, per-tournament logo, public page per tournament | live |
 | P3 | Pickle Match scoring: engine (`src/lib/match`), teams/schedule/scores (`src/lib/play/repo.ts`), live SSE `/live/<id>/`, score pad, live standings | live |
-| P4 | On-site screens in the web app: full-screen projector board (`/display/<slug>`), check-in desk (`/admin/checkin/<id>`), printable results | next |
+| P4 | On-site screens: venue screen `/display/<slug>/` (courts now/next + divisions rotating, `?division=`, `?day=`, `?rotate=`), check-in desk `/admin/checkin/<id>/`, printable results `/display/<slug>/print/` | built, deploys on push |
 | P5 | Playoffs (top 4 / top 8 brackets from pool standings, bronze match or from standings) + medals on board, page, print | todo |
 | P6 | Logo upload in the admin (theme.logo) replacing the hard-coded `/logo.png`; themeColor from the theme | todo |
 | P7 | Handover: README runbook (tournament day, hotspot, offline fallback), final review, deploy | todo |
@@ -26,6 +26,8 @@ https://ddptournament.com. Read `web/README.md` first (setup, tests, deploy, cod
 - Brand logo = round oni badge (`web/public/logo.png`); every tournament can have its own logo (`info.logo`).
 
 ## Working rules
+- Commit messages: plain, authored by the owner's git identity only. **No `Co-Authored-By` or other AI attribution
+  lines** in commits or PR descriptions.
 - Test-first; `npm test` (Vitest + throwaway embedded PostgreSQL), `npm run typecheck`; build must work without a DB.
 - Review each phase with ECC reviewer agents (security / database / code / react) before deploying.
 - Teams/matches link to divisions with NO ACTION FKs; scoring bumps `tournaments.live_version` + `pg_notify('ddp_live')`.
@@ -33,7 +35,10 @@ https://ddptournament.com. Read `web/README.md` first (setup, tests, deploy, cod
 ## Open items
 - **Prod admin has no owner yet**: the owner must run `npm run admin:setup` and put `ADMIN_EMAIL` and
   `ADMIN_PASSWORD_HASH` (single-quoted) into `/root/deadly-drops/.env` on the VPS, then redeploy/restart.
-- P3 review nits for P4: `ScoreBoard` closePad should only close the pad for the match it opened; a live refresh
-  that removes the open match unmounts `ScorePad` without keeping the typed score.
-- Deploying needs SSH access to the VPS (`bash deploy/vps/deploy.sh`, ssh alias `smj`), which only the owner's
-  laptop has. A cloud/phone session can build, test, commit and push; deploy from the laptop afterwards.
+- P5 next: playoffs + medals. Results UI is shared in `src/components/results/Results.tsx` (page, board, print
+  variants) and `src/lib/match/present.ts`, so medals go in once.
+- Check-in times/who are staff-only: public reads go through `publicPlay()` (`src/lib/data.ts`), which blanks them.
+- **Deploying is automatic**: every push to `main` or `ccr-fffcb32a-715c27` that touches `web/` or `deploy/vps/`
+  runs GitHub Actions `deploy-vps` (typecheck + tests, then deploy). Watch it in GitHub → Actions; re-run or
+  "Run workflow" by hand there. The deploy key can only run `/root/deadly-drops/ci-deploy.sh` on the VPS. A
+  cloud/phone session just commits and pushes to that branch. Laptop fallback: `bash deploy/vps/deploy.sh`.

@@ -14,7 +14,7 @@ import type { DivisionFormat, RulesT } from '@/lib/tournaments/schema'
 
 export type MatchStatus = 'scheduled' | 'live' | 'final'
 export type Stage = 'pool' | 'qf' | 'sf' | 'final' | 'bronze'
-export type Player = { id: number; name: string; dupr: string; checkedInAt: string | null }
+export type Player = { id: number; name: string; dupr: string; checkedInAt: string | null; checkedInBy: string | null }
 export type Team = { id: number; divisionId: number; name: string; sort: number; players: Player[] }
 export type Match = {
   id: number
@@ -111,6 +111,14 @@ const toMatch = (r: MatchRow): Match => ({
   updatedAt: r.updatedAt.toISOString(),
 })
 
+const toPlayer = (p: typeof players.$inferSelect): Player => ({
+  id: p.id,
+  name: p.name,
+  dupr: p.dupr,
+  checkedInAt: p.checkedInAt?.toISOString() ?? null,
+  checkedInBy: p.checkedInBy,
+})
+
 /** Tick the tournament's live version and tell every listener (sent when the transaction commits). */
 async function bumpLive(tx: Tx, tournamentId: number): Promise<number> {
   const [r] = await tx
@@ -189,7 +197,7 @@ export async function getTournamentPlay(tournamentId: number, db: Executor = get
           sort: x.sort,
           players: playerRows
             .filter((p) => p.teamId === x.id)
-            .map((p) => ({ id: p.id, name: p.name, dupr: p.dupr, checkedInAt: p.checkedInAt?.toISOString() ?? null })),
+            .map(toPlayer),
         })),
       matches: matchRows.filter((m) => m.divisionId === d.id).map(toMatch),
     })),
@@ -339,6 +347,38 @@ export async function saveScore(input: {
       .returning()
     await bumpLive(tx, m.tournamentId)
     return toMatch(updated)
+  })
+}
+
+/* ---------- check-in ---------- */
+
+/**
+ * Check players in at the desk (or undo it). Every id must be a player on one of this tournament's
+ * teams, else nothing changes. Checking in again keeps the first time and who did it.
+ */
+export async function setCheckedIn(input: { tournamentId: number; playerIds: number[]; checkedIn: boolean; who: string }): Promise<Player[]> {
+  const ids = [...new Set(input.playerIds)]
+  if (!ids.length) return []
+  return getDb().transaction(async (tx) => {
+    const own = await tx
+      .select({ id: players.id })
+      .from(players)
+      .innerJoin(teams, eq(teams.id, players.teamId))
+      .where(and(eq(teams.tournamentId, input.tournamentId), inArray(players.id, ids)))
+      .orderBy(asc(players.id)) // a fixed lock order: two desks with overlapping batches can't deadlock
+      .for('update', { of: players })
+    if (own.length !== ids.length) throw new NotFoundError('player')
+    const updated = await tx
+      .update(players)
+      .set(
+        input.checkedIn
+          ? { checkedInAt: sql`coalesce(${players.checkedInAt}, now())`, checkedInBy: sql`coalesce(${players.checkedInBy}, ${input.who.slice(0, 254)})` }
+          : { checkedInAt: null, checkedInBy: null },
+      )
+      .where(inArray(players.id, ids))
+      .returning()
+    await bumpLive(tx, input.tournamentId)
+    return updated.map(toPlayer)
   })
 }
 
