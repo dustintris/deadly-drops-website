@@ -1,14 +1,15 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { EntriesCard } from '@/components/EntriesCard'
-import { eventTags, LadderBoard } from '@/components/EventBits'
+import { eventTags } from '@/components/EventBits'
+import live from '@/components/live.module.css'
 import { PageHero } from '@/components/PageHero'
 import { RegistrationForm } from '@/components/RegistrationForm'
 import { SeasonList } from '@/components/SeasonList'
 import page from '@/components/tournament.module.css'
 import t from '@/components/tournaments.module.css'
-import { getBracket, getChampions, getDivisionGuide, getEvents, getLadder, getNextEvent } from '@/lib/data'
-import { eventCta, eventEyebrow, eventState } from '@/lib/events'
+import { getChampions, getDivisionGuide, getEvents, getNextEvent, getTournamentLive } from '@/lib/data'
+import { clubToday, eventCta, eventEyebrow, eventState } from '@/lib/events'
 import { pageMeta } from '@/lib/seo'
 import { money } from '@/lib/utils'
 
@@ -21,14 +22,18 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TournamentsPage() {
-  const [event, events, guide, bracket, champions, ladder] = await Promise.all([
-    getNextEvent(), getEvents(), getDivisionGuide(), getBracket(), getChampions(), getLadder(),
-  ])
+  const [event, events, guide, champions] = await Promise.all([getNextEvent(), getEvents(), getDivisionGuide(), getChampions()])
 
   const state = event ? eventState(event) : 'tba'
   const cta = event ? eventCta(event, state) : null
   // worked out here on the server so the browser cannot disagree about the date
   const states = Object.fromEntries(events.map((e) => [e.slug, eventState(e)]))
+  // the tournament being played now, else the latest one played, when it has teams or scores to show
+  const today = clubToday()
+  const latest = events.filter((e) => e.date && e.date <= today).sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''))[0]
+  const latestPlay = latest?.id ? await getTournamentLive(Number(latest.id)) : null
+  const results = latest && latestPlay?.divisions.some((d) => d.teams.length > 0 || d.matches.length > 0) ? latest : null
+  const resultsLive = results !== null && states[results.slug] !== 'past'
   // from the club's own tournament pages
   const weekend = [
     { title: 'Matched by age and DUPR', body: 'We design our tournaments around age brackets and DUPR levels so everyone plays with peers who match their pace, experience, and stamina.' },
@@ -100,29 +105,23 @@ export default async function TournamentsPage() {
         </div>
       </section>
 
-      <section className="section darker">
-        <div className="wrap">
-          <div className="head-row">
-            <p className="eyebrow"><span className="live-dot" /> Gold bracket · 3.5 mixed</p>
-            <p className="mono small muted">Semifinals complete</p>
-          </div>
-          <div className={t.bracket}>
-            {bracket.map((round) => (
-              <div key={round.label}>
-                <p className="label">{round.label}</p>
-                <ul>
-                  {round.matches.map((m, i) => (
-                    <li key={i} data-final={round.label === 'Final'}>
-                      <span data-win={m.winner === 'a'}>{m.a}<b>{m.aScore}</b></span>
-                      <span data-win={m.winner === 'b'}>{m.b}<b>{m.bScore}</b></span>
-                    </li>
-                  ))}
-                </ul>
+      {results && (
+        <section className="section-tight darker" aria-labelledby="latest-results">
+          <div className="wrap">
+            <div className={`card ${live.latest}`} data-live={resultsLive}>
+              <div className="stack-8">
+                <p className="eyebrow">
+                  {resultsLive ? <><span className="live-dot" aria-hidden="true" /> Playing today</> : 'Latest results'}
+                </p>
+                <h2 id="latest-results" className="display d-s">{results.name}</h2>
               </div>
-            ))}
+              <Link href={`/tournaments/${results.slug}/#results`} className="link-arrow">
+                {resultsLive ? 'Live results & standings' : 'Results & standings'} →<span className="sr"> for {results.name}</span>
+              </Link>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {event && state === 'open' && !event.registrationUrl && (
         <section className="section light" id="register">
@@ -131,12 +130,6 @@ export default async function TournamentsPage() {
           </div>
         </section>
       )}
-
-      <section className="dark">
-        <div className="wrap" style={{ maxWidth: 760 }}>
-          <LadderBoard entries={ladder} />
-        </div>
-      </section>
     </>
   )
 }

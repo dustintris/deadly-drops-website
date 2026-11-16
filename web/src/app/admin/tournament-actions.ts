@@ -9,6 +9,7 @@ import { text } from '@/lib/content-schema'
 import {
   createTournament,
   deleteTournament,
+  DivisionInUseError,
   saveTournament,
   SlugTakenError,
   StaleTournamentError,
@@ -46,7 +47,7 @@ function failure(e: unknown, fallback: string): TournamentResult {
   if (e instanceof StaleTournamentError || e instanceof SlugTakenError) {
     return { ok: false, message: e.message, errors: e instanceof SlugTakenError ? { slug: e.message } : undefined }
   }
-  if (e instanceof TournamentNotFoundError) return { ok: false, message: e.message }
+  if (e instanceof TournamentNotFoundError || e instanceof DivisionInUseError) return { ok: false, message: e.message }
   console.error(e)
   return { ok: false, message: fallback }
 }

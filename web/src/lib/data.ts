@@ -1,12 +1,14 @@
 /**
  * Data access for every page. Owner-editable content (club info, events, ticker, shop, gallery,
- * community, FAQs, page copy, theme) comes from the MIS content store via getContent(); member,
- * ladder and results data are still sample content in src/content/sample.ts.
+ * community, FAQs, page copy, theme) comes from the MIS content store via getContent(); tournaments
+ * and their live play come from the database; member and ladder data are still sample content in
+ * src/content/sample.ts.
  * Pages only import from here, never from src/content or the store directly.
  */
 import { cache } from 'react'
 import { getContent, isPreview } from './content'
-import { eventState } from './events'
+import { clubToday, eventState } from './events'
+import { getTournamentPlay, type TournamentPlay } from './play/repo'
 import type { CommunityPostT, PageKey } from './content-schema'
 import * as sample from '@/content/sample'
 import { ensureImported, getTournamentBySlug, listTournaments, toClubEvent, type Tournament } from './tournaments/repo'
@@ -44,6 +46,76 @@ export const getNextEvent = async (): Promise<ClubEvent | null> => {
     null
   )
 }
+/* ---------- live tournament play ---------- */
+
+/** A visible tournament's teams, schedule and scores (null while it's hidden). Once per request. */
+export const getTournamentLive = cache(async (tournamentId: number): Promise<TournamentPlay | null> => {
+  await ensureImported()
+  const play = await getTournamentPlay(tournamentId)
+  return play?.visible ? play : null
+})
+
+/** The lead tournament's play (the one getNextEvent picks) until its last day is over, so a match left "live" never lingers on the site. */
+const leadPlay = cache(async (): Promise<TournamentPlay | null> => {
+  const event = await getNextEvent()
+  const id = Number(event?.id)
+  if (!event || !Number.isInteger(id) || eventState(event) === 'past') return null
+  return getTournamentLive(id)
+})
+
+export type LiveTeam = { name: string; players: string[] }
+export type LiveMatch = {
+  tournamentId: number
+  tournamentName: string
+  slug: string
+  division: string
+  court: number | null
+  /** points that win this game (playoff games can differ) */
+  gamesTo: number
+  teamA: LiveTeam
+  teamB: LiveTeam
+  scoreA: number
+  scoreB: number
+}
+
+/** The first match being played right now at the lead tournament (division order, then round and court), or null. */
+export const getLiveMatch = cache(async (): Promise<LiveMatch | null> => {
+  const play = await leadPlay()
+  if (!play) return null
+  for (const d of play.divisions) {
+    const m = d.matches.find((x) => x.status === 'live' && x.teamAId !== null && x.teamBId !== null)
+    if (!m) continue
+    const team = (id: number | null): LiveTeam => {
+      const t = d.teams.find((x) => x.id === id)
+      return { name: t?.name ?? 'To be decided', players: t?.players.map((p) => p.name) ?? [] }
+    }
+    return {
+      tournamentId: play.id,
+      tournamentName: play.name,
+      slug: play.slug,
+      division: d.name,
+      court: m.court,
+      gamesTo: m.stage === 'pool' ? d.gamesTo : play.rules.playoffGamesTo,
+      teamA: team(m.teamAId),
+      teamB: team(m.teamBId),
+      scoreA: m.scoreA ?? 0,
+      scoreB: m.scoreB ?? 0,
+    }
+  }
+  return null
+})
+
+/**
+ * The lead tournament's live channel while it's being played (today is one of its days, or a match
+ * is live), so the home page can follow it and its live card comes and goes by itself. Otherwise null.
+ */
+export const getLiveFeed = cache(async (): Promise<{ tournamentId: number; version: number } | null> => {
+  const play = await leadPlay()
+  if (!play) return null
+  const playing = play.days.includes(clubToday()) || play.divisions.some((d) => d.matches.some((m) => m.status === 'live'))
+  return playing ? { tournamentId: play.id, version: play.liveVersion } : null
+})
+
 export const getFaqs = async () => (await getContent()).faqs.filter((f) => f.visible)
 export const getTicker = async () => (await getContent()).ticker.filter((t) => t.visible).map((t) => t.text)
 
@@ -53,7 +125,6 @@ export const getMember = async (slug: string) => sample.members.find((m) => m.sl
 export const getMemberCount = async () => sample.members.length
 export const getSpotlights = async () => sample.spotlights
 export const getLadder = async () => sample.ladder
-export const getLiveMatch = async () => sample.liveMatch
 export const getBracket = async () => sample.bracket
 export const getChampions = async () => sample.champions
 export const getDivisionGuide = async () => sample.divisionGuide

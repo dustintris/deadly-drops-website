@@ -1,58 +1,44 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import type { Member } from '@/lib/types'
-import { Monogram } from './Monogram'
+import Link from 'next/link'
+import type { LiveMatch, LiveTeam } from '@/lib/data'
+import l from './live.module.css'
 import styles from './widgets.module.css'
 
-type Props = {
-  court: string
-  division: string
-  teamA: { label: string; lead: Member }
-  teamB: { label: string; lead: Member }
-  startA: number
-  startB: number
-  compact?: boolean
+const playerLine = (players: string[]) => players.join(players.length === 2 ? ' & ' : ', ')
+
+function Side({ team, score, lead, compact }: { team: LiveTeam; score: number; lead: boolean; compact?: boolean }) {
+  const players = playerLine(team.players)
+  return (
+    <div className={styles.scoreRow} data-lead={lead}>
+      <span className={l.cardTeam}>
+        {team.name}
+        {!compact && players && players !== team.name && <small>{players}</small>}
+      </span>
+      <strong><span className="sr">: </span>{score}</strong>
+    </div>
+  )
 }
 
 /**
- * Simulated live score for the preview: one rally every few seconds, game to 11.
- * Production: subscribe to the scoreboard feed (WebSocket / SSE) instead.
+ * A match being played right now at the lead tournament (home page). The page follows the
+ * tournament's live channel (LiveRefresh), so the score moves within a second of being entered.
  */
-export function LiveScore({ court, division, teamA, teamB, startA, startB, compact }: Props) {
-  const [{ a, b, serving }, setScore] = useState({ a: startA, b: startB, serving: 'a' as 'a' | 'b' })
-
-  useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const id = setInterval(() => {
-      setScore((s) => {
-        if (s.a >= 11 || s.b >= 11) return { a: 0, b: 0, serving: 'a' } // game over: next game
-        const aWins = Math.random() > 0.5
-        return { a: s.a + (aWins ? 1 : 0), b: s.b + (aWins ? 0 : 1), serving: aWins ? 'a' : 'b' }
-      })
-    }, 3400)
-    return () => clearInterval(id)
-  }, [])
-
+export function LiveScore({ match, compact }: { match: LiveMatch; compact?: boolean }) {
+  const { teamA, teamB, scoreA, scoreB } = match
+  const court = match.court !== null ? `Court ${match.court}` : null
   return (
-    <section className={`${styles.score} ${compact ? styles.scoreCompact : ''}`} aria-label={`Live score on ${court}, game to 11`}>
+    <section className={`${styles.score} ${compact ? styles.scoreCompact : ''}`} aria-label={`Live score${court ? ` on ${court}` : ''}, ${match.division}`}>
       <header>
-        <span className="eyebrow"><span className="live-dot" /> Live · {court}</span>
-        {!compact && <span className={styles.scoreDiv}>{division}</span>}
+        <span className="eyebrow"><span className="live-dot" aria-hidden="true" /> Live{court ? ` · ${court}` : ''}</span>
+        <span className={styles.scoreDiv}>{match.division}</span>
       </header>
-      <div className={styles.scoreRow} data-lead={a >= b}>
-        {!compact && <Monogram member={teamA.lead} size="sm" round />}
-        <span>{teamA.label}</span>
-        <strong>{a}</strong>
-      </div>
-      <div className={styles.scoreRow} data-lead={b > a}>
-        {!compact && <Monogram member={teamB.lead} size="sm" round />}
-        <span>{teamB.label}</span>
-        <strong>{b}</strong>
-      </div>
-      {!compact && (
-        <footer>Serving: {(serving === 'a' ? teamA.label : teamB.label).toUpperCase()} · Game to 11</footer>
-      )}
+      <Side team={teamA} score={scoreA} lead={scoreA > scoreB} compact={compact} />
+      <Side team={teamB} score={scoreB} lead={scoreB > scoreA} compact={compact} />
+      <footer className={l.cardFoot}>
+        <span>Game to {match.gamesTo}</span>
+        <Link href={`/tournaments/${match.slug}/#results`} className="link-arrow">
+          All scores →<span className="sr"> for {match.tournamentName}</span>
+        </Link>
+      </footer>
     </section>
   )
 }
