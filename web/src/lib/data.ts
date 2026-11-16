@@ -52,8 +52,19 @@ export const getNextEvent = async (): Promise<ClubEvent | null> => {
 export const getTournamentLive = cache(async (tournamentId: number): Promise<TournamentPlay | null> => {
   await ensureImported()
   const play = await getTournamentPlay(tournamentId)
-  return play?.visible ? play : null
+  return play?.visible ? publicPlay(play) : null
 })
+
+/** Play as the public may see it: who checked in, and when, stays with the staff. */
+export function publicPlay(play: TournamentPlay): TournamentPlay {
+  return {
+    ...play,
+    divisions: play.divisions.map((d) => ({
+      ...d,
+      teams: d.teams.map((t) => ({ ...t, players: t.players.map((p) => ({ ...p, checkedInAt: null, checkedInBy: null })) })),
+    })),
+  }
+}
 
 /** The lead tournament's play (the one getNextEvent picks) until its last day is over, so a match left "live" never lingers on the site. */
 const leadPlay = cache(async (): Promise<TournamentPlay | null> => {

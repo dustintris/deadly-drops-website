@@ -94,3 +94,31 @@
 .cardTeam small { margin-top: 2px; font-size: 12px; font-weight: 400; color: rgb(var(--ink-rgb) / .72); }
 .cardFoot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 16px; }
 .cardFoot :global(.link-arrow) { min-height: 32px; font-size: 10px; }
+
+/* ---------- venue screen (/display/<slug>/): the same results, sized for across the room ---------- */
+.division[data-variant='board'] { height: 100%; padding: 1.2em 1.4em; font-size: 1em; overflow: hidden; }
+.division[data-variant='board'] .divName { font-family: var(--font-display); font-weight: 400; font-size: 2.2em; line-height: 1; }
+.division[data-variant='board'] .status { min-height: 2em; font-size: .75em; }
+.division[data-variant='board'] .divMeta { font-size: .85em; }
+.division[data-variant='board'] .body { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); align-items: start; }
+.division[data-variant='board'] .table { font-size: 1.15em; min-width: 0; }
+.division[data-variant='board'] .table caption,
+.division[data-variant='board'] .table thead th { font-size: .6em; }
+.division[data-variant='board'] .table th,
+.division[data-variant='board'] .table td { padding: .45em .7em; }
+.division[data-variant='board'] .rank { font-size: 1.5em; }
+.division[data-variant='board'] .players { font-size: .7em; }
+.division[data-variant='board'] .roundName { font-size: .75em; }
+.division[data-variant='board'] .matches { grid-template-columns: repeat(auto-fill, minmax(min(100%, 12em), 1fr)); }
+.division[data-variant='board'] .matchMeta { font-size: .7em; }
+.division[data-variant='board'] .side { font-size: 1em; }
+.division[data-variant='board'] .side strong { font-size: 1.6em; }
+@media (max-width: 900px) { .division[data-variant='board'] .body { grid-template-columns: 1fr; } }
+
+/* ---------- printable results (/display/<slug>/print/): no scroll boxes, a division never split badly ---------- */
+.division[data-variant='print'] { break-inside: avoid-page; }
+.division[data-variant='print'] .tableWrap { overflow: visible; }
+.division[data-variant='print'] .body { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+.division[data-variant='print'] .match,
+.division[data-variant='print'] .table tr,
+.division[data-variant='print'] .round { break-inside: avoid; }

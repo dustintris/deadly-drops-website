@@ -15,6 +15,7 @@ const NAV: { group?: string; items: NavItem[] }[] = [
     items: [
       { href: '/admin/tournaments/', label: 'Tournaments', area: 'tournaments' },
       { href: '/admin/score/', label: 'Scoring', area: 'scoring' },
+      { href: '/admin/checkin/', label: 'Check-in', area: 'checkin' },
       { href: '/admin/announcements/', label: 'Announcements', area: 'content' },
       { href: '/admin/products/', label: 'Shop & prices', area: 'shop' },
       { href: '/admin/media/', label: 'Photos', area: 'content' },

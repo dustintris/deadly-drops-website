@@ -9,8 +9,10 @@ import {
   saveScore,
   ScheduleExistsError,
   ScoresExistError,
+  setCheckedIn,
   setTeams,
   StaleMatchError,
+  NotFoundError,
 } from '../repo'
 
 const sql = () => getSql()
@@ -136,5 +138,69 @@ describe('protecting played divisions', () => {
     const { tournament } = await setup(2)
     const fresh = await getSql()`select version from tournaments where id = ${tournament.id}`
     await expect(saveTournament(tournament.id, payload(tournament, []), fresh[0].version as number)).rejects.toBeInstanceOf(DivisionInUseError)
+  })
+})
+
+describe('check-in', () => {
+  const roster = async (id: number) => (await getTournamentPlay(id))!.divisions[0].teams.flatMap((x) => x.players)
+
+  it('checks players in, records who did it, bumps the live version once and tells listeners', async () => {
+    const { tournament } = await setup(2)
+    const [p1, p2] = await roster(tournament.id)
+    const heard: string[] = []
+    const listener = await sql().listen('ddp_live', (payload) => heard.push(payload))
+    const before = await liveVersion(tournament.id)
+
+    const out = await setCheckedIn({ tournamentId: tournament.id, playerIds: [p1.id, p2.id], checkedIn: true, who: 'desk@x.test' })
+    await new Promise((r) => setTimeout(r, 200))
+    await listener.unlisten()
+
+    expect(out.map((p) => p.id).sort()).toEqual([p1.id, p2.id].sort())
+    expect(out.every((p) => p.checkedInAt !== null && p.checkedInBy === 'desk@x.test')).toBe(true)
+    expect(await liveVersion(tournament.id)).toBe(before + 1)
+    expect(heard.map((p) => JSON.parse(p))).toContainEqual({ t: tournament.id, v: before + 1 })
+    const after = await roster(tournament.id)
+    expect(after.filter((p) => p.checkedInAt).map((p) => p.id).sort()).toEqual([p1.id, p2.id].sort())
+  })
+
+  it('keeps the first check-in time when a player is checked in again', async () => {
+    const { tournament } = await setup(2)
+    const [p1] = await roster(tournament.id)
+    const [first] = await setCheckedIn({ tournamentId: tournament.id, playerIds: [p1.id], checkedIn: true, who: 'a@x.test' })
+    await new Promise((r) => setTimeout(r, 20))
+    const [again] = await setCheckedIn({ tournamentId: tournament.id, playerIds: [p1.id], checkedIn: true, who: 'b@x.test' })
+    expect(again.checkedInAt).toBe(first.checkedInAt)
+    expect(again.checkedInBy).toBe('a@x.test')
+  })
+
+  it('undoes a check-in', async () => {
+    const { tournament } = await setup(2)
+    const [p1] = await roster(tournament.id)
+    await setCheckedIn({ tournamentId: tournament.id, playerIds: [p1.id], checkedIn: true, who: 'a@x.test' })
+    const [undone] = await setCheckedIn({ tournamentId: tournament.id, playerIds: [p1.id], checkedIn: false, who: 'a@x.test' })
+    expect(undone).toMatchObject({ checkedInAt: null, checkedInBy: null })
+  })
+
+  it('refuses a player from another tournament and changes nothing', async () => {
+    const one = await setup(2)
+    const two = await setup(2)
+    const [mine] = await roster(one.tournament.id)
+    const [theirs] = await roster(two.tournament.id)
+    const before = await liveVersion(one.tournament.id)
+    await expect(
+      setCheckedIn({ tournamentId: one.tournament.id, playerIds: [mine.id, theirs.id], checkedIn: true, who: 'a@x.test' }),
+    ).rejects.toBeInstanceOf(NotFoundError)
+    expect((await roster(one.tournament.id)).every((p) => p.checkedInAt === null)).toBe(true)
+    expect((await roster(two.tournament.id)).every((p) => p.checkedInAt === null)).toBe(true)
+    expect(await liveVersion(one.tournament.id)).toBe(before)
+  })
+
+  it('keeps a check-in when the teams are saved again', async () => {
+    const { tournament, divisionId } = await setup(2)
+    const teams = (await getTournamentPlay(tournament.id))!.divisions[0].teams
+    await setCheckedIn({ tournamentId: tournament.id, playerIds: [teams[0].players[0].id], checkedIn: true, who: 'a@x.test' })
+    await setTeams(divisionId, teams.map((x) => ({ id: x.id, name: x.name, players: x.players.map((p) => ({ id: p.id, name: p.name, dupr: p.dupr })) })))
+    const [p] = await roster(tournament.id)
+    expect(p.checkedInAt).not.toBeNull()
   })
 })

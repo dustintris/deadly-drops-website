@@ -53,11 +53,13 @@ type Props = {
   draft?: PadDraft
   /** a save went through (the board shows it straight away) */
   onSaved: (m: Match) => void
-  /** the pad closes; `unsaved` is a typed score that isn't saved yet */
-  onClose: (unsaved: PadDraft | null) => void
+  /** the pad closes; `unsaved` is a typed score that isn't saved yet (keyed by this pad's match, never the board's current one) */
+  onClose: (matchId: number, unsaved: PadDraft | null) => void
+  /** the match left the schedule while the pad was open (it was cleared or redone): keep the score, block saving */
+  gone?: boolean
 }
 
-export function ScorePad({ match, teamA, teamB, title, subtitle, gamesTo, winBy2, draft, onSaved, onClose }: Props) {
+export function ScorePad({ match, teamA, teamB, title, subtitle, gamesTo, winBy2, draft, onSaved, onClose, gone = false }: Props) {
   const id = useId()
   const dialogRef = useRef<HTMLDialogElement>(null)
   /** the newest saved state of this match that the pad knows of */
@@ -93,10 +95,10 @@ export function ScorePad({ match, teamA, teamB, title, subtitle, gamesTo, winBy2
     return () => d?.close()
   }, [])
 
-  const close = () => onClose(touched ? { a: scoreA, b: scoreB, version: ver } : null)
+  const close = () => onClose(match.id, touched ? { a: scoreA, b: scoreB, version: ver } : null)
 
   const send = async (want: Want, version = ver) => {
-    if (busy) return
+    if (busy || gone) return
     const sentA = scoreA
     const sentB = scoreB
     setA(String(sentA))
@@ -114,7 +116,7 @@ export function ScorePad({ match, teamA, teamB, title, subtitle, gamesTo, winBy2
       setVer(m.version)
       setPhase({ kind: 'idle', text })
       onSaved(m)
-      if (m.status === 'final' && want.status === 'final') onClose(null)
+      if (m.status === 'final' && want.status === 'final') onClose(match.id, null)
     }
     if (res.ok && res.match) return done(res.match, res.message)
     if (res.match) {
@@ -169,6 +171,12 @@ export function ScorePad({ match, teamA, teamB, title, subtitle, gamesTo, winBy2
           <button type="button" className="adm-btn" style={{ minHeight: 48, minWidth: 64 }} onClick={close}>Close</button>
         </div>
 
+        {gone && (
+          <p className="adm-locknote" role="alert">
+            This match was removed from the schedule. Your score {scoreA}–{scoreB} is kept on this device when you close.
+          </p>
+        )}
+
         {ver < server.version && phase.kind !== 'stale' && (
           <p className="adm-locknote" role="note">
             Someone else saved {server.scoreA ?? 0}–{server.scoreB ?? 0} since you started. Your score is kept; saving will ask which one to keep.
@@ -222,10 +230,10 @@ export function ScorePad({ match, teamA, teamB, title, subtitle, gamesTo, winBy2
 
         {phase.kind !== 'stale' && (
           <div style={ACTIONS}>
-            <button type="submit" className="adm-btn primary" style={TALL} aria-disabled={busy}>
+            <button type="submit" className="adm-btn primary" style={TALL} aria-disabled={busy || gone}>
               {busy && phase.want.status === primary.status ? 'Saving…' : isFinal ? 'Save correction' : 'Save'}
             </button>
-            <button type="button" className={`adm-btn ${isFinal ? '' : 'accent'}`} style={TALL} aria-disabled={busy} onClick={() => void send(secondary)}>
+            <button type="button" className={`adm-btn ${isFinal ? '' : 'accent'}`} style={TALL} aria-disabled={busy || gone} onClick={() => void send(secondary)}>
               {busy && phase.want.status === secondary.status ? 'Saving…' : isFinal ? 'Reopen game' : 'Finish game'}
             </button>
           </div>
