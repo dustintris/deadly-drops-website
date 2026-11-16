@@ -26,6 +26,8 @@ https://ddptournament.com. Read `web/README.md` first (setup, tests, deploy, cod
 - Brand logo = round oni badge (`web/public/logo.png`); every tournament can have its own logo (`info.logo`).
 
 ## Working rules
+- Commit messages: plain, authored by the owner's git identity only. **No `Co-Authored-By` or other AI attribution
+  lines** in commits or PR descriptions.
 - Test-first; `npm test` (Vitest + throwaway embedded PostgreSQL), `npm run typecheck`; build must work without a DB.
 - Review each phase with ECC reviewer agents (security / database / code / react) before deploying.
 - Teams/matches link to divisions with NO ACTION FKs; scoring bumps `tournaments.live_version` + `pg_notify('ddp_live')`.
