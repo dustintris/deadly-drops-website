@@ -8,7 +8,6 @@ import type { SiteContent } from './content-schema'
 export function findUsage(src: string, d: SiteContent): string[] {
   const where: string[] = []
   const has = (v: unknown) => JSON.stringify(v).includes(`"${src}"`)
-  d.events.forEach((e) => has(e) && where.push(`Event: ${e.name}`))
   d.products.forEach((p) => has(p) && where.push(`Product: ${p.name}`))
   d.gallery.forEach((g) => has(g) && where.push(`Gallery: ${g.caption}`))
   d.posts.forEach((p) => has(p) && where.push(`Community: ${p.title}`))

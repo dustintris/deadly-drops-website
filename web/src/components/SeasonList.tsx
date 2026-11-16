@@ -4,9 +4,10 @@ import Link from 'next/link'
 import { useState } from 'react'
 import type { ClubEvent } from '@/lib/types'
 import { eventCta, type EventState } from '@/lib/events'
-import { money } from '@/lib/utils'
+import { asset, cx, money } from '@/lib/utils'
 import { Monogram } from './Monogram'
 import type { Member } from '@/lib/types'
+import page from './tournament.module.css'
 import styles from './tournaments.module.css'
 
 type Champion = { event: string; pair: string; detail: string; lead: Member }
@@ -40,9 +41,12 @@ export function SeasonList({ events, states, champions }: { events: ClubEvent[];
                   <strong>{d ? String(d.getDate()).padStart(2, '0') : 'TBA'}</strong>
                   <span>{d ? d.toLocaleString('en-US', { month: 'short' }) : 'Date soon'}</span>
                 </div>
-                <div className={styles.seasonBody}>
-                  <h3>{e.name}</h3>
-                  <p>{e.format} · {e.includes.join(' · ')}</p>
+                <div className={cx(styles.seasonBody, e.logo && page.withBadge)}>
+                  {e.logo && <img className={page.logoBadge} src={asset(e.logo.src)} alt="" width={48} height={48} />}
+                  <div>
+                    <h3><Link href={`/tournaments/${e.slug}/`} className={page.nameLink}>{e.name}</Link></h3>
+                    <p>{e.format} · {e.includes.join(' · ')}</p>
+                  </div>
                 </div>
                 <span className="tag">{money(e.entryFee)}{e.entryFeeWithMeal ? ` / ${money(e.entryFeeWithMeal)}` : ''}</span>
                 {cta.external ? (
@@ -67,9 +71,12 @@ export function SeasonList({ events, states, champions }: { events: ClubEvent[];
                   <strong>{d ? String(d.getDate()).padStart(2, '0') : '–'}</strong>
                   <span>{d ? d.toLocaleString('en-US', { month: 'short', year: 'numeric' }) : ''}</span>
                 </div>
-                <div className={styles.seasonBody}>
-                  <h3>{e.name}</h3>
-                  <p>{e.dateLabel}{e.location ? ` · ${e.location}` : ''}</p>
+                <div className={cx(styles.seasonBody, e.logo && page.withBadge)}>
+                  {e.logo && <img className={page.logoBadge} src={asset(e.logo.src)} alt="" width={48} height={48} />}
+                  <div>
+                    <h3><Link href={`/tournaments/${e.slug}/`} className={page.nameLink}>{e.name}</Link></h3>
+                    <p>{e.dateLabel}{e.location ? ` · ${e.location}` : ''}</p>
+                  </div>
                 </div>
                 <span className="tag">{money(e.entryFee)}{e.prizes.length ? ` · Gold ${money(e.prizes[0].amount)}` : ''}</span>
                 <Link href="/community/" className="btn btn-line btn-sm">Photos &amp; stories<span className="sr"> from {e.name}</span></Link>

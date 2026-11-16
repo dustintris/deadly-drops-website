@@ -35,13 +35,13 @@ export function parseMoney(input: string): number | null {
   return Math.round(parseFloat(s) * 100) / 100
 }
 
-const httpsUrl = z.string().trim().max(500).regex(/^https:\/\/[^\s"<>]+$/, 'Links must start with https://')
+export const httpsUrl = z.string().trim().max(500).regex(/^https:\/\/[^\s"<>]+$/, 'Links must start with https://')
 const internalOrHttps = z.string().trim().max(500).regex(/^(\/(?!\/)[a-z0-9/#-]*|https:\/\/[^\s"<>]+)$/, 'Use a page path like /tournaments/ or a full https:// link.')
-const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-03-14.')
+export const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-03-14.')
   .refine((d) => { const t = new Date(`${d}T00:00:00Z`); return !Number.isNaN(t.getTime()) && t.toISOString().slice(0, 10) === d }, 'That date does not exist.')
 /** lists typed one-per-line: blank lines are ignored instead of failing validation */
-const lines = <T extends z.ZodTypeAny>(item: T) => z.preprocess((v) => (Array.isArray(v) ? v.filter((x) => String(x ?? '').trim() !== '') : v), z.array(item))
-const optional = <T extends z.ZodTypeAny>(s: T) => z.union([s, z.literal('').transform(() => undefined)]).optional()
+export const lines = <T extends z.ZodTypeAny>(item: T) => z.preprocess((v) => (Array.isArray(v) ? v.filter((x) => String(x ?? '').trim() !== '') : v), z.array(item))
+export const optional = <T extends z.ZodTypeAny>(s: T) => z.union([s, z.literal('').transform(() => undefined)]).optional()
 
 /* ---------- entities ---------- */
 
@@ -77,7 +77,7 @@ export const Theme = z.object({
   for (const issue of themeContrastIssues(t)) ctx.addIssue({ code: 'custom', path: [issue.key], message: issue.message })
 })
 
-const Prize = z.object({ place: z.enum(['Gold', 'Silver', 'Bronze']), amount: Money })
+export const Prize = z.object({ place: z.enum(['Gold', 'Silver', 'Bronze']), amount: Money })
 export const ClubEvent = z.object({
   id: Id,
   slug: Slug,
@@ -97,6 +97,8 @@ export const ClubEvent = z.object({
   registrationOpen: z.boolean(),
   registrationUrl: optional(httpsUrl),
   image: ImageRef.optional(),
+  /** the tournament's own logo */
+  logo: ImageRef.optional(),
   featured: z.boolean(),
   visible: z.boolean(),
 }).refine((e) => e.entryFeeWithMeal === undefined || e.entryFeeWithMeal > e.entryFee, { message: 'The with-meal price must be higher than the entry fee.', path: ['entryFeeWithMeal'] })
@@ -180,8 +182,6 @@ export const PageCopy = z.object({
 export const SECTIONS = {
   settings: SiteSettings,
   theme: Theme,
-  events: z.array(ClubEvent).max(50).refine((l) => l.filter((e) => e.featured).length <= 1, 'Only one event can be featured.')
-    .refine((l) => new Set(l.map((e) => e.slug)).size === l.length, 'Two events have the same web address.'),
   ticker: z.array(TickerItem).max(20),
   products: z.array(Product).max(200).refine((l) => new Set(l.map((p) => p.slug)).size === l.length, 'Two products have the same web address.'),
   gallery: z.array(GalleryItem).max(500),
@@ -208,7 +208,6 @@ export type SiteContent = {
   updatedAt: string
   settings: SiteSettingsT
   theme: ThemeT
-  events: ClubEventT[]
   ticker: TickerItemT[]
   products: ProductT[]
   media: MediaAssetT[]

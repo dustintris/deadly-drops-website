@@ -14,6 +14,7 @@ import { findUsage } from '@/lib/media-usage'
 import {
   discardSections,
   publishSections,
+  readDraft,
   readPublished,
   saveDraftSection,
   StaleRevisionError,
@@ -21,6 +22,7 @@ import {
   updateDraft,
 } from '@/lib/store/content-store'
 import { removeImage } from '@/lib/store/media-store'
+import { tournamentImageUsage } from '@/lib/tournaments/repo'
 
 export type ActionResult = { ok: boolean; message: string; errors?: Record<string, string>; rev?: number; email?: string; hash?: string }
 
@@ -160,6 +162,10 @@ export async function deleteMedia(id: string): Promise<ActionResult> {
   if (!s) return NO_EDIT
   let file = ''
   try {
+    // tournament posters live in their own table: check those first
+    const listed = (await readDraft()).media.find((m) => m.id === id)
+    const posters = listed ? await tournamentImageUsage(`/media/${listed.file}`) : []
+    if (posters.length) return { ok: false, message: `Still used by ${posters.join(', ')}. Replace it there first.` }
     // check and remove in one locked step, so a save in another tab cannot start using the image in between
     const d = await updateDraft((doc) => {
       const asset = doc.media.find((m) => m.id === id)
@@ -170,7 +176,8 @@ export async function deleteMedia(id: string): Promise<ActionResult> {
       return { ...doc, media: doc.media.filter((m) => m.id !== id) }
     })
     // the live site may still show it until the next publish, so only remove a file no live page uses
-    if (!findUsage(`/media/${file}`, await readPublished()).length) await removeImage(file)
+    // (and not if a tournament started using it while this ran: the library entry goes, the file stays)
+    if (!findUsage(`/media/${file}`, await readPublished()).length && !(await tournamentImageUsage(`/media/${file}`)).length) await removeImage(file)
     await audit(s.email, 'media_delete', file)
     return { ok: true, message: 'Image deleted.', rev: d.rev }
   } catch (e) {

@@ -4,7 +4,7 @@
  */
 import type { SiteContent } from '@/lib/content-schema'
 import { defaultTheme } from '@/theme/tokens'
-import { aboutPoints, club, events, faqs, tickerItems } from './club'
+import { aboutPoints, club, faqs, tickerItems } from './club'
 import { communityPosts } from './community'
 import { clubGallery, shopProducts } from './real'
 import { MEMBER_DISCOUNT } from './sample'
@@ -24,13 +24,6 @@ export function buildSeed(): SiteContent {
       shop: { memberDiscount: MEMBER_DISCOUNT, pickupNote: '' },
     },
     theme: { ...defaultTheme },
-    events: events.map((e, i) => ({
-      ...e,
-      id: id('event', i),
-      featured: i === 0,
-      visible: true,
-      entryFeeWithMeal: e.entryFeeWithMeal,
-    })),
     ticker: tickerItems.map((t, i) => ({ id: id('tick', i), text: t, visible: true })),
     products: shopProducts.map((p, i) => ({ ...p, id: id('product', i), images: p.images ?? [], stock: null, visible: true })),
     media: [],

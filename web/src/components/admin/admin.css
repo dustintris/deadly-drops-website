@@ -11,7 +11,7 @@
 .adm-shell { display: grid; grid-template-columns: 236px 1fr; min-height: 100svh; }
 .adm-side { background: var(--ink-dark); color: var(--ink); padding: 20px 14px; position: sticky; top: 0; height: 100svh; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
 .adm-side .brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 18px; font-family: var(--font-display); text-transform: uppercase; font-size: 18px; }
-.adm-side .brand img { width: 34px; height: 34px; background: var(--logo-plate); border-radius: 6px; padding: 2px; object-fit: contain; }
+.adm-side .brand img { width: 34px; height: 34px; background: var(--logo-plate); border-radius: 50%; padding: 2px; object-fit: contain; }
 .adm-side a, .adm-side button.link { display: flex; align-items: center; min-height: 40px; padding: 0 12px; border-radius: 8px; color: rgb(var(--ink-rgb) / .8); text-decoration: none; font-weight: 500; text-align: left; width: 100%; }
 .adm-side a:hover, .adm-side button.link:hover { background: rgb(var(--ink-rgb) / .08); color: var(--ink); }
 .adm-side a[aria-current='page'] { background: var(--accent); color: var(--on-accent); }

@@ -5,6 +5,7 @@ import { eventTags, LadderBoard } from '@/components/EventBits'
 import { PageHero } from '@/components/PageHero'
 import { RegistrationForm } from '@/components/RegistrationForm'
 import { SeasonList } from '@/components/SeasonList'
+import page from '@/components/tournament.module.css'
 import t from '@/components/tournaments.module.css'
 import { getBracket, getChampions, getDivisionGuide, getEvents, getLadder, getNextEvent } from '@/lib/data'
 import { eventCta, eventEyebrow, eventState } from '@/lib/events'
@@ -41,7 +42,7 @@ export default async function TournamentsPage() {
       {event && cta ? (
         <PageHero
           eyebrow={eventEyebrow(state)}
-          title={event.name}
+          title={<Link href={`/tournaments/${event.slug}/`} className={page.titleLink}>{event.name}</Link>}
           lede={event.summary}
           photo={event.image?.src ?? '/images/club/dominate-podium-1.jpg'}
           photoPosition={event.image?.position ?? '50% 40%'}
@@ -52,11 +53,14 @@ export default async function TournamentsPage() {
             {eventTags(event).map((x) => <li key={x} className="tag">{x}</li>)}
           </ul>
           {event.location && <p className="small muted">{event.location}</p>}
-          {cta.external ? (
-            <a href={cta.href} className="btn btn-accent" target="_blank" rel="noopener noreferrer">{cta.label} <span className="sr">(opens in a new tab)</span></a>
-          ) : (
-            <Link href={state === 'open' ? '#register' : cta.href} className="btn btn-accent">{cta.label}</Link>
-          )}
+          <div className={page.ctaRow}>
+            {cta.external ? (
+              <a href={cta.href} className="btn btn-accent" target="_blank" rel="noopener noreferrer">{cta.label} <span className="sr">(opens in a new tab)</span></a>
+            ) : (
+              <Link href={state === 'open' ? '#register' : cta.href} className="btn btn-accent">{cta.label}</Link>
+            )}
+            <Link href={`/tournaments/${event.slug}/`} className="link-arrow">Schedule &amp; rules →<span className="sr"> for {event.name}</span></Link>
+          </div>
         </PageHero>
       ) : (
         <PageHero eyebrow="Tournaments" title="Next tournament coming soon" lede="New tournaments are announced by email first. Join the list at the bottom of the page." photo="/images/club/dominate-podium-1.jpg" />

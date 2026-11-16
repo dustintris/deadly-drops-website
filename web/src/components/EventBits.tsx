@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import type { ClubEvent, LadderEntry } from '@/lib/types'
 import { eventCta, eventEyebrow, eventState } from '@/lib/events'
-import { money } from '@/lib/utils'
+import { asset, money } from '@/lib/utils'
 import { Monogram } from './Monogram'
 import styles from './events.module.css'
+import page from './tournament.module.css'
 
 export function eventTags(e: ClubEvent) {
   return [
@@ -18,8 +19,9 @@ export function NextEventBlock({ event }: { event: ClubEvent }) {
   const cta = eventCta(event, state)
   return (
     <div className={styles.next}>
+      {event.logo && <img className={page.logoBadgeLg} src={asset(event.logo.src)} alt="" width={72} height={72} />}
       <p className="eyebrow">{eventEyebrow(state)}</p>
-      <h2 className="display d-l">{event.name}</h2>
+      <h2 className="display d-l"><Link href={`/tournaments/${event.slug}/`} className={page.titleLink}>{event.name}</Link></h2>
       <p className={styles.when}>{event.dateLabel}</p>
       <p className="lede">{event.summary}</p>
       <ul className={styles.tags}>
@@ -34,11 +36,14 @@ export function NextEventBlock({ event }: { event: ClubEvent }) {
           </div>
         ))}
       </div>}
-      {cta.external ? (
-        <a href={cta.href} className="btn btn-accent" target="_blank" rel="noopener noreferrer">{cta.label} <span className="sr">(opens in a new tab)</span></a>
-      ) : (
-        <Link href={cta.href} className="btn btn-accent">{cta.label}</Link>
-      )}
+      <div className={page.ctaRow}>
+        {cta.external ? (
+          <a href={cta.href} className="btn btn-accent" target="_blank" rel="noopener noreferrer">{cta.label} <span className="sr">(opens in a new tab)</span></a>
+        ) : (
+          <Link href={cta.href} className="btn btn-accent">{cta.label}</Link>
+        )}
+        <Link href={`/tournaments/${event.slug}/`} className="link-arrow">Schedule &amp; rules →<span className="sr"> for {event.name}</span></Link>
+      </div>
     </div>
   )
 }

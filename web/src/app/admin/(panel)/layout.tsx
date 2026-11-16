@@ -7,7 +7,7 @@ import { unpublishedSections } from '@/lib/store/content-store'
 export const dynamic = 'force-dynamic'
 
 const LABELS: Record<string, string> = {
-  settings: 'club info', theme: 'colours', events: 'tournaments', ticker: 'announcements', products: 'shop',
+  settings: 'club info', theme: 'colours', ticker: 'announcements', products: 'shop',
   media: 'photos', gallery: 'gallery', posts: 'community', faqs: 'FAQ', pages: 'page text',
 }
 

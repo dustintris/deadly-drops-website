@@ -55,6 +55,7 @@ export const events: ClubEvent[] = [
     prizes: [],
     registrationOpen: false,
     registrationUrl: 'https://maincourt.com/events-list/victory-dink-for-pink-breast-cancer-halloween/',
+    logo: { src: '/images/club/victory-dink-for-pink-logo.png', alt: 'VICTORY: Dink for Pink tournament logo' },
   },
   {
     slug: 'dominate-2026',
