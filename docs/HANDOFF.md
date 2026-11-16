@@ -35,5 +35,7 @@ https://ddptournament.com. Read `web/README.md` first (setup, tests, deploy, cod
   `ADMIN_PASSWORD_HASH` (single-quoted) into `/root/deadly-drops/.env` on the VPS, then redeploy/restart.
 - P3 review nits for P4: `ScoreBoard` closePad should only close the pad for the match it opened; a live refresh
   that removes the open match unmounts `ScorePad` without keeping the typed score.
-- Deploying needs SSH access to the VPS (`bash deploy/vps/deploy.sh`, ssh alias `smj`), which only the owner's
-  laptop has. A cloud/phone session can build, test, commit and push; deploy from the laptop afterwards.
+- **Deploying is automatic**: every push to `main` or `ccr-fffcb32a-715c27` that touches `web/` or `deploy/vps/`
+  runs GitHub Actions `deploy-vps` (typecheck + tests, then deploy). Watch it in GitHub → Actions; re-run or
+  "Run workflow" by hand there. The deploy key can only run `/root/deadly-drops/ci-deploy.sh` on the VPS. A
+  cloud/phone session just commits and pushes to that branch. Laptop fallback: `bash deploy/vps/deploy.sh`.
