@@ -258,9 +258,23 @@ export function accentSegments(title: string): { text: string; accent: boolean }
     part.startsWith('*') && part.endsWith('*') ? { text: part.slice(1, -1), accent: true } : { text: part, accent: false })
 }
 
+/**
+ * JSON with object keys sorted at every level. PostgreSQL jsonb does not keep key order,
+ * so comparisons and fingerprints must not depend on it. Arrays keep their order.
+ */
+export function canonicalJson(value: unknown): string {
+  return JSON.stringify(value ?? null, (_key, v: unknown) =>
+    v && typeof v === 'object' && !Array.isArray(v)
+      ? Object.fromEntries(Object.entries(v as Record<string, unknown>).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)))
+      : v)
+}
+
+/** Same content regardless of object key order. */
+export const sameContent = (a: unknown, b: unknown) => canonicalJson(a) === canonicalJson(b)
+
 /** Fingerprint of a section as stored, so two editors never silently overwrite each other (FNV-1a). */
 export function sectionHash(value: unknown): string {
-  const s = JSON.stringify(value ?? null)
+  const s = canonicalJson(value)
   let h = 0x811c9dc5
   for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0 }
   return h.toString(16)

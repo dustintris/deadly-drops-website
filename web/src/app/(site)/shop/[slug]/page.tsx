@@ -2,13 +2,9 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ProductDetail } from '@/components/ProductDetail'
-import { getMemberDiscount, getProduct, getProducts, getShopSettings } from '@/lib/data'
+import { getMemberDiscount, getProduct, getShopSettings } from '@/lib/data'
 import { pageMeta } from '@/lib/seo'
 import { money } from '@/lib/utils'
-
-export async function generateStaticParams() {
-  return (await getProducts()).map((p) => ({ slug: p.slug }))
-}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const slug = (await params).slug

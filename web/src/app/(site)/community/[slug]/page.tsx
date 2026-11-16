@@ -11,13 +11,7 @@ import { pageMeta } from '@/lib/seo'
 import type { GalleryItem } from '@/lib/types'
 import { asset } from '@/lib/utils'
 
-export const dynamicParams = true
-
 type Params = { params: Promise<{ slug: string }> }
-
-export async function generateStaticParams() {
-  return (await getCommunityPosts()).map((p) => ({ slug: p.slug }))
-}
 
 /** Search descriptions read best at 120–160 characters: trim long summaries, extend short ones. */
 function describe(post: CommunityPostT) {

@@ -6,9 +6,15 @@ Next.js 16 / React 19 / TypeScript. Public site in `src/app/(site)`, owner admin
 cd web
 npm install
 npm run admin:setup   # once: creates .env.local with the owner email, password hash and session secret
+                      # then add DATABASE_URL from .env.example to .env.local
+npm run db:dev        # local PostgreSQL 18 (no Docker needed); leave it running in its own terminal
 npm run dev           # http://localhost:3000, admin at http://localhost:3000/admin/
+npm test              # Vitest; database tests start their own throwaway PostgreSQL
 npm run build && npm start
 ```
+
+Schema changes: edit `src/db/schema.ts`, run `npm run db:generate`, commit the new file in `drizzle/`.
+Migrations apply automatically when the server starts.
 
 ## Public pages
 
@@ -27,7 +33,8 @@ npm run build && npm start
 ## Owner admin (MIS)
 
 Sign in at `/admin/`. Every change is saved as a **draft**; **Preview site** shows the draft, **Publish** puts it live
-(no rebuild), **Discard** goes back to what is live. The last 20 published versions are kept in `data/content/history/`.
+(no rebuild), **Discard** goes back to what is live. The last 20 published versions are kept in the database
+(`site_history`).
 
 | Screen | What the owner changes |
 |---|---|
@@ -45,7 +52,7 @@ Sign in at `/admin/`. Every change is saved as a **draft**; **Preview site** sho
 Security: scrypt password hash, signed HttpOnly SameSite=Strict session cookie (8 h), login throttling, every
 server action and route checks the session, same-origin check on uploads, server-side validation (zod) of every save,
 uploads checked by file content with random names and served with `nosniff`, admin pages not indexed or framed,
-audit log in `data/audit.log`.
+audit log in the database (`audit_log`).
 
 ## Content and where it comes from
 
@@ -61,19 +68,21 @@ audit log in `data/audit.log`.
 
 ## Hosting
 
-The admin saves to disk, so the site runs as a Node server (`npm start`), not a static export:
+Production runs at https://ddptournament.com on the VPS as two containers (Next.js standalone server + PostgreSQL 18)
+behind the shared Caddy proxy. Deploy from the repo root with `bash deploy/vps/deploy.sh` (runs the tests, uploads,
+builds on the server, waits for the health check). Server secrets live in `/root/deadly-drops/.env` (see
+`deploy/vps/.env.example`); `deploy/vps/backup.sh` runs nightly at 03:15 (database dump + uploaded images, 14 kept,
+restore steps in the script). Pages render per request from the database, so the build needs no database.
 
-- **Node host with a persistent disk** (Fly.io, Render, a VPS, Docker): set `CONTENT_DIR` to the disk and back it up.
-- **Vercel / serverless**: the file system is not persistent. Add a database + blob storage adapter with the same
-  functions as `src/lib/store/file-store.ts` and `media-store.ts` before going live there.
-
-Environment (`.env.local`, never committed; see `.env.example`): `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH`, `SESSION_SECRET`,
-optional `ADMIN_SESSION_VERSION` (raise it to sign everyone out), `CONTENT_DIR`, `NEXT_PUBLIC_SITE_URL`.
+Environment (`.env.local`, never committed; see `.env.example`): `DATABASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH`,
+`SESSION_SECRET`, optional `ADMIN_SESSION_VERSION` (raise it to sign everyone out), `CONTENT_DIR` (uploaded images),
+`NEXT_PUBLIC_SITE_URL`.
 
 ## Code map
 
 - `src/lib/content-schema.ts`: content model and validation rules
-- `src/lib/store/`: draft/published JSON store and image files
+- `src/db/`: PostgreSQL schema, connection pool, migrations runner (`drizzle/` holds the SQL)
+- `src/lib/store/`: draft/published content store (PostgreSQL) and image files
 - `src/lib/data.ts`: the only way pages read content
 - `src/components/admin/kit.tsx`: admin form kit (fields, list editor, image picker, uploader)
 - `src/theme/tokens.ts`: default colours; the saved theme from the admin overrides them

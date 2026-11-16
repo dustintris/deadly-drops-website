@@ -3,7 +3,7 @@ import { draftMode } from 'next/headers'
 import { cache } from 'react'
 import type { SiteContent } from './content-schema'
 import { getSession } from './auth/session'
-import { readDraft, readPublished } from './store/file-store'
+import { readDraft, readPublished } from './store/content-store'
 
 /** Draft preview needs both Next's draft-mode cookie and a live admin session (so it ends with the session). */
 export const isPreview = cache(async () => {

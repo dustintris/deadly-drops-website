@@ -1,0 +1,20 @@
+# Keep the build context small and free of local state and secrets.
+# Tests stay in: tsconfig covers them, so `next build` type-checks them.
+node_modules
+.next
+out
+data
+.pgdata
+.env*
+coverage
+test-results
+playwright-report
+*.tsbuildinfo
+next-env.d.ts
+*.log
+.DS_Store
+.git
+.vscode
+.idea
+Dockerfile
+.dockerignore

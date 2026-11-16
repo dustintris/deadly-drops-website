@@ -11,6 +11,8 @@ import type { NextConfig } from 'next'
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''
 
 const nextConfig: NextConfig = {
+  // self-contained server bundle for the Docker image (deploy/vps)
+  output: 'standalone',
   basePath: basePath || undefined,
   trailingSlash: true,
   images: { unoptimized: true },

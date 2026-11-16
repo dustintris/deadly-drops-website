@@ -7,9 +7,6 @@ import shell from '@/components/shell.module.css'
 import { isPreview } from '@/lib/content'
 import { getClub, getNotice } from '@/lib/data'
 
-// re-render public pages at least hourly, so tournament dates (past / upcoming) stay current without a publish
-export const revalidate = 3600
-
 /** Public site shell: notice bar, header, footer and the phone tab bar. */
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const [club, notice, preview] = await Promise.all([getClub(), getNotice(), isPreview()])

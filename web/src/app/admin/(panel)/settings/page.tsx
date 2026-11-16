@@ -1,4 +1,4 @@
-import { readDraft } from '@/lib/store/file-store'
+import { readDraft } from '@/lib/store/content-store'
 import { SettingsEditor } from './SettingsEditor'
 import { requireAdmin } from '@/lib/auth/session'
 

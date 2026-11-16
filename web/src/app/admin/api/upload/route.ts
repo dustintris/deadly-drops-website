@@ -3,7 +3,7 @@ import { audit } from '@/lib/audit'
 import { getSession } from '@/lib/auth/session'
 import { MediaAsset } from '@/lib/content-schema'
 import { isSameOrigin } from '@/lib/security'
-import { updateDraft } from '@/lib/store/file-store'
+import { updateDraft } from '@/lib/store/content-store'
 import { MAX_BYTES, MAX_SIDE, putImage, sniffImage, stripMetadata } from '@/lib/store/media-store'
 
 export const runtime = 'nodejs'

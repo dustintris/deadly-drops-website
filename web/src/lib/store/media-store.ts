@@ -2,7 +2,7 @@ import 'server-only'
 import { randomBytes } from 'node:crypto'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
-import { DATA_DIR } from './file-store'
+import { DATA_DIR } from './paths'
 
 /** Uploaded images live outside /public, under data/uploads, and are served by /media/[file]. */
 export const UPLOADS = path.join(DATA_DIR, 'uploads')
