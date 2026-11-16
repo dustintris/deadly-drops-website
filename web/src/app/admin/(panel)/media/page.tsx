@@ -1,13 +1,14 @@
 import { findUsage } from '@/lib/media-usage'
-import { MediaLibraryProvider } from '@/components/admin/kit'
+import { EditGate, MediaLibraryProvider } from '@/components/admin/kit'
 import { getAdminData } from '@/lib/admin-data'
 import { MediaManager, type BundledPhoto, type UploadedPhoto } from './MediaManager'
-import { requireAdmin } from '@/lib/auth/session'
+import { can } from '@/lib/auth/permissions'
+import { requirePermission } from '@/lib/auth/session'
 
 export const metadata = { title: 'Photos' }
 
 export default async function MediaAdmin() {
-  await requireAdmin() // each page checks: a layout check alone can be skipped by partial rendering
+  const s = await requirePermission('content', 'view') // each page checks: a layout check alone can be skipped by partial rendering
   const { draft, library } = await getAdminData()
   const uploads: UploadedPhoto[] = await Promise.all(
     [...draft.media]
@@ -36,7 +37,9 @@ export default async function MediaAdmin() {
           <p className="adm-muted">Upload photos here, then pick them on any page, product or gallery item. Each photo needs a short description for people using screen readers.</p>
         </div>
       </div>
-      <MediaManager uploads={uploads} bundled={bundled} />
+      <EditGate canEdit={can(s, 'content', 'edit')}>
+        <MediaManager uploads={uploads} bundled={bundled} />
+      </EditGate>
     </MediaLibraryProvider>
   )
 }

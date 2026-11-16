@@ -30,9 +30,9 @@ const hash = await new Promise((res, rej) =>
 const values = {
   ADMIN_EMAIL: email.trim(),
   ADMIN_PASSWORD_HASH: `scrypt$${salt.toString('base64')}$${hash.toString('base64')}`,
-  SESSION_SECRET: randomBytes(48).toString('base64url'),
 }
 const file = new URL('../.env.local', import.meta.url)
+// SESSION_SECRET is dropped too: sign-in sessions now live in the database and need no secret
 const kept = existsSync(file)
   ? readFileSync(file, 'utf8').split('\n').filter((l) => l && !/^(ADMIN_EMAIL|ADMIN_PASSWORD_HASH|SESSION_SECRET)=/.test(l))
   : []

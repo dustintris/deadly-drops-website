@@ -1,39 +1,53 @@
 import 'server-only'
-import { createHmac, timingSafeEqual } from 'node:crypto'
-import { promises as fs } from 'node:fs'
-import path from 'node:path'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { cache } from 'react'
+import { can, type Area, type Level } from './permissions'
+import { createSessionRow, deleteSessionByToken, findSessionUser, type StaffUser } from './sessions'
+import { countUsers, syncEnvOwner } from './users'
 
 /**
- * Signed admin session cookie: base64url(JSON payload).HMAC-SHA256.
- * httpOnly, SameSite=Strict, Secure in production, 8 hours.
- * Single owner account from env (ADMIN_EMAIL / ADMIN_PASSWORD_HASH); raise
- * ADMIN_SESSION_VERSION to sign every session out.
+ * Admin sign-in: an HttpOnly, SameSite=Strict cookie (Secure in production, 8 hours) holding a
+ * random token that matches a row in `sessions`. Signing out deletes that row; disabling a person
+ * deletes all of theirs. Permissions are read from the database on every request, so a change to
+ * someone's access applies at once.
  */
 // __Host- prefix (production): Secure, Path=/, no Domain, so no subdomain can set or overwrite it
 export const COOKIE = process.env.NODE_ENV === 'production' ? '__Host-dd_admin' : 'dd_admin'
 const MAX_AGE = 8 * 60 * 60
 
-/** iat in milliseconds, exp in seconds */
-type Session = { email: string; exp: number; v: string; iat: number }
+export type Session = StaffUser & { tokenHash: string }
 
-function secret(): Buffer {
-  const s = process.env.SESSION_SECRET || ''
-  if (Buffer.byteLength(s) < 32) throw new Error('SESSION_SECRET must be at least 32 characters (run npm run admin:setup).')
-  return Buffer.from(s)
+let ownerSync: Promise<void> | null = null
+/**
+ * Bring the server's owner (ADMIN_EMAIL / ADMIN_PASSWORD_HASH) into the staff table, once per
+ * server process (the environment only changes with a restart). A failure is retried next time.
+ */
+export function ensureEnvOwner(): Promise<void> {
+  const email = process.env.ADMIN_EMAIL
+  const passwordHash = process.env.ADMIN_PASSWORD_HASH
+  if (!email || !passwordHash) return Promise.resolve()
+  ownerSync ??= syncEnvOwner({ email, passwordHash }).catch((e) => {
+    ownerSync = null
+    throw e
+  })
+  return ownerSync
 }
-const sign = (data: string) => createHmac('sha256', secret()).update(data).digest('base64url')
-const version = () => process.env.ADMIN_SESSION_VERSION || '1'
 
-export function adminConfigured(): boolean {
-  return !!process.env.ADMIN_EMAIL && !!process.env.ADMIN_PASSWORD_HASH && Buffer.byteLength(process.env.SESSION_SECRET || '') >= 32
+/** Whether anyone can sign in at all (an owner on the server, or staff logins). */
+export async function loginAvailable(): Promise<boolean> {
+  await ensureEnvOwner()
+  return (await countUsers()) > 0
 }
 
-export async function createSession(email: string) {
-  const payload: Session = { email, iat: Date.now(), exp: Math.floor(Date.now() / 1000) + MAX_AGE, v: version() }
-  const data = Buffer.from(JSON.stringify(payload)).toString('base64url')
-  ;(await cookies()).set(COOKIE, `${data}.${sign(data)}`, {
+export async function createSession(userId: number): Promise<void> {
+  const jar = await cookies()
+  // a fresh token on every sign-in; an older session this browser still held is ended, not left behind
+  const previous = jar.get(COOKIE)?.value
+  if (previous) await deleteSessionByToken(previous)
+  const userAgent = (await headers()).get('user-agent') ?? ''
+  const token = await createSessionRow(userId, userAgent, MAX_AGE * 1000)
+  jar.set(COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
@@ -42,49 +56,37 @@ export async function createSession(email: string) {
   })
 }
 
-export async function destroySession() {
-  ;(await cookies()).delete(COOKIE)
+/** Sign this device out. */
+export async function destroySession(): Promise<void> {
+  const jar = await cookies()
+  const token = jar.get(COOKIE)?.value
+  if (token) await deleteSessionByToken(token)
+  jar.delete(COOKIE)
 }
 
-export async function getSession(): Promise<Session | null> {
-  if (!adminConfigured()) return null
-  const raw = (await cookies()).get(COOKIE)?.value
-  if (!raw) return null
-  const [data, mac] = raw.split('.')
-  if (!data || !mac) return null
-  const expected = Buffer.from(sign(data))
-  const given = Buffer.from(mac)
-  if (expected.length !== given.length || !timingSafeEqual(expected, given)) return null
-  try {
-    const s = JSON.parse(Buffer.from(data, 'base64url').toString()) as Session
-    if (s.exp < Date.now() / 1000 || s.v !== version() || s.email !== process.env.ADMIN_EMAIL) return null
-    if (typeof s.iat !== 'number' || s.iat < (await revokedBefore())) return null
-    return s
-  } catch {
-    return null
-  }
+/** This device's session token (to keep it signed in after a password change). */
+export async function currentSessionToken(): Promise<string | undefined> {
+  return (await cookies()).get(COOKIE)?.value
 }
 
-/* "Sign out" ends every session issued before now, on every device (server-side revocation). */
-const REVOKE_FILE = () => path.join(path.resolve(/*turbopackIgnore: true*/ process.env.CONTENT_DIR || path.join(process.cwd(), 'data')), 'auth.json')
-
-async function revokedBefore(): Promise<number> {
-  try {
-    return Number(JSON.parse(await fs.readFile(REVOKE_FILE(), 'utf8')).revokedBefore) || 0
-  } catch {
-    return 0
-  }
-}
-
-export async function revokeAllSessions() {
-  const file = REVOKE_FILE()
-  await fs.mkdir(path.dirname(file), { recursive: true, mode: 0o700 })
-  await fs.writeFile(file, JSON.stringify({ revokedBefore: Date.now() }), { mode: 0o600 })
-}
+/** The signed-in staff member for this request, or null. Looked up once per request. */
+export const getSession = cache(async (): Promise<Session | null> => {
+  const token = (await cookies()).get(COOKIE)?.value
+  if (!token) return null
+  const found = await findSessionUser(token)
+  return found ? { ...found.user, tokenHash: found.tokenHash } : null
+})
 
 /** Call at the top of every admin page and Server Action. Route Handlers use getSession() and return 401. */
 export async function requireAdmin(): Promise<Session> {
   const s = await getSession()
   if (!s) redirect('/admin/login/')
+  return s
+}
+
+/** Pages: signed in AND allowed; otherwise back to the dashboard, which explains. */
+export async function requirePermission(area: Area, level: Exclude<Level, 'none'> = 'view'): Promise<Session> {
+  const s = await requireAdmin()
+  if (!can(s, area, level)) redirect(`/admin/?denied=${area}`)
   return s
 }

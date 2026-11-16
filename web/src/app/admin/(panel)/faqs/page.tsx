@@ -1,11 +1,13 @@
+import { EditGate } from '@/components/admin/kit'
 import { readDraft } from '@/lib/store/content-store'
 import { FaqEditor } from './FaqEditor'
-import { requireAdmin } from '@/lib/auth/session'
+import { can } from '@/lib/auth/permissions'
+import { requirePermission } from '@/lib/auth/session'
 
 export const metadata = { title: 'FAQ' }
 
 export default async function FaqAdmin() {
-  await requireAdmin() // each page checks: a layout check alone can be skipped by partial rendering
+  const s = await requirePermission('content', 'view') // each page checks: a layout check alone can be skipped by partial rendering
   const d = await readDraft()
   return (
     <>
@@ -15,7 +17,9 @@ export default async function FaqAdmin() {
           <p className="adm-muted">Questions shown on the Contact page under &ldquo;Before you write&rdquo;.</p>
         </div>
       </div>
-      <FaqEditor initial={d.faqs} />
+      <EditGate canEdit={can(s, 'content', 'edit')}>
+        <FaqEditor initial={d.faqs} />
+      </EditGate>
     </>
   )
 }

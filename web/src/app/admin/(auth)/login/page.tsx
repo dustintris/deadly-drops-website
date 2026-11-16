@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { adminConfigured, getSession } from '@/lib/auth/session'
+import { getSession, loginAvailable } from '@/lib/auth/session'
 import { LoginForm } from './LoginForm'
 
 export const dynamic = 'force-dynamic'
@@ -17,7 +17,7 @@ export default async function LoginPage() {
             <p className="adm-muted">Deadly Drops Pickleball</p>
           </div>
         </div>
-        {adminConfigured() ? (
+        {(await loginAvailable()) ? (
           <LoginForm />
         ) : (
           <p role="alert">

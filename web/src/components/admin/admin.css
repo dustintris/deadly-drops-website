@@ -107,3 +107,57 @@ textarea.adm-input { min-height: 110px; resize: vertical; line-height: 1.5; }
 .adm-login form { width: min(420px, 100%); }
 .adm-toast { position: fixed; right: 20px; bottom: 20px; z-index: 100; background: var(--ink-dark); color: var(--ink); padding: 12px 16px; border-radius: 10px; font-weight: 600; box-shadow: 0 10px 30px rgb(0 0 0 / .25); }
 .adm-swatch { width: 42px; height: 42px; border-radius: 8px; border: 1px solid rgb(var(--ink-dark-rgb) / .2); padding: 0; cursor: pointer; }
+
+/* staff logins and My account */
+.adm h4 { font-size: 14px; font-weight: 700; }
+.adm-staff-list { display: grid; gap: 12px; }
+.adm-staff > .top { display: grid; gap: 10px; padding: 14px 16px; }
+.adm-staff-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.adm-staff-head .who { display: grid; gap: 2px; min-width: 0; }
+.adm-staff-head h3 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 16px; overflow-wrap: anywhere; }
+.adm-staff-head .who p { overflow-wrap: anywhere; }
+.adm-facts { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0; font-size: 14px; }
+.adm-facts > div { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.adm-facts dt { color: rgb(var(--ink-dark-rgb) / .68); }
+.adm-facts dd { margin: 0; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+.adm-badge.bad { background: rgb(179 38 30 / .12); color: var(--danger-on-light); }
+.adm-locknote { padding: 8px 12px; border-radius: 8px; background: rgb(var(--ink-dark-rgb) / .05); font-size: 14px; }
+.adm-locknote code { font-family: var(--font-mono), ui-monospace, monospace; font-size: 13px; }
+.adm-staff > .body { gap: 0; padding: 0 16px; border-top: 1px solid rgb(var(--ink-dark-rgb) / .1); }
+.adm-staff > .body[hidden] { display: none; }
+.adm-staff-sec { display: grid; gap: 12px; padding: 16px 0; }
+.adm-staff-sec + .adm-staff-sec { border-top: 1px dashed rgb(var(--ink-dark-rgb) / .18); }
+.adm-staff-form { display: grid; gap: 18px; }
+.adm-actions { display: flex; align-items: center; gap: 10px 12px; flex-wrap: wrap; }
+.adm-note { font-size: 14px; font-weight: 600; }
+.adm-note.good { color: #2e7d32; }
+.adm-note.bad { color: var(--danger-on-light); }
+.adm-btn[aria-disabled='true'] { opacity: .5; cursor: not-allowed; }
+.adm-mono { font-family: var(--font-mono), ui-monospace, monospace; letter-spacing: .03em; }
+.adm-pw { display: flex; gap: 8px; flex-wrap: wrap; }
+.adm-pw .adm-input { flex: 1 1 240px; width: auto; min-width: 0; }
+.adm-handover { display: grid; gap: 6px; padding: 14px 16px; border: 2px solid var(--accent-deep); border-radius: 10px; background: rgb(var(--accent-rgb) / .1); }
+.adm-secret { font-size: 20px; font-weight: 700; overflow-wrap: anywhere; user-select: all; }
+.adm-access { display: grid; gap: 12px; }
+.adm-roles, .adm-perm { min-width: 0; margin: 0; padding: 0; border: 0; }
+.adm-roles > legend, .adm-perms-title { padding: 0; font-size: 14px; font-weight: 600; }
+.adm-roles .err { margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--danger-on-light); }
+.adm-roles-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; margin-top: 8px; }
+.adm-role { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid rgb(var(--ink-dark-rgb) / .2); border-radius: 10px; background: var(--paper-card); cursor: pointer; }
+.adm-role > span { display: grid; gap: 2px; }
+.adm-role .adm-muted { font-size: 13px; }
+.adm-roles[data-invalid] .adm-role { border-color: var(--danger-on-light); }
+.adm-role:has(input:checked), .adm-perm-opt:has(input:checked) { border-color: var(--ink-dark); background: rgb(var(--accent-rgb) / .14); }
+.adm-role input, .adm-perm-opt input { flex: none; width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--ink-dark); }
+.adm-perm-opt input { margin: 0; }
+.adm-perms { display: grid; padding: 12px 14px 4px; border: 1px solid rgb(var(--ink-dark-rgb) / .14); border-radius: 10px; }
+.adm-perms[hidden] { display: none; }
+.adm-perms > .adm-muted { padding: 8px 0 10px; }
+.adm-perm { padding: 10px 0; border-top: 1px solid rgb(var(--ink-dark-rgb) / .08); }
+.adm-perm > legend { padding: 0; font-size: 14px; font-weight: 700; }
+.adm-perm .row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 16px; }
+.adm-perm .help { flex: 1 1 240px; font-size: 13px; color: rgb(var(--ink-dark-rgb) / .68); }
+.adm-perm .opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.adm-perm-opt { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; border: 1px solid rgb(var(--ink-dark-rgb) / .2); border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.adm-access-table tbody th { font-size: 14px; font-weight: 600; letter-spacing: 0; text-transform: none; color: inherit; }
+.adm-access-table tbody th .adm-muted { display: block; font-size: 13px; font-weight: 400; }

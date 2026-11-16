@@ -4,7 +4,9 @@ import { getSql } from '@/db/client'
 import { sectionHash } from '@/lib/content-schema'
 import {
   discardDraft,
+  discardSections,
   publish,
+  publishSections,
   readDraft,
   readPublished,
   saveDraftSection,
@@ -113,6 +115,33 @@ describe('content store (PostgreSQL)', () => {
     for (let i = 0; i < 23; i++) await publish()
     const [{ count }] = await sql()`select count(*)::int as count from site_history`
     expect(count).toBe(20)
+  })
+
+  it('publishes only the chosen sections; other drafts stay unpublished', async () => {
+    const d1 = await readDraft()
+    await saveDraftSection('faqs', [], sectionHash(d1.faqs))
+    const d2 = await readDraft()
+    await saveDraftSection('ticker', [], sectionHash(d2.ticker))
+
+    await publishSections(['faqs'])
+
+    const live = await readPublished()
+    expect(live.faqs).toEqual([])
+    expect(live.ticker).toEqual(buildSeed().ticker)
+    expect(await unpublishedSections()).toEqual(['ticker'])
+    expect((await readDraft()).ticker).toEqual([]) // the other person's draft is kept
+  })
+
+  it('discards only the chosen sections', async () => {
+    const d1 = await readDraft()
+    await saveDraftSection('faqs', [], sectionHash(d1.faqs))
+    const d2 = await readDraft()
+    await saveDraftSection('ticker', [], sectionHash(d2.ticker))
+
+    await discardSections(['faqs'])
+
+    expect((await readDraft()).faqs).toEqual((await readPublished()).faqs)
+    expect(await unpublishedSections()).toEqual(['ticker'])
   })
 
   it('discards draft changes back to the live copy', async () => {

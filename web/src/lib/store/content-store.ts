@@ -107,8 +107,16 @@ export function updateDraft(fn: (d: SiteContent) => SiteContent): Promise<SiteCo
   })
 }
 
-/** Put the draft live; the copy it replaces goes to history (last 20 kept). */
-export function publish(): Promise<SiteContent> {
+/** Every part of the content that can be published or discarded on its own (media = the photo library). */
+export const CONTENT_KEYS = ['settings', 'theme', 'events', 'ticker', 'products', 'media', 'gallery', 'posts', 'faqs', 'pages'] as const
+export type ContentKey = (typeof CONTENT_KEYS)[number]
+
+/**
+ * Put these sections of the draft live; the rest of the live site is untouched (someone without
+ * access to a section can't publish another person's draft of it). The previous live copy goes
+ * to history (last 20 kept).
+ */
+export function publishSections(keys: readonly ContentKey[]): Promise<SiteContent> {
   return locked(async (tx) => {
     const draft = await draftOf(tx)
     const current = await readDoc(tx, 'published')
@@ -120,27 +128,33 @@ export function publish(): Promise<SiteContent> {
           select ${siteHistory.id} from ${siteHistory} order by ${siteHistory.id} desc limit ${KEEP_HISTORY}
         )`)
     }
-    const live = { ...draft, updatedAt: new Date().toISOString() }
+    const live: SiteContent = { ...(current ?? buildSeed()), rev: draft.rev, updatedAt: new Date().toISOString() }
+    for (const k of keys) (live as Record<ContentKey, unknown>)[k] = draft[k]
     await writeDoc(tx, 'published', live)
-    await writeDoc(tx, 'draft', live)
     return live
   })
 }
 
-/** Throw away unpublished changes: the draft becomes the live copy again. */
-export function discardDraft(): Promise<SiteContent> {
+/** Put the whole draft live. */
+export const publish = () => publishSections(CONTENT_KEYS)
+
+/** Throw away unpublished changes to these sections: they go back to the live copy. */
+export function discardSections(keys: readonly ContentKey[]): Promise<SiteContent> {
   return locked(async (tx) => {
     const live = (await readDoc(tx, 'published')) ?? buildSeed()
     const draft = await draftOf(tx)
-    const next = { ...live, rev: draft.rev + 1 }
+    const next: SiteContent = { ...draft, rev: draft.rev + 1, updatedAt: new Date().toISOString() }
+    for (const k of keys) (next as Record<ContentKey, unknown>)[k] = live[k]
     await writeDoc(tx, 'draft', next)
     return next
   })
 }
 
+/** Throw away every unpublished change. */
+export const discardDraft = () => discardSections(CONTENT_KEYS)
+
 /** Which sections differ between draft and live. */
-export async function unpublishedSections(): Promise<string[]> {
+export async function unpublishedSections(): Promise<ContentKey[]> {
   const [d, p] = await Promise.all([readDraft(), readPublished()])
-  const keys = ['settings', 'theme', 'events', 'ticker', 'products', 'media', 'gallery', 'posts', 'faqs', 'pages'] as const
-  return keys.filter((k) => !sameContent(d[k], p[k]))
+  return CONTENT_KEYS.filter((k) => !sameContent(d[k], p[k]))
 }

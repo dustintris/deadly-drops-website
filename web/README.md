@@ -36,6 +36,15 @@ Sign in at `/admin/`. Every change is saved as a **draft**; **Preview site** sho
 (no rebuild), **Discard** goes back to what is live. The last 20 published versions are kept in the database
 (`site_history`).
 
+**Staff logins.** The owner (the server's `ADMIN_EMAIL` / `ADMIN_PASSWORD_HASH`) can do everything, can't be locked
+out, and creates a login for each helper under **Staff**, picking a role (Manager, Tournament director, Scorekeeper,
+Check-in desk, Content editor) or setting *no access / view only / can change* per area: tournaments, scoring,
+check-in, website content, shop, logo & colours, staff. People only see the screens they can view; a view-only
+screen is read-only; Publish and Discard only touch the sections the person can change. Changes to someone's access
+apply at once; disabling a login signs that person out everywhere. Everyone changes their own password under
+**My account** (the owner's password is changed on the server with `npm run admin:setup` + restart). Only the owner
+can give access to staff accounts, and nobody can hand out access they don't have themselves.
+
 | Screen | What the owner changes |
 |---|---|
 | Tournaments | name, date (countdown when set), location, fees, prizes, what's included, registration open + link, poster, featured |
@@ -49,8 +58,9 @@ Sign in at `/admin/`. Every change is saved as a **draft**; **Preview site** sho
 | FAQ | questions on the Contact page |
 | Colours | brand colours with presets; saving is blocked if any text would be hard to read (WCAG 4.5:1) |
 
-Security: scrypt password hash, signed HttpOnly SameSite=Strict session cookie (8 h), login throttling, every
-server action and route checks the session, same-origin check on uploads, server-side validation (zod) of every save,
+Security: scrypt password hashes, HttpOnly SameSite=Strict session cookie (8 h) holding a random token whose SHA-256
+is stored in `sessions` (sign out = delete the row), login throttling, every page, server action and route checks the
+session and the person's access for that area, same-origin check and an hourly limit on uploads, server-side validation (zod) of every save,
 uploads checked by file content with random names and served with `nosniff`, admin pages not indexed or framed,
 audit log in the database (`audit_log`).
 
@@ -74,9 +84,8 @@ builds on the server, waits for the health check). Server secrets live in `/root
 `deploy/vps/.env.example`); `deploy/vps/backup.sh` runs nightly at 03:15 (database dump + uploaded images, 14 kept,
 restore steps in the script). Pages render per request from the database, so the build needs no database.
 
-Environment (`.env.local`, never committed; see `.env.example`): `DATABASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH`,
-`SESSION_SECRET`, optional `ADMIN_SESSION_VERSION` (raise it to sign everyone out), `CONTENT_DIR` (uploaded images),
-`NEXT_PUBLIC_SITE_URL`.
+Environment (`.env.local`, never committed; see `.env.example`): `DATABASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH`
+(the owner), `CONTENT_DIR` (uploaded images), `NEXT_PUBLIC_SITE_URL`. Staff logins live in the database.
 
 ## Code map
 
