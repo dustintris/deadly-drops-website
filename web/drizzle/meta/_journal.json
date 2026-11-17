@@ -43,6 +43,13 @@
       "when": 1794912834644,
       "tag": "0005_twilight_theme",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794924236006,
+      "tag": "0006_victory_two_days",
+      "breakpoints": true
     }
   ]
 }

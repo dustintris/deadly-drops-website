@@ -45,9 +45,10 @@ export const events: ClubEvent[] = [
   {
     slug: 'victory-dink-for-pink-2026',
     name: 'VICTORY: Dink for Pink',
-    summary: 'Our second charity tournament of 2026: a one-day Breast Cancer and Halloween Bash at Better at Pickleball. Pink. Spooky. Friendly. Community-driven.',
+    summary: 'Our second charity tournament of 2026: a two-day Breast Cancer and Halloween Bash at Better at Pickleball. Pink. Spooky. Friendly. Community-driven.',
     date: '2026-10-17',
-    dateLabel: 'Sat, Oct 17, 2026',
+    endDate: '2026-10-18',
+    dateLabel: 'Oct 17–18, 2026',
     location: 'Better at Pickleball, 2800 Olympic Parkway, Chula Vista, CA',
     entryFee: 65,
     includes: ['Pickle meal of your choice', 'Tournament shirt', 'Best-costume prizes', 'Raffle: $5 a ticket, 5 for $20'],

@@ -19,6 +19,8 @@ export const charities: CharityT[] = [
       'At Us4Warriors, we believe those who serve our nation deserve a community that stands beside them. The Us for Warriors Foundation is an award-winning, volunteer-based 501(c)(3) nonprofit dedicated to helping active-duty military members, veterans, and their families overcome hardship and improve their quality of life. Through the commitment of veterans, volunteers, and community supporters, we help military families build stability, strengthen their independence, and pursue a brighter future.',
       'Our mission comes to life through practical assistance and caring connections. Across San Diego County, our Food4Warriors programs help address food insecurity through food distributions, fresh produce, emergency pantry assistance, and support for veterans experiencing homelessness. These efforts help ease immediate burdens while treating those we serve with dignity and respect. Every distribution is an opportunity to remind a military family that their community cares.',
       'You can be part of that commitment. Whether you give your time, make a donation, or become a community partner, your support helps Us4Warriors continue serving those who have given so much. Visit Us4Warriors.org to learn how you can help turn gratitude into action—and help warriors and their families move forward with hope.',
+      // signed as in the text the club sent
+      '— Danny Shaffsta',
     ].join('\n\n'),
     // us4warriors.org redirects here
     website: 'https://www.us4warriors.org',

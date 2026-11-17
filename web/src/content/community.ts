@@ -64,7 +64,7 @@ export const communityPosts: CommunityPostT[] = [
     title: 'VICTORY: Dink for Pink, Breast Cancer and Halloween Bash',
     excerpt: 'Our second charity tournament of 2026 brought pink-themed energy, spooky accents and best-dressed awards to Better at Pickleball on October 17.',
     body: [
-      'Deadly Drops Pickleball presented its second charity tournament of 2026: **VICTORY, Dink for Pink, Breast Cancer and Halloween Bash**, a one-day tournament on October 17 at Better at Pickleball, Chula Vista.',
+      'Deadly Drops Pickleball presented its second charity tournament of 2026: **VICTORY, Dink for Pink, Breast Cancer and Halloween Bash**, a two-day tournament on October 17 and 18 at Better at Pickleball, Chula Vista.',
       'We design our tournaments around age brackets and DUPR levels so everyone plays with peers who match their pace, experience, and stamina. Our round-robin format ensures plenty of playing time for every participant.',
       'Because this is a charity-centered event, the focus is on fun, friendly games rather than high-pressure semifinals. It’s a supportive environment where players of all ages can enjoy the sport comfortably, and a great opportunity for anyone who has never played competitively to feel that special tournament energy.',
       '## What was included',

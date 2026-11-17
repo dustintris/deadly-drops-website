@@ -111,7 +111,9 @@ describe('Charity (Admin → Charities)', () => {
       ['us4warriors', ['dominate-2026']],
       ['breast-cancer-angels', ['victory-dink-for-pink-2026']],
     ])
-    // the charity's own story, as three paragraphs
-    expect(seed[0].story.split('\n\n')).toHaveLength(3)
+    // the charity's own story, as three paragraphs, then the sign-off
+    const paragraphs = seed[0].story.split('\n\n')
+    expect(paragraphs).toHaveLength(4)
+    expect(paragraphs.at(-1)).toBe('— Danny Shaffsta')
   })
 })
