@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { DivisionPlay, Match } from '@/lib/play/repo'
-import { divisionStatus, matchGroups, playerLine, signed } from './present'
+import { divisionStatus, matchGroups, medals, playerLine, signed } from './present'
 import { courtBoard } from './courts'
 import type { Tiebreaker } from './types'
 
@@ -101,5 +101,29 @@ describe('courtBoard', () => {
 
   it('leaves out courts with nothing left to play', () => {
     expect(courtBoard([division([match({ court: 1, status: 'final', scoreA: 11, scoreB: 0 })])])).toEqual([])
+  })
+})
+
+describe('medals', () => {
+  const tb: Tiebreaker[] = ['headToHead', 'pointDiff']
+  const done = (a: number, b: number, sa: number, sb: number) => match({ teamAId: a, teamBId: b, status: 'final', scoreA: sa, scoreB: sb })
+
+  it('gives none while a game is still to play', () => {
+    expect(medals(division([done(1, 2, 11, 3), match({ teamAId: 3, teamBId: 4, status: 'live', scoreA: 4, scoreB: 2 })]), tb)).toEqual([])
+    expect(medals(division([]), tb)).toEqual([])
+  })
+
+  it('gives gold, silver and bronze to the top 3 once every game is final', () => {
+    const d = division([done(1, 2, 11, 3), done(3, 4, 11, 9), done(1, 3, 11, 5), done(2, 4, 11, 1)])
+    expect(medals(d, tb)).toEqual([
+      { place: 'gold', teamId: 1 },
+      { place: 'silver', teamId: 2 },
+      { place: 'bronze', teamId: 3 },
+    ])
+  })
+
+  it('gives only gold and silver with two teams', () => {
+    const d = division([done(1, 2, 9, 11)], { teams: [team(1), team(2)] })
+    expect(medals(d, tb)).toEqual([{ place: 'gold', teamId: 2 }, { place: 'silver', teamId: 1 }])
   })
 })

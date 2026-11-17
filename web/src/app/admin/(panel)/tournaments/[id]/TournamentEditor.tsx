@@ -515,6 +515,9 @@ export function TournamentEditor({ initial, canEdit }: { initial: Tournament; ca
                           onChange={(v) => { if (v) set({ ...d, bronze: v }) }} />
                       )}
                     </div>
+                    {d.playoffs !== 'none' && (
+                      <p className="adm-muted">Playoff brackets aren’t run on the website yet: medals go to the top 3 of the final standings, as in the desktop app.</p>
+                    )}
                   </fieldset>
                 </>
               )

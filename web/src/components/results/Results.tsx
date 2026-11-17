@@ -8,13 +8,15 @@
  *  - print: everything, without the scroll box and focus stops a sheet of paper can't use
  */
 import l from '@/components/live.module.css'
-import { divisionStatus, matchGroups, playerLine, plural, signed } from '@/lib/match/present'
+import { divisionStatus, matchGroups, MEDAL_LABELS, medals, playerLine, plural, signed, type MedalPlace } from '@/lib/match/present'
 import { formatTime12 } from '@/lib/match/schedule'
 import type { Tiebreaker } from '@/lib/match/types'
 import type { DivisionPlay, Match } from '@/lib/play/repo'
 import { FORMAT_LABELS } from '@/lib/tournaments/schema'
 
 export type ResultsVariant = 'page' | 'board' | 'print'
+
+const MEDAL_ICON: Record<MedalPlace, string> = { gold: '🥇', silver: '🥈', bronze: '🥉' }
 
 export function MatchCard({ m, names, day }: { m: Match; names: Map<number, string>; day?: string }) {
   const a = m.scoreA ?? 0
@@ -73,6 +75,8 @@ export function DivisionResults({
   const names = new Map(d.teams.map((t) => [t.id, t.name]))
   const players = new Map(d.teams.map((t) => [t.id, playerLine(t.players.map((p) => p.name))]))
   const scrollBox = variant === 'page'
+  const podium = medals(d, tiebreakers)
+  const medalOf = new Map(podium.map((m) => [m.teamId, m.place]))
 
   return (
     <article className={`card ${l.division}`} data-state={state} data-variant={variant} aria-labelledby={id}>
@@ -86,6 +90,25 @@ export function DivisionResults({
           {FORMAT_LABELS[d.format]} · {plural(d.teams.length, 'team')} · Games to {d.gamesTo}{d.winBy2 ? ', win by 2' : ''}
         </p>
       </header>
+
+      {podium.length > 0 && (
+        <ol className={l.podium} aria-label={`${d.name} medals`}>
+          {podium.map((m) => {
+            const who = players.get(m.teamId)
+            const name = names.get(m.teamId) ?? ''
+            return (
+              <li key={m.place} data-medal={m.place}>
+                <span className={l.medal} aria-hidden="true">{MEDAL_ICON[m.place]}</span>
+                <span className={l.podiumText}>
+                  <span className={l.podiumPlace}>{MEDAL_LABELS[m.place]}<span className="sr">: </span></span>
+                  <strong>{name}</strong>
+                  {who && who !== name && <span className={l.players}>{who}</span>}
+                </span>
+              </li>
+            )
+          })}
+        </ol>
+      )}
 
       {d.matches.length > 0 ? (
         <div className={l.body}>
@@ -104,8 +127,11 @@ export function DivisionResults({
                 {board.standings.map((s) => {
                   const who = players.get(s.teamId)
                   return (
-                    <tr key={s.teamId} data-top={ranked && s.rank === 1}>
-                      <td className={l.rank}>{ranked ? s.rank : <><span aria-hidden="true">–</span><span className="sr">Not ranked yet</span></>}</td>
+                    <tr key={s.teamId} data-top={ranked && s.rank === 1} data-medal={medalOf.get(s.teamId)}>
+                      <td className={l.rank}>
+                        {ranked ? s.rank : <><span aria-hidden="true">–</span><span className="sr">Not ranked yet</span></>}
+                        {medalOf.has(s.teamId) && <span className="sr"> ({MEDAL_LABELS[medalOf.get(s.teamId)!]})</span>}
+                      </td>
                       <th scope="row">
                         {s.name}
                         {who && who !== s.name && <span className={l.players}>{who}</span>}

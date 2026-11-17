@@ -55,3 +55,17 @@ export function divisionStatus(d: DivisionPlay, tiebreakers: Tiebreaker[]): Divi
     : `Starts ${formatTime12(d.startTime)}`
   return { board, state, status, ranked: pool.some((m) => m.status === 'final') }
 }
+
+export type MedalPlace = 'gold' | 'silver' | 'bronze'
+export const MEDAL_PLACES: MedalPlace[] = ['gold', 'silver', 'bronze']
+export const MEDAL_LABELS: Record<MedalPlace, string> = { gold: 'Gold', silver: 'Silver', bronze: 'Bronze' }
+
+/**
+ * Medals the way the desktop Pickle Match app gives them: the top 3 of the standings, once every
+ * game in the division is final. (No playoff brackets yet: they'd decide the medals instead.)
+ */
+export function medals(d: DivisionPlay, tiebreakers: Tiebreaker[]): { place: MedalPlace; teamId: number }[] {
+  const { board, state } = divisionStatus(d, tiebreakers)
+  if (state !== 'final') return []
+  return board.standings.slice(0, 3).map((s, i) => ({ place: MEDAL_PLACES[i], teamId: s.teamId }))
+}

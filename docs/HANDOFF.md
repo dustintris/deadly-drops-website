@@ -12,7 +12,7 @@ https://ddptournament.com. Read `web/README.md` first (setup, tests, deploy, cod
 | P2 | Tournaments in the DB: days (multi-day), divisions, game rules, per-tournament logo, public page per tournament | live |
 | P3 | Pickle Match scoring: engine (`src/lib/match`), teams/schedule/scores (`src/lib/play/repo.ts`), live SSE `/live/<id>/`, score pad, live standings | live |
 | P4 | On-site screens: venue screen `/display/<slug>/` (courts now/next + divisions rotating, `?division=`, `?day=`, `?rotate=`), check-in desk `/admin/checkin/<id>/`, printable results `/display/<slug>/print/` | built, deploys on push |
-| P5 | Playoffs (top 4 / top 8 brackets from pool standings, bronze match or from standings) + medals on board, page, print | todo |
+| P5 | Medals = top 3 of the final standings (same rule as the desktop app) on page/board/print; desktop app download API `GET /api/tournaments[/<id>]` (bearer key from Admin → Desktop app, the app's own import format) | built, deploys on push |
 | P6 | Logo upload in the admin (theme.logo) replacing the hard-coded `/logo.png`; themeColor from the theme | todo |
 | P7 | Handover: README runbook (tournament day, hotspot, offline fallback), final review, deploy | todo |
 
@@ -35,8 +35,12 @@ https://ddptournament.com. Read `web/README.md` first (setup, tests, deploy, cod
 ## Open items
 - **Prod admin has no owner yet**: the owner must run `npm run admin:setup` and put `ADMIN_EMAIL` and
   `ADMIN_PASSWORD_HASH` (single-quoted) into `/root/deadly-drops/.env` on the VPS, then redeploy/restart.
-- P5 next: playoffs + medals. Results UI is shared in `src/components/results/Results.tsx` (page, board, print
-  variants) and `src/lib/match/present.ts`, so medals go in once.
+- Desktop app = `dustintris/DeadlyDropsPickleBall` (Electron + NestJS registration server). It has no playoffs either.
+  The website serves its download contract (`src/lib/appsync/`); the key is stored hashed in `app_meta`. Teams with
+  one player are left out (the app needs exactly two) and listed on the admin page. App "publish" (POST) is 405.
+- Later: real playoff brackets (division `playoffs` top4/top8 is saved but not run; medals come from standings), and
+  porting the app server's online registration + signed QR tickets + QR check-in.
+- Results UI is shared in `src/components/results/Results.tsx` (page, board, print) and `src/lib/match/present.ts`.
 - Check-in times/who are staff-only: public reads go through `publicPlay()` (`src/lib/data.ts`), which blanks them.
 - **Deploying is automatic**: every push to `main` or `ccr-fffcb32a-715c27` that touches `web/` or `deploy/vps/`
   runs GitHub Actions `deploy-vps` (typecheck + tests, then deploy). Watch it in GitHub → Actions; re-run or
