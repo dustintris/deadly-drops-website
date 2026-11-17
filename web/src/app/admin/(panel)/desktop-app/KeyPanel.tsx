@@ -14,6 +14,7 @@ export function KeyPanel({ server, set, createdAt }: { server: string; set: bool
   const run = async (fn: () => Promise<KeyResult>, confirmText?: string) => {
     if (busy || (confirmText && !window.confirm(confirmText))) return
     setBusy(true)
+    setCopied('')
     try {
       const res = await fn()
       setKey(res.key ?? null)
@@ -27,9 +28,9 @@ export function KeyPanel({ server, set, createdAt }: { server: string; set: bool
   const copy = async (text: string, what: string) => {
     try {
       await navigator.clipboard.writeText(text)
-      setCopied(what)
+      setCopied(`Copied the ${what}.`)
     } catch {
-      setCopied('')
+      setCopied(`Couldn’t copy the ${what}: select the text and copy it yourself.`)
     }
   }
 
@@ -70,7 +71,7 @@ export function KeyPanel({ server, set, createdAt }: { server: string; set: bool
         )}
       </div>
       <p role="status" className={`adm-note ${note ? (note.ok ? 'good' : 'bad') : ''}`}>
-        {copied ? `Copied the ${copied}. ` : ''}{note?.text ?? ''}
+        {copied ? `${copied} ` : ''}{note?.text ?? ''}
       </p>
     </section>
   )

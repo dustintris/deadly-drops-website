@@ -1,13 +1,26 @@
 import 'server-only'
-import { getTournamentPlay } from '@/lib/play/repo'
+import { asc, inArray } from 'drizzle-orm'
+import { getDb } from '@/db/client'
+import { players, teams } from '@/db/schema'
 import { ensureImported, getTournament, listTournaments, type Tournament } from '@/lib/tournaments/repo'
 import type { ExportTournament } from './export'
 
-/** A tournament's setup plus its teams, in the shape the desktop export needs. */
-async function combine(t: Tournament): Promise<ExportTournament> {
-  const play = await getTournamentPlay(t.id)
-  const teamsOf = new Map((play?.divisions ?? []).map((d) => [d.id, d.teams]))
-  return {
+/** Tournaments' setup plus their teams and players (two queries for any number of tournaments; no matches). */
+async function combine(ts: Tournament[]): Promise<ExportTournament[]> {
+  const ids = ts.map((t) => t.id)
+  const teamRows = ids.length
+    ? await getDb().select().from(teams).where(inArray(teams.tournamentId, ids)).orderBy(asc(teams.sort), asc(teams.id))
+    : []
+  const playerRows = teamRows.length
+    ? await getDb().select().from(players).where(inArray(players.teamId, teamRows.map((x) => x.id))).orderBy(asc(players.sort), asc(players.id))
+    : []
+  const playersOf = new Map<number, { name: string; dupr: string }[]>()
+  for (const p of playerRows) {
+    const list = playersOf.get(p.teamId) ?? []
+    list.push({ name: p.name, dupr: p.dupr })
+    playersOf.set(p.teamId, list)
+  }
+  return ts.map((t) => ({
     id: t.id,
     name: t.name,
     days: t.days,
@@ -19,20 +32,19 @@ async function combine(t: Tournament): Promise<ExportTournament> {
       teamLimit: d.teamLimit,
       firstCourt: d.firstCourt,
       courtCount: d.courtCount,
-      teams: (teamsOf.get(d.id) ?? []).map((x) => ({ name: x.name, players: x.players.map((p) => ({ name: p.name, dupr: p.dupr })) })),
+      teams: teamRows.filter((x) => x.divisionId === d.id).map((x) => ({ name: x.name, players: playersOf.get(x.id) ?? [] })),
     })),
-  }
+  }))
 }
 
 /** Every tournament, hidden drafts included (the app is the director's own tool), earliest first. */
 export async function loadAllForApp(): Promise<ExportTournament[]> {
   await ensureImported()
-  const all = await listTournaments()
-  return Promise.all(all.map(combine))
+  return combine(await listTournaments())
 }
 
 export async function loadForApp(id: number): Promise<ExportTournament | null> {
   await ensureImported()
   const t = await getTournament(id)
-  return t ? combine(t) : null
+  return t ? (await combine([t]))[0] : null
 }

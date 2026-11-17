@@ -147,3 +147,5 @@
 .division[data-variant='board'] .podiumPlace { font-size: .6em; }
 .division[data-variant='board'] .podium strong { font-size: 1.2em; }
 .division[data-variant='print'] .podium li { break-inside: avoid; }
+/* on white paper the bright medal tones are too faint for text: darker shades, same hues */
+.division[data-variant='print'] { --gold: #8a6100; --silver: #5b6070; --bronze: #8a4f1e; }
