@@ -433,3 +433,6 @@ export function Uploader({ onUploaded, compact }: { onUploaded?: (img: LibraryIm
 export const newId = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4)
 export const slugify = (s: string) =>
   s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 60)
+/** A web address field as they type: lowercase, anything else becomes one dash; a dash at the end stays so "us4-" can be typed. */
+export const cleanSlug = (v: string) =>
+  v.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+/, '').slice(0, 60)

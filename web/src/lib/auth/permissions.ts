@@ -27,7 +27,7 @@ export const AREA_HELP: Record<Area, string> = {
   tournaments: 'Tournament details, divisions, teams and schedules',
   scoring: 'Enter and correct match scores',
   checkin: 'Check players in on the day',
-  content: 'Page text, club info, announcements, community posts, gallery, FAQ and photos',
+  content: 'Page text, club info, announcements, community posts, charities, gallery, FAQ and photos',
   shop: 'Products and prices',
   branding: 'Logo and theme colours',
   staff: 'Create staff logins and set what each person can do',
@@ -114,6 +114,7 @@ export const SECTION_AREA: Record<SectionKey | 'media', Area> = {
   gallery: 'content',
   posts: 'content',
   faqs: 'content',
+  charities: 'content',
   pages: 'content',
 }
 

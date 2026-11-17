@@ -39,9 +39,11 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     ...Object.values(live.pages).flatMap((p) => [p.heroImage?.src, p.heroImageMobile?.src]),
   ].filter((src) => src?.startsWith('/images/stand-in/')).length
   const noPhoto = live.products.filter((p) => p.visible && !p.images.length).length
+  const noFlyer = live.charities.filter((c) => !c.flyer).length
 
   const todos = [
     seeContent && <li key="photos">{standIns} places still use stock stand-in photos. <Link href="/admin/media/">Upload club photos</Link>.</li>,
+    seeContent && noFlyer > 0 && <li key="flyers">{noFlyer} {noFlyer === 1 ? 'charity has' : 'charities have'} no flyer yet. <Link href="/admin/charities/">Add charity flyers</Link>.</li>,
     seeShop && <li key="shop">{noPhoto} shop products have no photo yet. <Link href="/admin/products/">Add product photos</Link>.</li>,
     seeContent && <li key="posts">{live.posts.filter((p) => p.status === 'published').length} community posts are live. <Link href="/admin/community/">Write news</Link>.</li>,
   ].filter(Boolean)

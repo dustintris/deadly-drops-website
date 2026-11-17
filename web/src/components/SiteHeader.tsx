@@ -9,11 +9,12 @@ import styles from './shell.module.css'
 
 export const NAV = [
   { href: '/', label: 'Home' },
-  { href: '/about/', label: 'About us' },
-  { href: '/shop/', label: 'Shop' },
   { href: '/tournaments/', label: 'Tournaments' },
+  { href: '/charity/', label: 'Charity' },
+  { href: '/shop/', label: 'Shop' },
   { href: '/community/', label: 'Community' },
   { href: '/gallery/', label: 'Gallery' },
+  { href: '/about/', label: 'About us' },
   { href: '/contact/', label: 'Contact us' },
 ]
 

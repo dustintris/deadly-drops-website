@@ -8,7 +8,7 @@ import { RegistrationForm } from '@/components/RegistrationForm'
 import { SeasonList } from '@/components/SeasonList'
 import page from '@/components/tournament.module.css'
 import t from '@/components/tournaments.module.css'
-import { getChampions, getDivisionGuide, getEvents, getNextEvent, getTournamentLive } from '@/lib/data'
+import { getChampions, getDivisionGuide, getEvents, getNextEvent, getTournamentBasics, getTournamentLive } from '@/lib/data'
 import { clubToday, eventCta, eventEyebrow, eventState } from '@/lib/events'
 import { pageMeta } from '@/lib/seo'
 import { money } from '@/lib/utils'
@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TournamentsPage() {
-  const [event, events, guide, champions] = await Promise.all([getNextEvent(), getEvents(), getDivisionGuide(), getChampions()])
+  const [event, events, guide, champions, weekend] = await Promise.all([getNextEvent(), getEvents(), getDivisionGuide(), getChampions(), getTournamentBasics()])
 
   const state = event ? eventState(event) : 'tba'
   const cta = event ? eventCta(event, state) : null
@@ -34,13 +34,6 @@ export default async function TournamentsPage() {
   const latestPlay = latest?.id ? await getTournamentLive(Number(latest.id)) : null
   const results = latest && latestPlay?.divisions.some((d) => d.teams.length > 0 || d.matches.length > 0) ? latest : null
   const resultsLive = results !== null && states[results.slug] !== 'past'
-  // from the club's own tournament pages
-  const weekend = [
-    { title: 'Matched by age and DUPR', body: 'We design our tournaments around age brackets and DUPR levels so everyone plays with peers who match their pace, experience, and stamina.' },
-    { title: 'Round robin', body: 'Our round-robin format ensures plenty of playing time for every participant. Medals go to each division’s podium.' },
-    { title: 'Charity first', body: 'The focus is on fun, friendly games rather than high-pressure semifinals: a great first taste of competitive play.' },
-    { title: 'Courtside Fuel', body: 'Every registration includes a meal and a tournament shirt, with raffle prizes to add to the excitement.' },
-  ]
 
   return (
     <>

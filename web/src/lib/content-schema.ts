@@ -36,6 +36,9 @@ export function parseMoney(input: string): number | null {
 }
 
 export const httpsUrl = z.string().trim().max(500).regex(/^https:\/\/[^\s"<>]+$/, 'Links must start with https://')
+  // a "user@" part makes a link look like one site and open another (https://us4warriors.org@elsewhere.com)
+  // (a link that doesn't parse at all already failed the pattern above: one message is enough)
+  .refine((u) => { try { const p = new URL(u); return !p.username && !p.password } catch { return true } }, 'Remove the name or password before the @ in the link.')
 const internalOrHttps = z.string().trim().max(500).regex(/^(\/(?!\/)[a-z0-9/#-]*|https:\/\/[^\s"<>]+)$/, 'Use a page path like /tournaments/ or a full https:// link.')
 export const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use a date like 2026-03-14.')
   .refine((d) => { const t = new Date(`${d}T00:00:00Z`); return !Number.isNaN(t.getTime()) && t.toISOString().slice(0, 10) === d }, 'That date does not exist.')
@@ -176,6 +179,30 @@ export const CommunityPost = z.object({
 
 export const Faq = z.object({ id: Id, q: text(5, 140, 'Question'), a: text(5, 600, 'Answer'), visible: z.boolean() })
 
+/**
+ * A charity the club's tournaments play for. Shown on /charity/ (anchor = slug), on the home page and on
+ * the page of every tournament listed in `tournaments`. Tournaments live in the database, so they are
+ * linked by web address (slug); a slug that no longer matches a visible tournament is simply not shown.
+ */
+export const Charity = z.object({
+  id: Id,
+  slug: Slug,
+  name: text(2, 80, 'Charity name'),
+  tagline: text(0, 120, 'Tagline'),
+  /** for cards: home page and tournament pages */
+  summary: text(20, 240, 'Summary'),
+  /** the full story on /charity/, in the same formatting language as community posts */
+  story: text(0, 10000, 'Story'),
+  website: httpsUrl,
+  logo: ImageRef.optional(),
+  /** the charity's own flyer, shown next to the tournament's poster */
+  flyer: ImageRef.optional(),
+  // checked as a whole (not per item) so the error lands on the tournament picker
+  tournaments: z.array(z.string()).max(20, 'Up to 20 tournaments.')
+    .refine((l) => l.every((s) => Slug.safeParse(s).success), 'Pick tournaments from the list.')
+    .refine((l) => new Set(l).size === l.length, 'Each tournament can only be ticked once.'),
+})
+
 export const PAGE_KEYS = ['home', 'about', 'shop', 'gallery', 'contact', 'community'] as const
 export type PageKey = (typeof PAGE_KEYS)[number]
 export const PageCopy = z.object({
@@ -196,6 +223,7 @@ export const SECTIONS = {
   gallery: z.array(GalleryItem).max(500),
   posts: z.array(CommunityPost).max(250).refine((l) => new Set(l.map((p) => p.slug)).size === l.length, 'Two posts have the same web address.'),
   faqs: z.array(Faq).max(40),
+  charities: z.array(Charity).max(20).refine((l) => new Set(l.map((c) => c.slug)).size === l.length, 'Two charities have the same web address.'),
   pages: z.object(Object.fromEntries(PAGE_KEYS.map((k) => [k, PageCopy])) as Record<PageKey, typeof PageCopy>),
 } as const
 export type SectionKey = keyof typeof SECTIONS
@@ -209,6 +237,7 @@ export type MediaAssetT = z.infer<typeof MediaAsset>
 export type GalleryItemT = z.infer<typeof GalleryItem>
 export type CommunityPostT = z.infer<typeof CommunityPost>
 export type FaqT = z.infer<typeof Faq>
+export type CharityT = z.infer<typeof Charity>
 export type PageCopyT = z.infer<typeof PageCopy>
 
 export type SiteContent = {
@@ -223,6 +252,7 @@ export type SiteContent = {
   gallery: GalleryItemT[]
   posts: CommunityPostT[]
   faqs: FaqT[]
+  charities: CharityT[]
   pages: Record<PageKey, PageCopyT>
 }
 

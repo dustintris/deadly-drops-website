@@ -7,13 +7,15 @@
 
 .head {
   display: flex; align-items: center; gap: 1em 1.4em; padding: .8em 1.6em;
-  border-bottom: 1px solid rgb(var(--accent-rgb) / .25); background: var(--surface);
+  border-bottom: 1px solid rgb(var(--accent-rgb) / .5); box-shadow: 0 1px 14px -2px rgb(var(--accent-rgb) / .45);
+  /* a little twilight across the header only: the board itself stays flat for reading at a distance */
+  background: linear-gradient(180deg, var(--surface), color-mix(in srgb, var(--surface2) 82%, var(--accent-deep)));
 }
 .logo { width: 3.6em; height: 3.6em; object-fit: contain; flex: none; }
 .title { flex: 1; min-width: 0; }
 .title h1 { font-family: var(--font-display); font-weight: 400; font-size: 2.2em; line-height: 1; letter-spacing: .01em; overflow-wrap: anywhere; }
 .title p { margin-top: .3em; font-size: .9em; color: rgb(var(--ink-rgb) / .72); }
-.clock { font-family: var(--font-display); font-size: 2.4em; line-height: 1; font-variant-numeric: tabular-nums; color: var(--accent); }
+.clock { font-family: var(--font-display); font-size: 2.4em; line-height: 1; font-variant-numeric: tabular-nums; color: var(--accent); text-shadow: 0 0 18px rgb(var(--accent-rgb) / .45); }
 .feed { display: contents; }
 .feed :global(.live-offline) { font-size: .8em; color: var(--danger); }
 .control {
@@ -34,7 +36,7 @@
 .courts { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: .6em; min-height: 0; }
 .courts ol { list-style: none; padding: 0; display: grid; gap: .6em; align-content: start; overflow: hidden; }
 .court { display: grid; gap: .3em; padding: .55em .9em; border-radius: 12px; background: var(--surface2); border: 1px solid rgb(var(--ink-rgb) / .1); }
-.court[data-live='true'] { border-color: var(--accent); box-shadow: inset 4px 0 0 var(--accent); }
+.court[data-live='true'] { border-color: var(--accent); box-shadow: inset 4px 0 0 var(--accent), 0 0 24px -8px rgb(var(--accent-rgb) / .7); }
 .courtNo { display: flex; align-items: baseline; gap: .3em; font-family: var(--font-display); font-size: 1.5em; line-height: 1; }
 .courtNo em { margin-left: auto; font-style: normal; font-size: .45em; }
 .main[data-many='true'] { grid-template-columns: minmax(28em, 40em) minmax(0, 1fr); }

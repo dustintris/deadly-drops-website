@@ -21,6 +21,7 @@ const NAV: { group?: string; items: NavItem[] }[] = [
       { href: '/admin/products/', label: 'Shop & prices', area: 'shop' },
       { href: '/admin/media/', label: 'Photos', area: 'content' },
       { href: '/admin/community/', label: 'Community & news', area: 'content' },
+      { href: '/admin/charities/', label: 'Charities', area: 'content' },
     ],
   },
   {

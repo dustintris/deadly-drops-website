@@ -1,6 +1,6 @@
 /**
  * Data access for every page. Owner-editable content (club info, events, ticker, shop, gallery,
- * community, FAQs, page copy, theme) comes from the MIS content store via getContent(); tournaments
+ * community, charities, FAQs, page copy, theme) comes from the MIS content store via getContent(); tournaments
  * and their live play come from the database; member and ladder data are still sample content in
  * src/content/sample.ts.
  * Pages only import from here, never from src/content or the store directly.
@@ -8,8 +8,10 @@
 import { cache } from 'react'
 import { getContent, isPreview } from './content'
 import { clubToday, eventState } from './events'
-import { getTournamentPlay, type TournamentPlay } from './play/repo'
+import { getTournamentPlay, tournamentsWithPlay, type TournamentPlay } from './play/repo'
+import { charitiesForTournament } from './charities'
 import type { CommunityPostT, PageKey } from './content-schema'
+import { tournamentBasics } from '@/content/club'
 import * as sample from '@/content/sample'
 import { themeLogo } from '@/theme/tokens'
 import { ensureImported, getTournamentBySlug, listTournaments, toClubEvent, type Tournament } from './tournaments/repo'
@@ -38,13 +40,18 @@ export const getTournamentPage = cache(async (slug: string): Promise<Tournament 
   await ensureImported()
   return getTournamentBySlug(slug, { visibleOnly: true })
 })
-/** The tournament the site leads with: the featured one, else the next upcoming, else the latest past one. null if none is visible. */
+/**
+ * The tournament the site leads with: a featured upcoming one, else the next upcoming; with nothing ahead,
+ * the featured one, else the latest past one (with its results). null if none is visible.
+ */
 export const getNextEvent = async (): Promise<ClubEvent | null> => {
   const list = await getEvents()
   const byDate = [...list].sort((a, b) => (a.date ?? '9999').localeCompare(b.date ?? '9999'))
+  const coming = byDate.filter((e) => eventState(e) !== 'past')
   return (
+    coming.find((e) => e.featured) ??
+    coming[0] ??
     list.find((e) => e.featured) ??
-    byDate.find((e) => eventState(e) !== 'past') ??
     byDate.reverse().find((e) => eventState(e) === 'past') ??
     null
   )
@@ -56,6 +63,15 @@ export const getTournamentLive = cache(async (tournamentId: number): Promise<Tou
   await ensureImported()
   const play = await getTournamentPlay(tournamentId)
   return play?.visible ? publicPlay(play) : null
+})
+
+/**
+ * Ids of the visible tournaments that have teams or matches, so their page shows results. One query for
+ * the whole list (instead of loading each tournament's play), once per request; hidden ones never count.
+ */
+export const getTournamentsWithPlay = cache(async (): Promise<Set<number>> => {
+  const ids = (await getEvents()).map((e) => Number(e.id)).filter(Number.isInteger)
+  return tournamentsWithPlay(ids)
 })
 
 /** Play as the public may see it: who checked in, and when, stays with the staff. */
@@ -129,6 +145,15 @@ export const getLiveFeed = cache(async (): Promise<{ tournamentId: number; versi
   const playing = play.days.includes(clubToday()) || play.divisions.some((d) => d.matches.some((m) => m.status === 'live'))
   return playing ? { tournamentId: play.id, version: play.liveVersion } : null
 })
+
+/* ---------- charities ---------- */
+
+/** The charities the tournaments play for, in the admin's order. */
+export const getCharities = async () => (await getContent()).charities
+/** The charities one tournament plays for (none, one, or more). */
+export const getTournamentCharities = async (slug: string) => charitiesForTournament((await getContent()).charities, slug)
+/** How a Deadly Drops tournament runs (age + DUPR brackets, round robin, charity focus, meal and shirt). */
+export const getTournamentBasics = async () => tournamentBasics
 
 export const getFaqs = async () => (await getContent()).faqs.filter((f) => f.visible)
 export const getTicker = async () => (await getContent()).ticker.filter((t) => t.visible).map((t) => t.text)

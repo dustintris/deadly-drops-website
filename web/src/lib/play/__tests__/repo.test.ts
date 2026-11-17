@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { getSql } from '@/db/client'
+import { hasPlay } from '@/lib/match/present'
 import { createTournament, DivisionInUseError, saveTournament, type Tournament } from '@/lib/tournaments/repo'
 import { TournamentInput } from '@/lib/tournaments/schema'
 import {
@@ -13,6 +14,7 @@ import {
   setTeams,
   StaleMatchError,
   NotFoundError,
+  tournamentsWithPlay,
 } from '../repo'
 
 const sql = () => getSql()
@@ -63,6 +65,31 @@ describe('teams', () => {
     const { divisionId } = await setup(4)
     await generateSchedule(divisionId)
     await expect(setTeams(divisionId, [])).rejects.toBeInstanceOf(ScheduleExistsError)
+  })
+})
+
+describe('which tournaments have play', () => {
+  it('lists only the asked-for tournaments that have teams or matches', async () => {
+    const withTeams = await setup(2)
+    const scheduled = await setup(4)
+    await generateSchedule(scheduled.divisionId)
+    const quiet = await createTournament('Quiet Day')
+    await saveTournament(quiet.id, payload(quiet, [division()]), quiet.version)
+    const notAsked = await setup(2)
+
+    const found = await tournamentsWithPlay([withTeams.tournament.id, scheduled.tournament.id, quiet.id, 999_999])
+    expect([...found].sort((a, b) => a - b)).toEqual([withTeams.tournament.id, scheduled.tournament.id].sort((a, b) => a - b))
+    expect(found.has(notAsked.tournament.id)).toBe(false)
+  })
+
+  it('agrees with the full play (hasPlay) and asks nothing for an empty list', async () => {
+    const { tournament, divisionId } = await setup(2)
+    expect((await tournamentsWithPlay([tournament.id])).has(tournament.id)).toBe(true)
+    await setTeams(divisionId, [])
+    const play = (await getTournamentPlay(tournament.id))!
+    expect(play.divisions.some(hasPlay)).toBe(false)
+    expect((await tournamentsWithPlay([tournament.id])).size).toBe(0)
+    expect((await tournamentsWithPlay([])).size).toBe(0)
   })
 })
 

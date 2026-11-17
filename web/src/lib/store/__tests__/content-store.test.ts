@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { buildSeed } from '@/content/seed'
-import { getSql } from '@/db/client'
-import { sectionHash } from '@/lib/content-schema'
+import { getDb, getSql } from '@/db/client'
+import { siteDocuments } from '@/db/schema'
+import { sectionHash, type SiteContent } from '@/lib/content-schema'
 import {
   discardDraft,
   discardSections,
@@ -142,6 +143,35 @@ describe('content store (PostgreSQL)', () => {
 
     expect((await readDraft()).faqs).toEqual((await readPublished()).faqs)
     expect(await unpublishedSections()).toEqual(['ticker'])
+  })
+
+  it('still loads content saved before charities existed: the starting charities fill the gap', async () => {
+    const old: Partial<SiteContent> = { ...buildSeed(), faqs: [] }
+    delete old.charities
+    await getDb().insert(siteDocuments).values({ key: 'published', data: old as SiteContent })
+    const [row] = await sql()`select data ? 'charities' as has from site_documents where key = 'published'`
+    expect(row.has).toBe(false)
+
+    const live = await readPublished()
+    expect(live.faqs).toEqual([]) // the saved content is kept
+    expect(live.charities).toEqual(buildSeed().charities)
+    expect((await readDraft()).charities).toEqual(buildSeed().charities)
+    expect(await unpublishedSections()).toEqual([])
+  })
+
+  it('publishes and discards the charities section on its own', async () => {
+    const draft = await readDraft()
+    const [first] = draft.charities
+    await saveDraftSection('charities', [first], sectionHash(draft.charities))
+    expect(await unpublishedSections()).toEqual(['charities'])
+
+    await publishSections(['charities'])
+    expect((await readPublished()).charities).toEqual([first])
+
+    const d2 = await readDraft()
+    await saveDraftSection('charities', [], sectionHash(d2.charities))
+    await discardSections(['charities'])
+    expect((await readDraft()).charities).toEqual([first])
   })
 
   it('discards draft changes back to the live copy', async () => {

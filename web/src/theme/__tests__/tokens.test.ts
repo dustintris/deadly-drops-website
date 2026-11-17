@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { Theme } from '@/lib/content-schema'
-import { DEFAULT_LOGO, defaultTheme, themeLogo, themeToCss } from '../tokens'
+import { Theme, THEME_COLOUR_KEYS, themeContrastIssues } from '@/lib/content-schema'
+import { DEFAULT_LOGO, defaultTheme, LEGACY_LIME_THEME, themeLogo, themeToCss } from '../tokens'
 
 const LOGO = { src: '/media/0123456789abcdef01234567.png', alt: 'Deadly Drops oni badge' }
 
 describe('themeToCss', () => {
   it('writes every colour as a CSS variable with an -rgb twin', () => {
     const css = themeToCss(defaultTheme)
-    expect(css).toContain('--bg: #080808;')
-    expect(css).toContain('--bg-rgb: 8 8 8;')
+    expect(css).toContain('--bg: #120A2E;')
+    expect(css).toContain('--bg-rgb: 18 10 46;')
+    expect(css).toContain('--accent: #FF5CB8;')
     expect(css).toContain('--logo-plate: #FFFFFF;')
   })
 
@@ -34,5 +35,23 @@ describe('themeLogo', () => {
 
   it('gives an uploaded logo without a description a plain one, so the footer image is never unnamed', () => {
     expect(themeLogo({ logo: { src: LOGO.src, alt: '' } })).toEqual({ src: LOGO.src, alt: 'Deadly Drops Pickleball logo' })
+  })
+})
+
+describe('default and legacy palettes', () => {
+  it('passes every readability check the theme editor enforces (WCAG AA 4.5:1)', () => {
+    expect(themeContrastIssues(defaultTheme)).toEqual([])
+    expect(themeContrastIssues(LEGACY_LIME_THEME)).toEqual([])
+    expect(Theme.safeParse({ ...defaultTheme }).success).toBe(true)
+  })
+
+  it('both define exactly the colours the saved theme holds', () => {
+    expect(Object.keys(defaultTheme).sort()).toEqual([...THEME_COLOUR_KEYS].sort())
+    expect(Object.keys(LEGACY_LIME_THEME).sort()).toEqual([...THEME_COLOUR_KEYS].sort())
+  })
+
+  it('keeps the original lime design as the legacy palette', () => {
+    expect(LEGACY_LIME_THEME).toMatchObject({ bg: '#080808', accent: '#C6F24E', paper: '#F2F2EE', onAccent: '#111111' })
+    expect(defaultTheme.accent).not.toBe(LEGACY_LIME_THEME.accent)
   })
 })

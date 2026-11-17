@@ -6,7 +6,12 @@
 @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
 
 /* ---------- ticker ---------- */
-.ticker { position: relative; background: var(--accent); color: var(--on-accent); overflow: hidden; border-block: 1px solid var(--accent); }
+/* a neon band, pink through lilac and back (both light: the dark text reads on every stop) */
+.ticker {
+  position: relative; overflow: hidden; color: var(--on-accent); border-block: 1px solid var(--accent);
+  background: var(--accent) linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 45%, var(--accent-soft)) 50%, var(--accent));
+  box-shadow: 0 0 30px -6px rgb(var(--accent-rgb) / .6);
+}
 .ticker[data-paused='true'] .tickTrack { animation-play-state: paused; }
 .tickPause {
   position: absolute; right: 0; top: 0; bottom: 0; min-width: 52px; padding: 0 14px;
@@ -24,7 +29,8 @@
 /* ---------- live score ---------- */
 .score {
   background: rgb(var(--bg-rgb) / .86); backdrop-filter: blur(10px);
-  border: 1px solid rgb(var(--accent-rgb) / .28); border-radius: 14px; padding: 18px 20px; width: 100%; max-width: 380px;
+  border: 1px solid rgb(var(--accent-rgb) / .4); border-radius: 14px; padding: 18px 20px; width: 100%; max-width: 380px;
+  box-shadow: 0 0 34px -10px rgb(var(--accent-rgb) / .5);
 }
 .score header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .score header .eyebrow { display: inline-flex; align-items: center; gap: 8px; }

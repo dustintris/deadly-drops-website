@@ -78,6 +78,14 @@ export const events: ClubEvent[] = [
   },
 ]
 
+/** How a Deadly Drops tournament runs, from the club's own tournament pages (Tournaments page and home page). */
+export const tournamentBasics = [
+  { title: 'Matched by age and DUPR', body: 'We design our tournaments around age brackets and DUPR levels so everyone plays with peers who match their pace, experience, and stamina.' },
+  { title: 'Round robin', body: 'Our round-robin format ensures plenty of playing time for every participant. Medals go to each division’s podium.' },
+  { title: 'Charity first', body: 'The focus is on fun, friendly games rather than high-pressure semifinals: a great first taste of competitive play.' },
+  { title: 'Courtside Fuel', body: 'Every registration includes a meal and a tournament shirt, with raffle prizes to add to the excitement.' },
+]
+
 /** Lines for the scrolling news ticker. Real facts only. */
 export const tickerItems = [
   'VICTORY Dink for Pink: a charity tournament for Breast Cancer Angels',

@@ -3,11 +3,15 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { LiveRefresh } from '@/components/LiveRefresh'
 import { PageHero } from '@/components/PageHero'
+import { CloudEdge, Sparkles } from '@/components/Sky'
 import l from '@/components/live.module.css'
 import { DivisionResults } from '@/components/results/Results'
 import x from '@/components/tournament.module.css'
 import ts from '@/components/tournaments.module.css'
-import { getClub, getClubLogo, getEvents, getNextEvent, getTournamentLive, getTournamentPage } from '@/lib/data'
+import ch from '@/app/(site)/charity/charity.module.css'
+import { charityHref, websiteLabel } from '@/lib/charities'
+import type { CharityT } from '@/lib/content-schema'
+import { getClub, getClubLogo, getEvents, getNextEvent, getTournamentCharities, getTournamentLive, getTournamentPage } from '@/lib/data'
 import { eventState, type EventState } from '@/lib/events'
 import { hasPlay, plural } from '@/lib/match/present'
 import { pageMeta } from '@/lib/seo'
@@ -133,9 +137,50 @@ function DivisionList({ divisions, day, rules, level: H }: { divisions: Division
   )
 }
 
+/**
+ * "Playing for <charity>": the charity's summary and links, with its flyer (or logo) beside this tournament's
+ * own poster (or logo). Without any charity image it's text only, so the tournament's logo never stands alone here.
+ */
+function PlayingFor({ c, t }: { c: CharityT; t: Tournament }) {
+  const theirs = c.flyer
+    ? { ...c.flyer, alt: c.flyer.alt || `${c.name} flyer`, caption: `${c.name} flyer`, kind: 'flyer' }
+    : c.logo ? { ...c.logo, alt: c.logo.alt || `${c.name} logo`, caption: c.name, kind: 'logo' } : null
+  const ours = t.info.image
+    ? { ...t.info.image, alt: t.info.image.alt || `${t.name} poster`, caption: `${t.name} poster`, kind: 'poster' }
+    : t.info.logo ? { ...t.info.logo, alt: t.info.logo.alt || `${t.name} logo`, caption: t.name, kind: 'logo' } : null
+  const images = theirs ? [theirs, ...(ours ? [ours] : [])] : []
+  const titleId = `playing-for-${c.slug}`
+  return (
+    <section className={ch.playing} data-media={images.length > 0} aria-labelledby={titleId}>
+      <div>
+        <p className="eyebrow">Charity</p>
+        <h2 id={titleId} className="display d-m">Playing for <span className="accent">{c.name}</span></h2>
+        {c.tagline && <p className={ch.tagline}>{c.tagline}</p>}
+        <p className="lede">{c.summary}</p>
+        <div className={ch.actions} style={{ marginTop: 24 }}>
+          <Link href={charityHref(c)} className="btn btn-accent">Read their story<span className="sr"> about {c.name}</span></Link>
+          <a href={c.website} className="btn btn-ghost" target="_blank" rel="noopener noreferrer">
+            Visit {websiteLabel(c.website, c.name)} <span aria-hidden="true">↗</span><span className="sr"> (opens in a new tab)</span>
+          </a>
+        </div>
+      </div>
+      {images.length > 0 && (
+        <div className={ch.pair} data-count={images.length}>
+          {images.map((img, i) => (
+            <figure key={`${i}-${img.src}`} data-kind={img.kind}>
+              <img src={asset(img.src)} alt={img.alt} loading="lazy" decoding="async" />
+              <figcaption>{img.caption}</figcaption>
+            </figure>
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
 export default async function TournamentPage({ params }: Params) {
   const slug = (await params).slug
-  const [t, events, next, club] = await Promise.all([getTournamentPage(slug), getEvents(), getNextEvent(), getClub()])
+  const [t, events, next, club, charities] = await Promise.all([getTournamentPage(slug), getEvents(), getNextEvent(), getClub(), getTournamentCharities(slug)])
   if (!t) notFound()
   const play = await getTournamentLive(t.id)
 
@@ -321,7 +366,7 @@ export default async function TournamentPage({ params }: Params) {
                   <div>
                     <h2 className="display d-s">What’s included</h2>
                     <ul className={x.included}>
-                      {info.includes.map((item) => <li key={item}>{item}</li>)}
+                      {info.includes.map((item, k) => <li key={`${k}-${item}`}>{item}</li>)}
                     </ul>
                   </div>
                 )}
@@ -342,6 +387,17 @@ export default async function TournamentPage({ params }: Params) {
       </section>
 
       {!resultsFirst && resultsSection}
+
+      {charities.length > 0 && (
+        <section className={`section darker rule-top ${ch.playingBand}`}>
+          <Sparkles />
+          <div className={`wrap ${ch.playingInner}`}>
+            {charities.map((c) => <PlayingFor key={c.id} c={c} t={t} />)}
+          </div>
+          {/* the night sky melts into pink clouds above the rules (a light section) */}
+          <CloudEdge />
+        </section>
+      )}
 
       <section className="section light">
         <div className="wrap">

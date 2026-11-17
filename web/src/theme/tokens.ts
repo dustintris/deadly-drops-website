@@ -36,7 +36,34 @@ export type Theme = {
   logoPlate: string
 }
 
+/**
+ * "Twilight": a deep indigo night sky fading to orchid, neon pink and lilac highlights, blush-pink light
+ * sections and near-black accents. Every text pair the admin checks is WCAG AA (see `themeContrastIssues`).
+ */
 export const defaultTheme: Theme = {
+  bg: '#120A2E',
+  surface: '#1C1142',
+  surface2: '#281A57',
+  paper: '#FDE8F3',
+  paperCard: '#FFFFFF',
+  ink: '#FFF4FB',
+  inkDark: '#1A0D22',
+  accent: '#FF5CB8',
+  accentSoft: '#D9C2FF',
+  accentDeep: '#A8247E',
+  onAccent: '#1A0D22',
+  accentTint: '#2E1440',
+  danger: '#FF9F85',
+  dangerOnLight: '#B3261E',
+  logoPlate: '#FFFFFF',
+}
+
+/**
+ * The site's first palette (dark with lime), the default until the Twilight redesign. Kept as an admin
+ * preset; migration `drizzle/0005_twilight_theme.sql` moved content saved with these exact colours to
+ * Twilight once (its test checks both palettes there match this file).
+ */
+export const LEGACY_LIME_THEME: Theme = {
   bg: '#080808',
   surface: '#111111',
   surface2: '#181818',

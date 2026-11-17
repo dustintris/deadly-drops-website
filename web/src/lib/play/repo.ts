@@ -1,5 +1,5 @@
 import 'server-only'
-import { and, asc, eq, inArray, ne, notInArray, or, sql } from 'drizzle-orm'
+import { and, asc, eq, exists, inArray, ne, notInArray, or, sql } from 'drizzle-orm'
 import { getDb, type Db } from '@/db/client'
 import { divisions, matches, players, teams, tournaments } from '@/db/schema'
 import { BRACKET_SIZE, bracketPlan, gameKey, gameLabel, planOf, playoffCourt, resolveBracket, type PlayedGame, type PlayoffStage } from '@/lib/match/bracket'
@@ -237,6 +237,25 @@ export async function getTournamentPlay(tournamentId: number, db: Executor = get
       matches: matchRows.filter((m) => m.divisionId === d.id).map(toMatch),
     })),
   }
+}
+
+/**
+ * Which of these tournaments have teams or matches (any division with play, as hasPlay in lib/match/present
+ * puts it), so their page has results to show. One light query instead of loading each tournament's play.
+ */
+export async function tournamentsWithPlay(ids: number[], db: Executor = getDb()): Promise<Set<number>> {
+  if (!ids.length) return new Set()
+  const rows = await db
+    .select({ id: tournaments.id })
+    .from(tournaments)
+    .where(and(
+      inArray(tournaments.id, ids),
+      or(
+        exists(db.select({ x: sql`1` }).from(teams).where(eq(teams.tournamentId, tournaments.id))),
+        exists(db.select({ x: sql`1` }).from(matches).where(eq(matches.tournamentId, tournaments.id))),
+      ),
+    ))
+  return new Set(rows.map((r) => r.id))
 }
 
 /** The tournament a division belongs to (for permission checks and redirects). */

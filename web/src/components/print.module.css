@@ -3,11 +3,15 @@
 .sheet {
   --ink: var(--ink-dark); --ink-rgb: var(--ink-dark-rgb);
   --accent: var(--ink-dark); --accent-rgb: var(--ink-dark-rgb);
+  --accent-soft: var(--ink-dark); --accent-soft-rgb: var(--ink-dark-rgb); --accent-deep: var(--ink-dark); --accent-deep-rgb: var(--ink-dark-rgb);
   --surface2: #fff; --bg: #fff;
   min-height: 100vh; padding: 32px max(20px, 4vw) 48px; background: #fff; color: var(--ink-dark);
   max-width: 1100px; margin: 0 auto;
 }
 :global(html):has(.sheet), :global(html):has(.sheet) :global(body) { background: #fff; }
+/* the site's glossy cards and neon glows stay off the paper */
+.sheet :global(.card) { background: #fff; box-shadow: none; }
+.sheet :global(.live-dot) { box-shadow: none; }
 
 .head { display: flex; align-items: center; gap: 16px 24px; flex-wrap: wrap; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--ink-dark); }
 .logo { width: 64px; height: 64px; object-fit: contain; }

@@ -20,9 +20,10 @@ Migrations apply automatically when the server starts.
 
 | Page | Route |
 |---|---|
-| Home (with the live score card on tournament day) | `/` |
+| Home: next tournament (live score card on tournament day), upcoming tournaments in full, how tournaments work, past results, the charities | `/` |
 | Tournaments (season, format, divisions, registration) | `/tournaments` |
-| One tournament: days, divisions, fees, rules, then live standings, schedule, playoff bracket and medals | `/tournaments/[slug]` |
+| One tournament: days, divisions, fees, rules, then live standings, schedule, playoff bracket and medals, and the charity it plays for | `/tournaments/[slug]` |
+| Charity: each charity the tournaments play for, with its story, flyer, website and tournaments (anchor `#<slug>`) | `/charity` |
 | Venue screen for the projector (full screen, live, rotates divisions) | `/display/[slug]` |
 | Printable results | `/display/[slug]/print` |
 | Community: news, articles, photo stories, community photos | `/community`, `/community/[slug]` |
@@ -59,6 +60,7 @@ can give access to staff accounts, and nobody can hand out access they don't hav
 | Shop & prices | products, prices, stock (sold out / only N left), options, up to 6 photos each, visibility |
 | Photos | upload (resized in the browser, JPEG/PNG/WebP, 5 MB max), descriptions, see where each photo is used, delete unused |
 | Community & news | news, articles, photo stories with a simple formatting language, cover + photo sets, draft/published, featured |
+| Charities | name, tagline, card summary, full story (same formatting as posts), website, logo, flyer, and which tournaments play for each one: shown on the Charity page, the home page and those tournaments' pages |
 | Gallery | photos, captions, albums (Community/Socials photos also appear on the Community page) |
 | Page text | headline, intro and main photo for Home, About, Community, Shop, Gallery, Contact |
 | Club info | contact details, about text and points, how-it-works steps, favourites, social links, member discount |
@@ -112,6 +114,10 @@ audit log in the database (`audit_log`).
   tournaments, the three shirts, social links, community news, and photos in `public/images/club/`
   (tournament photography by Clara Barra and Bert Temple). These are the **starting content**; after the first
   publish the admin's saved content wins.
+- `src/content/charities.ts`: the charities the tournaments play for: Us4Warriors (DOMINATE, story from the charity)
+  and Breast Cancer Angels (VICTORY, written from breastcancerangels.org). Flyers are uploaded in Admin → Charities.
+  A charity is linked to tournaments by their web address, so after changing a tournament's web address, tick it
+  again under Charities.
 - The phone number is left off on purpose: the club masks it on its own site. Add one in Club info if wanted.
 - `src/content/sample.ts`: sample members, ratings, ladder and the member app, until a real member system
   exists. The top bar says so. (Tournament results are real: they come from the database.)

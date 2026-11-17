@@ -16,7 +16,8 @@
 /* hero */
 .heroSide { display: grid; gap: 18px; justify-items: start; }
 .heroSide > :last-child { justify-self: stretch; }
-.heroLogo { width: 184px; height: 184px; object-fit: contain; background: var(--logo-plate); border-radius: 18px; padding: 10px; box-shadow: 0 12px 32px rgb(var(--bg-rgb) / .45); }
+/* the tournament logo keeps its colours on its plate; a neon rim lifts it off the sky */
+.heroLogo { width: 184px; height: 184px; object-fit: contain; background: var(--logo-plate); border-radius: 18px; padding: 10px; box-shadow: 0 0 0 2px var(--accent), 0 0 28px 2px rgb(var(--accent-rgb) / .5), 0 12px 32px rgb(var(--bg-rgb) / .45); }
 @media (max-width: 900px) { .heroLogo { width: 132px; height: 132px; border-radius: 14px; padding: 8px; } }
 .meta { display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 15px; color: rgb(var(--ink-rgb) / .74); }
 .stateLine { max-width: 46ch; font-size: 15px; color: rgb(var(--ink-rgb) / .82); }
@@ -63,7 +64,7 @@
 .included li::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); transform: translateY(-1px); }
 .prizes { list-style: none; padding: 0; margin-top: 14px; display: flex; flex-wrap: wrap; gap: 10px; }
 .prizes li { flex: 1 1 88px; display: flex; flex-direction: column-reverse; gap: 4px; padding: 14px 16px; border-radius: 12px; background: var(--surface2); border: 1px solid rgb(var(--accent-rgb) / .14); }
-.prizes li[data-place='Gold'] { border-color: var(--accent); }
+.prizes li[data-place='Gold'] { border-color: var(--accent); box-shadow: 0 0 22px -6px rgb(var(--accent-rgb) / .6); }
 .prizes strong { font-family: var(--font-display); font-weight: 400; font-size: 32px; line-height: 1; }
 .prizes li[data-place='Gold'] strong { color: var(--accent); }
 .prizes span { font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .66); }
@@ -76,11 +77,12 @@
 .rulesMain > * + * { margin-top: 14px; }
 .rulesMain > .sub:not(:first-child) { margin-top: 36px; }
 .ruleFacts { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 10px; }
-.ruleFacts > div { padding: 18px 20px; border-radius: 12px; background: var(--paper-card); border: 1px solid rgb(var(--ink-dark-rgb) / .08); }
+/* white cards with the black outline of the light sections */
+.ruleFacts > div { padding: 18px 20px; border-radius: 12px; background: var(--paper-card); border: 1px solid rgb(var(--ink-dark-rgb) / .85); box-shadow: 0 12px 26px -18px rgb(var(--accent-deep-rgb) / .55); }
 .ruleFacts dt { font-family: var(--font-mono); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: rgb(var(--ink-dark-rgb) / .72); }
 .ruleFacts dd { margin-top: 8px; font-family: var(--font-display); font-weight: 400; font-size: 40px; line-height: 1; text-transform: uppercase; }
 .tiebreakers { list-style: none; padding: 0; counter-reset: tb; display: grid; gap: 8px; }
-.tiebreakers li { counter-increment: tb; display: flex; align-items: center; gap: 16px; min-height: 50px; padding: 0 18px; border-radius: 10px; background: var(--paper-card); border: 1px solid rgb(var(--ink-dark-rgb) / .08); font-weight: 500; }
+.tiebreakers li { counter-increment: tb; display: flex; align-items: center; gap: 16px; min-height: 50px; padding: 0 18px; border-radius: 10px; background: var(--paper-card); border: 1px solid rgb(var(--ink-dark-rgb) / .85); font-weight: 500; }
 .tiebreakers li::before { content: counter(tb); min-width: 16px; font-family: var(--font-display); font-size: 26px; line-height: 1; color: var(--accent-deep); }
 .notes { list-style: none; padding: 0; display: grid; gap: 12px; }
 .note { padding: 20px 22px; }

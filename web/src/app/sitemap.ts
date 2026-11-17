@@ -10,7 +10,7 @@ const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://deadlydropspickleball
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [members, products, posts, events] = await Promise.all([getMembers(), getProducts(), getCommunityPosts(), getEvents()])
   const paths = [
-    '/', '/tournaments/', '/about/', '/members/', '/shop/', '/community/', '/gallery/', '/contact/',
+    '/', '/tournaments/', '/charity/', '/about/', '/members/', '/shop/', '/community/', '/gallery/', '/contact/',
     ...events.map((e) => `/tournaments/${e.slug}/`),
     ...members.map((m) => `/members/${m.slug}/`),
     ...products.map((p) => `/shop/${p.slug}/`),
@@ -18,6 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]
   return paths.map((p) => {
     const tournaments = p.startsWith('/tournaments/')
-    return { url: SITE + p, changeFrequency: tournaments ? 'weekly' : 'monthly', priority: p === '/' ? 1 : p === '/tournaments/' ? 0.9 : tournaments ? 0.8 : 0.6 }
+    // the site is about the tournaments and the charities they play for
+    return { url: SITE + p, changeFrequency: tournaments ? 'weekly' : 'monthly', priority: p === '/' ? 1 : p === '/tournaments/' ? 0.9 : tournaments || p === '/charity/' ? 0.8 : 0.6 }
   })
 }

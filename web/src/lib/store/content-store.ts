@@ -29,8 +29,8 @@ export class StaleRevisionError extends Error {
 }
 
 /**
- * Content saved by an older version may lack newer sections or settings fields: fill them from the seed,
- * so pages and editors always get a complete document.
+ * Content saved by an older version may lack newer sections (e.g. charities) or settings fields: fill them
+ * from the seed, so pages and editors always get a complete document.
  */
 function normalize(doc: Partial<SiteContent>): SiteContent {
   const seed = buildSeed()
@@ -108,7 +108,7 @@ export function updateDraft(fn: (d: SiteContent) => SiteContent): Promise<SiteCo
 }
 
 /** Every part of the content that can be published or discarded on its own (media = the photo library). */
-export const CONTENT_KEYS = ['settings', 'theme', 'ticker', 'products', 'media', 'gallery', 'posts', 'faqs', 'pages'] as const
+export const CONTENT_KEYS = ['settings', 'theme', 'ticker', 'products', 'media', 'gallery', 'posts', 'faqs', 'charities', 'pages'] as const
 export type ContentKey = (typeof CONTENT_KEYS)[number]
 
 /**

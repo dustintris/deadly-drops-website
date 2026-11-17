@@ -1,0 +1,94 @@
+/* Charity page (/charity/): one section per charity, its story beside the charity flyer and the tournament posters.
+   Also the "Playing for …" block on each tournament's page (.playing, .pair below).
+   Colours, type and buttons come from the global theme classes; only layout lives here. */
+
+/* the story on the left; beside it a glowing panel (website + tournaments) that stays in view, then the flyer and posters */
+.layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr); gap: clamp(32px, 5vw, 72px); align-items: start; }
+.aside { display: flex; flex-direction: column; gap: 24px; }
+/* wide screens: only the panel follows the reader down a long story. It is sticky inside a track that fills the
+   column above the flyer and posters, so it never slides over them and they scroll normally (never cut off). */
+@media (min-width: 901px) {
+  .aside { align-self: stretch; }
+  .panelTrack { flex: 1 0 auto; }
+  .panel { position: sticky; top: 108px; }
+}
+.panel:global(.card) {
+  padding: clamp(20px, 2.4vw, 28px); border-color: rgb(var(--accent-rgb) / .45);
+  box-shadow: inset 0 1px 0 rgb(var(--ink-rgb) / .08), 0 0 44px -18px rgb(var(--accent-rgb) / .65);
+}
+.panel .actions { margin-top: 0; }
+.panel .actions :global(.btn) { width: 100%; white-space: normal; text-align: center; padding-block: 12px; }
+
+.head { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+/* logos sit on the theme's logo plate, like tournament logos */
+.logo { flex: none; width: 96px; height: 96px; object-fit: contain; background: var(--logo-plate); border-radius: 14px; padding: 6px; box-shadow: 0 0 0 2px var(--accent), 0 0 22px rgb(var(--accent-rgb) / .45); }
+.tagline { font-family: var(--font-display); text-transform: uppercase; font-size: clamp(20px, 2.4vw, 26px); line-height: 1.1; color: var(--accent); text-shadow: 0 0 20px rgb(var(--accent-rgb) / .45); }
+.story { max-width: 68ch; }
+.summary { margin-top: 28px; max-width: 60ch; font-size: 18px; line-height: 1.7; color: rgb(var(--ink-rgb) / .88); }
+.actions { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; }
+
+.tournaments { margin-top: 28px; }
+.tournaments ul { list-style: none; padding: 0; margin-top: 8px; display: grid; }
+/* rows inside the panel (not cards in a card) */
+.tournament { display: flex; align-items: center; gap: 14px; min-height: 56px; padding: 12px 0; border-top: 1px dashed rgb(var(--accent-soft-rgb) / .22); transition: color .18s ease; }
+.tournaments li:last-child .tournament { padding-bottom: 0; }
+.tournament:hover strong { color: var(--accent); }
+.tournament:hover .arrow { transform: translateX(3px); }
+.badge { flex: none; width: 44px; height: 44px; object-fit: contain; background: var(--logo-plate); border-radius: 8px; padding: 3px; }
+.tName { min-width: 0; }
+.tName strong { display: block; font-size: 18px; font-weight: 600; }
+.tName span { display: block; margin-top: 2px; font-size: 14px; color: rgb(var(--ink-rgb) / .68); }
+.arrow { margin-left: auto; font-size: 20px; color: var(--accent); transition: transform .18s ease; }
+
+/* flyers and posters: shown whole (never cropped), side by side when there are two */
+.media { display: grid; gap: 20px; }
+.media[data-count='2'] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.media figure { margin: 0; }
+.media a { display: block; border-radius: 12px; overflow: hidden; border: 1px solid rgb(var(--accent-rgb) / .2); background: var(--surface2); transition: border-color .2s ease, box-shadow .2s ease; }
+.media a:hover { border-color: rgb(var(--accent-rgb) / .6); box-shadow: var(--glow-soft); }
+/* portrait space is kept while the image loads (flyers usually are), then it takes its own shape: no jump */
+.media img { display: block; width: 100%; height: auto; aspect-ratio: auto 3 / 4; }
+.media figcaption { margin-top: 8px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .66); }
+
+/* "Playing for …" on a tournament's page (/tournaments/[slug]/): a twilight band with sparkles that ends in pink clouds
+   above the rules, the charity flyer beside the tournament's poster */
+.playingBand:global(.darker) {
+  --cloud-fill: var(--paper-gloss);
+  position: relative; overflow: hidden; isolation: isolate;
+  /* room for the clouds and their glow under the last line of text */
+  padding-bottom: calc(clamp(56px, 8vw, 96px) + 64px);
+  background:
+    radial-gradient(1100px 150px at 50% 100%, rgb(var(--accent-rgb) / .34), transparent 70%),
+    radial-gradient(55% 60% at 92% 0%, rgb(var(--accent-soft-rgb) / .12), transparent 70%),
+    var(--sky);
+}
+.playingInner { position: relative; z-index: 2; }
+.playingBand + :global(*) { margin-top: -1px; }
+.playing { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(32px, 5vw, 64px); align-items: center; }
+.playing[data-media='false'] { grid-template-columns: minmax(0, 1fr); max-width: 760px; }
+.playing + .playing { margin-top: clamp(48px, 6vw, 72px); }
+.playing > :first-child > * + * { margin-top: 16px; }
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.pair[data-count='1'] { grid-template-columns: minmax(0, 1fr); max-width: 420px; }
+.pair figure { margin: 0; }
+/* portrait space while loading, like .media img */
+.pair img { display: block; width: 100%; height: auto; aspect-ratio: auto 3 / 4; border-radius: 12px; border: 1px solid rgb(var(--accent-rgb) / .3); background: var(--surface2); box-shadow: 0 0 36px -16px rgb(var(--accent-rgb) / .6); }
+/* a logo (no poster or flyer yet) is shown whole on the theme's logo plate */
+.pair figure[data-kind='logo'] img { aspect-ratio: 1; object-fit: contain; background: var(--logo-plate); padding: 12px; }
+.pair figcaption { margin-top: 8px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .66); }
+
+/* the last charity band ends in pink clouds that melt into the blush call to action (no overflow clip: the panel stays sticky) */
+.lastBand { --cloud-fill: var(--paper-gloss); position: relative; isolation: isolate; padding-bottom: calc(clamp(56px, 8vw, 96px) + 64px); }
+.lastBand > :global(.wrap) { position: relative; z-index: 2; }
+.lastBand + :global(*) { margin-top: -1px; }
+
+.cta > * + * { margin-top: 16px; }
+.cta .actions { margin-top: 24px; }
+
+@media (max-width: 900px) {
+  .layout, .playing { grid-template-columns: minmax(0, 1fr); }
+  .media, .media[data-count='2'] { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+}
+@media (max-width: 560px) {
+  .logo { width: 72px; height: 72px; border-radius: 10px; padding: 4px; }
+}

@@ -1,9 +1,11 @@
 /**
  * Starting content for the MIS. Built from the real club facts (club.ts), shop and photos (real.ts)
- * and community posts (community.ts), all from deadlydropspickleball.com. The store serves this until the owner publishes their first change.
+ * and community posts (community.ts), all from deadlydropspickleball.com, and the charities the
+ * tournaments play for (charities.ts). The store serves this until the owner publishes their first change.
  */
 import type { SiteContent } from '@/lib/content-schema'
 import { defaultTheme } from '@/theme/tokens'
+import { charities } from './charities'
 import { aboutPoints, club, faqs, tickerItems } from './club'
 import { communityPosts } from './community'
 import { clubGallery, shopProducts } from './real'
@@ -20,7 +22,7 @@ export function buildSeed(): SiteContent {
       ...club,
       social: club.social ?? {},
       aboutPoints,
-      notice: { enabled: true, text: 'Preview build · member names, ratings and results are sample content' },
+      notice: { enabled: true, text: 'Preview build · member names and ratings are sample content' },
       shop: { memberDiscount: MEMBER_DISCOUNT, pickupNote: '' },
     },
     theme: { ...defaultTheme },
@@ -39,11 +41,12 @@ export function buildSeed(): SiteContent {
     })),
     posts: communityPosts,
     faqs: faqs.map((f, i) => ({ id: id('faq', i), ...f, visible: true })),
+    charities,
     pages: {
       home: {
         eyebrow: 'Open to all · earned by play',
         title: 'Everybody’s welcome. *Nobody* coasts.',
-        lede: 'Deadly Drops Pickleball is the premier destination for players in Chula Vista: structured division tournaments, engaging community events, and a vibrant court culture built for everyone who loves the sport.',
+        lede: 'Deadly Drops Pickleball runs charity pickleball tournaments in Chula Vista: divisions by age bracket and DUPR level, friendly round robins, and every tournament plays for a cause.',
         heroImage: { src: '/images/club/dominate-play-5.jpg', alt: '', position: '75% 40%' },
         heroImageMobile: { src: '/images/club/court-group-photo.jpg', alt: '', position: '50% 50%' },
       },

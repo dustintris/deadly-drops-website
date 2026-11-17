@@ -1,16 +1,40 @@
+.heroWhen { font-family: var(--font-display); font-size: clamp(26px, 3.4vw, 40px); text-transform: uppercase; line-height: 1; color: var(--accent); text-shadow: 0 0 22px rgb(var(--accent-rgb) / .5); }
+
+/* the twilight sky: night above, a lilac haze and a soft beam of light, a pink glow on the horizon under the clouds.
+   Text sits above the glow (see .heroInner's bottom padding), so every stop it sits on keeps AA contrast. */
 .hero {
-  position: relative; overflow: hidden;
-  background: radial-gradient(900px 420px at 0% 0%, rgb(var(--accent-rgb) / .12), transparent 70%), var(--surface);
-  border-bottom: 1px solid rgb(var(--accent-rgb) / .12);
+  --cloud-fill: var(--surface);
+  position: relative; overflow: hidden; isolation: isolate;
+  background:
+    linear-gradient(104deg, transparent 74%, rgb(var(--accent-soft-rgb) / .05) 79%, rgb(var(--accent-soft-rgb) / .08) 81%, rgb(var(--accent-soft-rgb) / .05) 83%, transparent 88%),
+    radial-gradient(60% 70% at 94% 0%, rgb(var(--accent-soft-rgb) / .15), transparent 70%),
+    radial-gradient(1100px 150px at 50% 100%, rgb(var(--accent-rgb) / .34), transparent 70%),
+    var(--sky);
 }
+/* phones: no beam (the copy spans the whole width there) */
+@media (max-width: 720px) {
+  .hero { background: radial-gradient(70% 50% at 100% 0%, rgb(var(--accent-soft-rgb) / .14), transparent 70%), radial-gradient(700px 110px at 50% 100%, rgb(var(--accent-rgb) / .34), transparent 70%), var(--sky); }
+}
+/* the clouds take the colour of the band that follows, so the sky melts into it */
+.hero:has(+ :global(.light)) { --cloud-fill: var(--paper-gloss); }
+.hero:has(+ :global(.darker)) { --cloud-fill: var(--bg); }
+/* the next band overlaps the hero by a pixel: at a fractional edge the shared pixel row would otherwise mix in the dark page behind */
+.hero + :global(*) { margin-top: -1px; }
 .withPhoto { min-height: min(62svh, 560px); display: flex; align-items: flex-end; }
 .heroImg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* night over the photo: dark where the text is, a little orchid where it isn't */
 .withPhoto::after {
   content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(90deg, rgb(var(--bg-rgb) / .92), rgb(var(--bg-rgb) / .55) 55%, rgb(var(--bg-rgb) / .25)),
-              linear-gradient(0deg, rgb(var(--bg-rgb) / .7), transparent 50%);
+  background: linear-gradient(90deg, rgb(var(--bg-rgb) / .94), rgb(var(--bg-rgb) / .8) 40%, rgb(var(--bg-rgb) / .5) 65%, rgb(var(--bg-rgb) / .25)),
+              linear-gradient(0deg, rgb(var(--bg-rgb) / .7), transparent 50%),
+              linear-gradient(180deg, rgb(var(--bg-rgb) / .45), transparent 32%),
+              linear-gradient(0deg, rgb(var(--accent-deep-rgb) / .3), rgb(var(--accent-soft-rgb) / .08) 60%, transparent);
 }
-.heroInner { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: end; padding-block: clamp(56px, 8vw, 96px) clamp(40px, 6vw, 72px); }
+.heroInner {
+  position: relative; z-index: 2; display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: end;
+  /* the bottom padding keeps the copy clear of the clouds */
+  padding-block: clamp(56px, 8vw, 96px) calc(clamp(40px, 6vw, 72px) + 40px);
+}
 .heroCopy > * + * { margin-top: 18px; }
 .heroCopy h1 { max-width: 14ch; }
 .heroAside { min-width: 300px; }
@@ -19,5 +43,6 @@
   .heroAside { min-width: 0; }
   .withPhoto { min-height: 0; }
   .withPhoto .heroInner { padding-top: 200px; }
-  .withPhoto::after { background: linear-gradient(0deg, rgb(var(--bg-rgb) / .96) 20%, rgb(var(--bg-rgb) / .3)); }
+  /* the photo shows above the copy (its 200px top padding); under the copy it is night-dark, so small pink text stays AA */
+  .withPhoto::after { background: linear-gradient(180deg, rgb(var(--bg-rgb) / .25), rgb(var(--bg-rgb) / .55) 130px, rgb(var(--bg-rgb) / .88) 200px, rgb(var(--bg-rgb) / .94)); }
 }

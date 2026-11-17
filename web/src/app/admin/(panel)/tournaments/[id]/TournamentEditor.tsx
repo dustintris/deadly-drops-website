@@ -10,7 +10,7 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { saveTournamentAction, type TournamentResult } from '@/app/admin/tournament-actions'
-import { Check, ImageField, LinesField, MoneyField, NumberField, SaveBar, SectionForm, Select, TextField, useFieldError } from '@/components/admin/kit'
+import { Check, cleanSlug, ImageField, LinesField, MoneyField, NumberField, SaveBar, SectionForm, Select, TextField, useFieldError } from '@/components/admin/kit'
 import { newId } from '@/lib/content-schema'
 import { addDaysIso, autoDateLabel, dayLabel } from '@/lib/tournaments/days'
 import type { Tournament } from '@/lib/tournaments/repo'
@@ -73,10 +73,6 @@ function todayInClub(): string {
   const p = Object.fromEntries(parts.map((x) => [x.type, x.value]))
   return `${p.year}-${p.month}-${p.day}`
 }
-
-/** Lowercase words and dashes as they type; a trailing dash is allowed until it is saved. */
-const cleanSlug = (v: string) =>
-  v.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+/, '').slice(0, 60)
 
 const courtsLabel = (d: { firstCourt: number; courtCount: number }) =>
   !(d.firstCourt >= 1 && d.courtCount >= 1)

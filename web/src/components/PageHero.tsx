@@ -1,5 +1,6 @@
 import { asset } from '@/lib/utils'
 import styles from './page.module.css'
+import { CloudEdge, Sparkles } from './Sky'
 
 type Props = {
   eyebrow?: string
@@ -11,11 +12,12 @@ type Props = {
   children?: React.ReactNode
 }
 
-/** Page opener used by inner pages: photo or tinted ground, eyebrow, display title, optional side panel. */
+/** Page opener used by inner pages: photo or twilight sky, sparkles, eyebrow, display title, optional side panel, cloud edge. */
 export function PageHero({ eyebrow, title, lede, photo, photoPosition = '50% 40%', aside, children }: Props) {
   return (
     <section className={`${styles.hero} ${photo ? styles.withPhoto : ''}`}>
       {photo && <img className={styles.heroImg} src={asset(photo)} alt="" style={{ objectPosition: photoPosition }} />}
+      <Sparkles />
       <div className={`wrap ${styles.heroInner}`}>
         <div className={styles.heroCopy} data-enter>
           {eyebrow && <p className="eyebrow">{eyebrow}</p>}
@@ -25,6 +27,7 @@ export function PageHero({ eyebrow, title, lede, photo, photoPosition = '50% 40%
         </div>
         {aside && <div className={styles.heroAside}>{aside}</div>}
       </div>
+      <CloudEdge />
     </section>
   )
 }
