@@ -3,7 +3,7 @@ import { getSql } from '@/db/client'
 import { appKeyStatus, bearerKey, revokeAppKey, rotateAppKey, verifyAppKey } from '../key'
 
 beforeEach(async () => {
-  await getSql()`delete from app_meta where key = 'desktop_app_key'`
+  await revokeAppKey() // also clears the in-memory copy
 })
 
 describe('desktop app key', () => {

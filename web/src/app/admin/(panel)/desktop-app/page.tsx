@@ -12,9 +12,10 @@ export const dynamic = 'force-dynamic'
 export default async function DesktopAppAdmin() {
   await requirePermission('staff', 'edit') // each page checks: a layout check alone can be skipped by partial rendering
   const [status, all, h] = await Promise.all([appKeyStatus(), loadAllForApp(), headers()])
-  const host = h.get('x-forwarded-host') ?? h.get('host') ?? ''
-  const proto = h.get('x-forwarded-proto') ?? (host.startsWith('localhost') || host.startsWith('127.') ? 'http' : 'https')
-  const server = (process.env.NEXT_PUBLIC_SITE_URL || (host ? `${proto}://${host}` : '')) + (process.env.NEXT_PUBLIC_BASE_PATH || '')
+  // the configured address (always set in production); a request's own Host header only stands in during development
+  const host = process.env.NODE_ENV === 'production' ? '' : (h.get('host') ?? '')
+  const origin = process.env.NEXT_PUBLIC_SITE_URL || (host ? `http://${host}` : '')
+  const server = origin ? origin + (process.env.NEXT_PUBLIC_BASE_PATH || '') : ''
   const skipped = all.flatMap((t) => skippedTeams(t).map((x) => ({ ...x, tournament: t.name })))
 
   return (
