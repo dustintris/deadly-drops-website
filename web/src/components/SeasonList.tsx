@@ -78,7 +78,8 @@ export function SeasonList({ events, states, champions }: { events: ClubEvent[];
                     <p>{e.dateLabel}{e.location ? ` · ${e.location}` : ''}</p>
                   </div>
                 </div>
-                <span className="tag">{money(e.entryFee)}{e.prizes.length ? ` · Gold ${money(e.prizes[0].amount)}` : ''}</span>
+                {/* a tournament that's over shows no entry price, only its top prize */}
+                {e.prizes.length > 0 && <span className="tag">Gold {money(e.prizes[0].amount)}</span>}
                 <Link href="/community/" className="btn btn-line btn-sm">Photos &amp; stories<span className="sr"> from {e.name}</span></Link>
               </li>
             )

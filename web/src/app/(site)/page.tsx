@@ -190,7 +190,8 @@ export default async function Home() {
                         <p>{e.dateLabel}{e.location ? ` · ${e.location.split(',')[0]}` : ''}</p>
                       </div>
                     </div>
-                    <span className="tag">{cause ? `For ${cause.name}` : `${fee(e.entryFee)} entry`}</span>
+                    {/* a past tournament: the cause it played for, never its entry price */}
+                    {cause && <span className="tag">For {cause.name}</span>}
                     <Link href={pastResults[i] ? `${tournamentHref(e)}#results` : tournamentHref(e)} className="btn btn-line btn-sm">
                       {pastResults[i] ? 'Results' : 'Details'}<span className="sr"> for {e.name}</span>
                     </Link>
@@ -268,10 +269,13 @@ function TournamentCard({ e, state, t, charities, results }: { e: ClubEvent; sta
 
       <dl className={s.facts}>
         {e.location && <div className={s.wide}><dt>Where</dt><dd>{e.location}</dd></div>}
-        <div>
-          <dt>Entry</dt>
-          <dd>{fee(e.entryFee)} per player{e.entryFeeWithMeal !== undefined ? `, ${money(e.entryFeeWithMeal)} with meal` : ''}</dd>
-        </div>
+        {/* the price only while the tournament is ahead */}
+        {state !== 'past' && (
+          <div>
+            <dt>Entry</dt>
+            <dd>{fee(e.entryFee)} per player{e.entryFeeWithMeal !== undefined ? `, ${money(e.entryFeeWithMeal)} with meal` : ''}</dd>
+          </div>
+        )}
         <div>
           <dt>Divisions</dt>
           <dd>

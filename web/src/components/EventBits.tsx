@@ -6,12 +6,9 @@ import { Monogram } from './Monogram'
 import styles from './events.module.css'
 import page from './tournament.module.css'
 
-export function eventTags(e: ClubEvent) {
-  return [
-    `${money(e.entryFee)} / player`,
-    e.entryFeeWithMeal ? `${money(e.entryFeeWithMeal)} with meal` : null,
-    ...e.includes.slice(0, 2),
-  ].filter(Boolean) as string[]
+/** Chips for a hero: what's included. Never the price (that's in the section under the hero). */
+export function eventTags(e: ClubEvent): string[] {
+  return e.includes.slice(0, 3)
 }
 
 export function NextEventBlock({ event }: { event: ClubEvent }) {

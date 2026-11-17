@@ -107,8 +107,19 @@ function Registration({ t, state }: { t: Tournament; state: EventState }) {
   if (state === 'tba') {
     return <p className={x.stateLine}>The date is still to be announced. <Link href="/tournaments/#join-email">Join the email list</Link> to hear first.</p>
   }
-  return <p className={x.stateLine}>This tournament is over. <Link href="/community/">See photos and stories</Link> from the day.</p>
+  return (
+    <div className={x.register}>
+      <p className={x.stateLine}>This tournament is over.</p>
+      <div className={x.pastCtas}>
+        <Link href={PHOTOS_HREF} className="btn btn-accent btn-lg">See all the photos</Link>
+        <Link href="/community/" className="link-arrow">Stories from the day →</Link>
+      </div>
+    </div>
+  )
 }
+
+/** The gallery, opened on its tournament photos. */
+const PHOTOS_HREF = '/gallery/?album=Tournaments'
 
 function DivisionList({ divisions, day, rules, level: H }: { divisions: Division[]; day?: string; rules: Tournament['rules']; level: 'h3' | 'h4' }) {
   return (
@@ -259,7 +270,11 @@ export default async function TournamentPage({ params }: Params) {
     (d) => (d.gamesTo !== null && d.gamesTo !== rules.gamesTo) || (d.gamesPerTeam !== null && d.gamesPerTeam !== rules.gamesPerTeam),
   )
   const prizes = [...info.prizes].sort((a, b) => PLACE_ORDER.indexOf(a.place) - PLACE_ORDER.indexOf(b.place))
-  const hasSide = info.includes.length > 0 || prizes.length > 0
+  // the entry band under the hero (price, what's included, register) only while the tournament is ahead;
+  // once it's over, the price goes and what was included stays beside the schedule
+  const showEntry = state !== 'past'
+  const sideIncludes = !showEntry && info.includes.length > 0
+  const hasSide = sideIncludes || prizes.length > 0
   // the tournament's own logo; the club badge until one is uploaded
   const logo = info.logo ? { src: info.logo.src, alt: info.logo.alt || `${t.name} logo` } : { src: (await getClubLogo()).src, alt: `${club.name} logo` }
 
@@ -306,13 +321,6 @@ export default async function TournamentPage({ params }: Params) {
         aside={
           <div className={x.heroSide}>
             <img className={x.heroLogo} src={asset(logo.src)} alt={logo.alt} width={184} height={184} />
-            <div className={ts.entries}>
-              <p className="eyebrow">Entry</p>
-              <ul className={ts.pool}>
-                <li><span>Per player</span><strong>{fee(info.entryFee)}</strong></li>
-                {info.entryFeeWithMeal !== undefined && <li><span>With meal</span><strong>{money(info.entryFeeWithMeal)}</strong></li>}
-              </ul>
-            </div>
           </div>
         }
       >
@@ -327,6 +335,34 @@ export default async function TournamentPage({ params }: Params) {
         )}
         <Registration t={t} state={state} />
       </PageHero>
+
+      {/* what it costs and what you get, under the hero while the tournament is still ahead */}
+      {showEntry && (
+        <section className={`section-tight dark ${x.entryBand}`} aria-labelledby="entry-title">
+          <div className={`wrap ${x.entry}`} data-reveal>
+            <div>
+              <h2 id="entry-title" className="eyebrow">Entry</h2>
+              <ul className={x.entryPrices}>
+                <li><strong>{fee(info.entryFee)}</strong><span>Per player</span></li>
+                {info.entryFeeWithMeal !== undefined && <li><strong>{money(info.entryFeeWithMeal)}</strong><span>With meal</span></li>}
+              </ul>
+            </div>
+            {info.includes.length > 0 && (
+              <div>
+                <p className="eyebrow">What’s included</p>
+                <ul className={`chips ${x.entryIncluded}`}>
+                  {info.includes.map((item, k) => <li key={`${k}-${item}`} className="tag">{item}</li>)}
+                </ul>
+              </div>
+            )}
+            {state === 'open' && info.registrationUrl && (
+              <a href={info.registrationUrl} className={`btn btn-accent ${x.entryCta}`} target="_blank" rel="noopener noreferrer">
+                Register on Main Court <span className="sr">for {t.name} (opens in a new tab)</span>
+              </a>
+            )}
+          </div>
+        </section>
+      )}
 
       {resultsFirst && resultsSection}
 
@@ -365,7 +401,7 @@ export default async function TournamentPage({ params }: Params) {
 
             {hasSide && (
               <div className={x.side} data-reveal="right">
-                {info.includes.length > 0 && (
+                {sideIncludes && (
                   <div>
                     <h2 className="display d-s">What’s included</h2>
                     <ul className={x.included}>

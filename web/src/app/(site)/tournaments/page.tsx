@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { EntriesCard } from '@/components/EntriesCard'
+import { Countdown } from '@/components/Countdown'
 import { eventTags } from '@/components/EventBits'
 import live from '@/components/live.module.css'
 import { MainCourtRegister } from '@/components/MainCourtRegister'
@@ -8,15 +8,18 @@ import { PageHero } from '@/components/PageHero'
 import { SeasonList } from '@/components/SeasonList'
 import page from '@/components/tournament.module.css'
 import t from '@/components/tournaments.module.css'
-import { getChampions, getDivisionGuide, getEvents, getNextEvent, getTournamentBasics, getTournamentLive } from '@/lib/data'
+import { startLabel, tournamentStart } from '@/lib/countdown'
+import { getChampions, getDivisionGuide, getEvents, getNextEvent, getTournamentBasics, getTournamentLive, getTournamentPage } from '@/lib/data'
 import { clubToday, eventCta, eventEyebrow, eventState } from '@/lib/events'
 import { pageMeta } from '@/lib/seo'
-import { money } from '@/lib/utils'
+import { asset, money } from '@/lib/utils'
 
 export async function generateMetadata(): Promise<Metadata> {
   const e = await getNextEvent()
+  // the entry price only while the tournament is ahead
+  const entry = e && eventState(e) !== 'past' ? ` ${money(e.entryFee)} entry.` : ''
   const desc = e
-    ? `${e.name}, ${e.dateLabel}${e.location ? ` at ${e.location.split(',')[0]}` : ''}. ${money(e.entryFee)} entry. Deadly Drops Pickleball charity tournaments in Chula Vista, CA.`
+    ? `${e.name}, ${e.dateLabel}${e.location ? ` at ${e.location.split(',')[0]}` : ''}.${entry} Deadly Drops Pickleball charity tournaments in Chula Vista, CA.`
     : 'Deadly Drops Pickleball charity tournaments in Chula Vista, CA: divisions by age and DUPR level, round robin play, a meal and a shirt with every entry.'
   return pageMeta('Tournaments', desc.slice(0, 160), '/tournaments/')
 }
@@ -34,6 +37,14 @@ export default async function TournamentsPage() {
   const latestPlay = latest?.id ? await getTournamentLive(Number(latest.id)) : null
   const results = latest && latestPlay?.divisions.some((d) => d.teams.length > 0 || d.matches.length > 0) ? latest : null
   const resultsLive = results !== null && states[results.slug] !== 'past'
+  // beside the hero (never a price): the countdown to the lead tournament's start, or once it's over, its logo
+  const lead = event && state !== 'past' ? await getTournamentPage(event.slug) : null
+  const start = lead ? tournamentStart(lead) : null
+  const heroSide = lead && start && Date.parse(start.at) > Date.now()
+    ? <Countdown at={start.at} timeKnown={start.timeKnown} name={lead.name} label={startLabel(start)} />
+    : event?.logo
+      ? <img className={page.heroLogo} src={asset(event.logo.src)} alt={event.logo.alt || `${event.name} logo`} width={184} height={184} />
+      : undefined
 
   return (
     <>
@@ -44,7 +55,7 @@ export default async function TournamentsPage() {
           lede={event.summary}
           photo={event.image?.src ?? '/images/club/dominate-podium-1.jpg'}
           photoPosition={event.image?.position ?? '50% 40%'}
-          aside={<EntriesCard event={event} state={state} />}
+          aside={heroSide}
         >
           <p className={t.heroWhen}>{event.dateLabel}</p>
           <ul className="chips" style={{ listStyle: 'none', padding: 0 }}>

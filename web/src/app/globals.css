@@ -161,6 +161,7 @@ main > :is(section, article):first-child:is(.dark, .darker) {
 .btn-line { border: 1px solid rgb(var(--accent-rgb) / .6); color: var(--accent); }
 .btn-line:hover { background: rgb(var(--accent-rgb) / .1); box-shadow: var(--glow-soft); }
 .btn-sm { min-height: 40px; padding: 0 18px; font-size: 11px; }
+.btn-lg { min-height: 58px; padding: 0 38px; font-size: 13px; }
 .btn-block { width: 100%; }
 .link-arrow { display: inline-flex; align-items: center; min-height: 44px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); background: linear-gradient(var(--accent), var(--accent)) 0 calc(50% + 11px) / 100% 1px no-repeat; }
 .link-arrow:hover { color: var(--accent-soft); background-image: linear-gradient(var(--accent-soft), var(--accent-soft)); }

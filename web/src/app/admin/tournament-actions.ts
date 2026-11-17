@@ -17,7 +17,7 @@ import {
   TournamentNotFoundError,
   type Tournament,
 } from '@/lib/tournaments/repo'
-import { TournamentInput } from '@/lib/tournaments/schema'
+import { MainCourtLink, TournamentInput } from '@/lib/tournaments/schema'
 
 /**
  * Tournament create / save / delete. Needs `tournaments: edit`, checked here on the server.
@@ -58,13 +58,20 @@ const refresh = () => {
 }
 
 /** Start a new hidden tournament; the editor opens on it. */
-export async function createTournamentAction(name: unknown): Promise<TournamentResult> {
+/** Create a hidden tournament from its name and, optionally, its Main Court link (where players register). */
+export async function createTournamentAction(name: unknown, registrationUrl: unknown = ''): Promise<TournamentResult> {
   const s = await editor()
   if (refused(s)) return s
   const parsed = Name.safeParse(name)
-  if (!parsed.success) return { ok: false, message: parsed.error.issues[0].message, errors: { name: parsed.error.issues[0].message } }
+  const link = MainCourtLink.safeParse(registrationUrl)
+  if (!parsed.success || !link.success) {
+    const errors: Record<string, string> = {}
+    if (!parsed.success) errors.name = parsed.error.issues[0].message
+    if (!link.success) errors.registrationUrl = link.error.issues[0].message
+    return { ok: false, message: 'Fix the highlighted field.', errors }
+  }
   try {
-    const t = await createTournament(parsed.data)
+    const t = await createTournament(parsed.data, { registrationUrl: link.data })
     await audit(s.email, 'tournament_create', t.name)
     refresh()
     return { ok: true, message: `${t.name} created. It stays hidden until you tick “Show on the website”.`, tournament: t }

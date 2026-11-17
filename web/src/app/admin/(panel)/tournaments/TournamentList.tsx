@@ -99,8 +99,11 @@ function NewTournament() {
   const router = useRouter()
   const id = useId()
   const inputRef = useRef<HTMLInputElement>(null)
+  const linkRef = useRef<HTMLInputElement>(null)
   const [name, setName] = useState('')
+  const [link, setLink] = useState('')
   const [error, setError] = useState<string | undefined>()
+  const [linkError, setLinkError] = useState<string | undefined>()
   const [note, setNote] = useState<Note | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -115,12 +118,14 @@ function NewTournament() {
     }
     setBusy(true)
     setNote(null)
-    const res = await call(() => createTournamentAction(name))
+    const res = await call(() => createTournamentAction(name, link))
     if (!res.ok || !res.tournament) {
       setBusy(false)
       setError(res.errors?.name)
+      setLinkError(res.errors?.registrationUrl)
       setNote({ ok: false, text: res.message })
-      inputRef.current?.focus()
+      if (!res.errors?.name && res.errors?.registrationUrl) linkRef.current?.focus()
+      else inputRef.current?.focus()
       return
     }
     setNote({ ok: true, text: `${res.message} Opening it…` })
@@ -139,6 +144,15 @@ function NewTournament() {
             onChange={(e) => { setName(e.target.value); setError(undefined) }} />
           {error && <p className="err" id={`${id}-err`}>{error}</p>}
           <p className="hint" id={`${id}-hint`}>It starts hidden from the website, so you can fill in the details first.</p>
+        </div>
+        <div className="adm-field">
+          <label htmlFor={`${id}-link`}>Main Court link (optional)</label>
+          <input ref={linkRef} id={`${id}-link`} className="adm-input" type="url" inputMode="url" value={link} maxLength={500} autoComplete="off"
+            placeholder="https://maincourt.com/events-list/…" aria-invalid={!!linkError}
+            aria-describedby={[linkError && `${id}-link-err`, `${id}-link-hint`].filter(Boolean).join(' ')}
+            onChange={(e) => { setLink(e.target.value); setLinkError(undefined) }} />
+          {linkError && <p className="err" id={`${id}-link-err`}>{linkError}</p>}
+          <p className="hint" id={`${id}-link-hint`}>Registration is on Main Court: paste the tournament’s Main Court page and every Register button sends players there. You can add it later in the editor.</p>
         </div>
         <div className="adm-actions">
           <button type="submit" className="adm-btn primary" aria-disabled={busy}>{busy ? 'Creating…' : 'Create tournament'}</button>

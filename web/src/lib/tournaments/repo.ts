@@ -163,14 +163,16 @@ const blankInfo = (): InfoT => ({
 })
 
 /** A new, hidden tournament with sensible defaults, ready to fill in. */
-export async function createTournament(name: string): Promise<Tournament> {
+/** A new, hidden tournament; its Main Court link (where players register) can be given right away. */
+export async function createTournament(name: string, opts: { registrationUrl?: string } = {}): Promise<Tournament> {
+  const info: InfoT = { ...blankInfo(), ...(opts.registrationUrl ? { registrationUrl: opts.registrationUrl } : {}) }
   const db = getDb()
   // two creates with the same name at once can pick the same free address: the loser tries the next one
   for (let attempt = 1; ; attempt++) {
     try {
       const [row] = await db
         .insert(tournaments)
-        .values({ slug: await uniqueSlug(db, name), name: name.trim(), info: blankInfo(), rules: DEFAULT_RULES })
+        .values({ slug: await uniqueSlug(db, name), name: name.trim(), info, rules: DEFAULT_RULES })
         .returning()
       return (await withDivisions(db, [row]))[0]
     } catch (e) {

@@ -42,6 +42,15 @@ describe('tournaments', () => {
     expect(b.slug).toBe('summer-slam-2027-2')
   })
 
+  it('keeps the Main Court link given when the tournament is created, and it passes the editor’s checks', async () => {
+    const link = 'https://maincourt.com/events-list/summer-slam-2027/'
+    const t = await createTournament('Summer Slam 2027', { registrationUrl: link })
+    expect(t.info.registrationUrl).toBe(link)
+    expect((await getTournament(t.id))?.info.registrationUrl).toBe(link)
+    expect(TournamentInput.safeParse(input(t)).success).toBe(true)
+    expect((await createTournament('Autumn Open')).info.registrationUrl).toBeUndefined()
+  })
+
   it('saves days and divisions, keeps division ids, and removes divisions that were taken out', async () => {
     const t = await createTournament('Two Day Open')
     const saved = await saveTournament(t.id, input(t, {

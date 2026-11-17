@@ -65,6 +65,9 @@ function hasOwnMessage(u: string): boolean {
   }
 }
 
+/** The tournament's page on Main Court, where all registration happens (optional until registration opens). */
+export const MainCourtLink = optional(httpsUrl.refine((u) => hasOwnMessage(u) || isMainCourtUrl(u), 'Paste the tournament’s Main Court link (https://maincourt.com/…).'))
+
 /** Everything the public page shows about a tournament besides its days and divisions. */
 export const Info = z.object({
   summary: text(10, 200, 'Summary'),
@@ -77,8 +80,7 @@ export const Info = z.object({
   format: text(3, 120, 'Format summary'),
   prizes: z.array(Prize).max(3).refine((p) => new Set(p.map((x) => x.place)).size === p.length, 'Each place can only appear once.'),
   registrationOpen: z.boolean(),
-  /** The tournament's page on Main Court, where all registration happens. */
-  registrationUrl: optional(httpsUrl.refine((u) => hasOwnMessage(u) || isMainCourtUrl(u), 'Paste the tournament’s Main Court link (https://maincourt.com/…).')),
+  registrationUrl: MainCourtLink,
   /** Poster or photo shown large on the tournament page. */
   image: ImageRef.optional(),
   /** The tournament's own logo (each event has one); the club logo is used when empty. */

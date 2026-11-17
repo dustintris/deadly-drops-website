@@ -8,10 +8,11 @@ import styles from './gallery.module.css'
 const ORDER = ['Tournaments', 'Community', 'Socials', 'Ladder', 'Clinics'] as const
 type Album = 'All' | GalleryItem['album']
 
-export function GalleryGrid({ items }: { items: GalleryItem[] }) {
-  const [album, setAlbum] = useState<Album>('All')
+/** `initialAlbum` (from /gallery/?album=…, e.g. a tournament's "See all the photos") opens on that album when it has photos. */
+export function GalleryGrid({ items, initialAlbum }: { items: GalleryItem[]; initialAlbum?: string }) {
   // only offer albums that have photos; hide the chips when there is just one
   const albums: Album[] = ['All', ...ORDER.filter((a) => items.some((g) => g.album === a))]
+  const [album, setAlbum] = useState<Album>(() => albums.find((a) => a !== 'All' && a === initialAlbum) ?? 'All')
   const [open, setOpen] = useState<number | null>(null)
   const dialog = useRef<HTMLDialogElement>(null)
   const list = album === 'All' ? items : items.filter((g) => g.album === album)

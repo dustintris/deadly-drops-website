@@ -7,8 +7,10 @@ import { pageMeta } from '@/lib/seo'
 
 export const metadata: Metadata = pageMeta('Gallery', 'Photos from Deadly Drops Pickleball tournaments, ladder nights, clinics and socials in Chula Vista, CA. Send us yours to add.', '/gallery/')
 
-export default async function GalleryPage() {
-  const [items, copy] = await Promise.all([getGallery(), getPageCopy('gallery')])
+export default async function GalleryPage({ searchParams }: { searchParams: Promise<{ album?: string | string[] }> }) {
+  const [items, copy, query] = await Promise.all([getGallery(), getPageCopy('gallery'), searchParams])
+  // ?album=Tournaments opens the grid on that album (an unknown one is simply ignored)
+  const album = typeof query.album === 'string' ? query.album : undefined
   return (
     <section className="section dark">
       <div className="wrap">
@@ -20,7 +22,7 @@ export default async function GalleryPage() {
           </div>
           <Link href="/contact/" className="btn btn-line">Submit a photo</Link>
         </div>
-        <GalleryGrid items={items} />
+        <GalleryGrid items={items} initialAlbum={album} />
       </div>
     </section>
   )
