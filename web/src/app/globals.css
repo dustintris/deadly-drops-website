@@ -5,6 +5,8 @@
  * Admin → Logo & colours recolours the stars, glows and clouds as well.
  */
 *, *::before, *::after { box-sizing: border-box; margin: 0; }
+/* the reset above takes away the browser's centring of pop-up dialogs (photo viewer, admin pickers): give it back */
+dialog:modal { margin: auto; }
 /* no smooth scrolling: keyboard focus must be visible the moment it lands */
 /* the scrollbar's space is always kept, so a short page (no scrollbar) never shifts everything sideways */
 html { -webkit-text-size-adjust: 100%; scroll-padding-top: 96px; scrollbar-gutter: stable; }
