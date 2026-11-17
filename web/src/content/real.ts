@@ -38,6 +38,32 @@ export const shopProducts: Product[] = [
     category: 'Apparel',
     images: [img('shop-crewneck-1', 'Black Deadly Drops unisex crewneck'), img('shop-crewneck-2', 'Unisex crewneck, worn')],
   },
+  // the tournament shirts, from the print proofs the club sent
+  {
+    slug: 'victory-2026-tournament-shirt',
+    name: 'VICTORY 2026 Tournament Shirt',
+    sub: 'Pink · Dink for Pink, October 17–18, 2026',
+    price: 25,
+    tag: 'NEW',
+    category: 'Apparel',
+    description: 'The official shirt of VICTORY: Dink for Pink, our Breast Cancer and Halloween charity tournament (October 17–18, 2026) for Breast Cancer Angels. White front print with the Deadly Drops warrior, the Breast Cancer Angels crest and the tournament sponsors.',
+    images: [
+      img('shop-victory-shirt-front', 'Pink VICTORY 2026 tournament shirt, front'),
+      img('shop-victory-shirt-print', 'VICTORY 2026 shirt print: Dink for Pink, the Deadly Drops warrior, Breast Cancer Angels and sponsor logos'),
+    ],
+  },
+  {
+    slug: 'dominate-2026-tournament-shirt',
+    name: 'DOMINATE 2026 Tournament Shirt',
+    sub: 'Black · charity tournament, June 13–14, 2026',
+    price: 25,
+    category: 'Apparel',
+    description: 'The official shirt of DOMINATE, our first charity tournament (June 13–14, 2026) for the Us4Warriors Foundation. White front print with the Deadly Drops oni, the Us4Warriors crest and the tournament sponsors.',
+    images: [
+      img('shop-dominate-shirt-front', 'Black DOMINATE 2026 tournament shirt, front'),
+      img('shop-dominate-shirt-print', 'DOMINATE 2026 shirt print: the Deadly Drops oni, the Us4Warriors crest and sponsor logos'),
+    ],
+  },
 ]
 
 const g = (id: string, name: string, caption: string, meta: string, album: GalleryItem['album'], opts: Partial<GalleryItem> = {}): GalleryItem => ({

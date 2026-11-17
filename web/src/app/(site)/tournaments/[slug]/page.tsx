@@ -155,16 +155,19 @@ function DivisionList({ divisions, day, rules, level: H }: { divisions: Division
 
 /**
  * "Playing for <charity>": the charity's summary and links, with its flyer (or logo) beside this tournament's
- * own poster (or logo). Without any charity image it's text only, so the tournament's logo never stands alone here.
+ * own flyer (else its poster, else its logo). Without a charity image only the tournament's flyer shows: its logo never stands alone here.
  */
 function PlayingFor({ c, t }: { c: CharityT; t: Tournament }) {
   const theirs = c.flyer
     ? { ...c.flyer, alt: c.flyer.alt || `${c.name} flyer`, caption: `${c.name} flyer`, kind: 'flyer' }
     : c.logo ? { ...c.logo, alt: c.logo.alt || `${c.name} logo`, caption: c.name, kind: 'logo' } : null
-  const ours = t.info.image
+  const ours = t.info.flyer
+    ? { ...t.info.flyer, alt: t.info.flyer.alt || `${t.name} flyer`, caption: `${t.name} flyer`, kind: 'flyer' }
+    : t.info.image
     ? { ...t.info.image, alt: t.info.image.alt || `${t.name} poster`, caption: `${t.name} poster`, kind: 'poster' }
     : t.info.logo ? { ...t.info.logo, alt: t.info.logo.alt || `${t.name} logo`, caption: t.name, kind: 'logo' } : null
-  const images = theirs ? [theirs, ...(ours ? [ours] : [])] : []
+  // the tournament's flyer may stand alone (until the charity's is uploaded); its logo never does
+  const images = theirs ? [theirs, ...(ours ? [ours] : [])] : ours && ours.kind === 'flyer' ? [ours] : []
   const titleId = `playing-for-${c.slug}`
   return (
     <section className={ch.playing} data-media={images.length > 0} aria-labelledby={titleId}>
@@ -203,6 +206,8 @@ export default async function TournamentPage({ params }: Params) {
   const { info, rules, days } = t
   const state = stateOf(t, events)
   const pageUrl = `${SITE}/tournaments/${t.slug}/`
+  // the image search engines and link previews show for the event: its hero photo, else its flyer
+  const previewImage = info.image ?? info.flyer
 
   const dayCount = Math.max(1, days.length)
   const byDay = Array.from({ length: dayCount }, (_, i) =>
@@ -299,7 +304,7 @@ export default async function TournamentPage({ params }: Params) {
             : { '@type': 'PostalAddress', addressLocality: club.city, addressRegion: 'CA', addressCountry: 'US' },
         },
         organizer: { '@type': 'SportsOrganization', name: club.name, url: `${SITE}/` },
-        ...(info.image ? { image: ORIGIN + asset(info.image.src) } : {}),
+        ...(previewImage ? { image: ORIGIN + asset(previewImage.src) } : {}),
         offers: {
           '@type': 'Offer',
           price: info.entryFee,

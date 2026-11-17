@@ -430,7 +430,8 @@ export function TournamentEditor({ initial, canEdit }: { initial: Tournament; ca
           <Check label="Registration is open on Main Court (shows the Register buttons)" path="info.registrationOpen" checked={info.registrationOpen} onChange={(v) => setInfo({ registrationOpen: v })} />
         </fieldset>
         <div className="adm-grid">
-          <ImageField label="Poster or photo" path="info.image" value={info.image} onChange={(v) => setInfo({ image: v })} />
+          <ImageField label="Hero photo" path="info.image" value={info.image} hint="The photo behind the headline on the tournament page." onChange={(v) => setInfo({ image: v })} />
+          <ImageField label="Flyer" path="info.flyer" value={info.flyer} hint="Shown beside the charity’s flyer on the tournament page and on the Charity page." onChange={(v) => setInfo({ flyer: v })} />
           <ImageField label="Tournament logo" path="info.logo" value={info.logo} hint="Shown on the tournament page and its cards; the club logo is used when empty."
             onChange={(v) => setInfo({ logo: v })} />
         </div>

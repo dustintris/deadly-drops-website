@@ -57,6 +57,7 @@ export const events: ClubEvent[] = [
     registrationOpen: false,
     registrationUrl: 'https://maincourt.com/events-list/victory-dink-for-pink-breast-cancer-halloween/',
     logo: { src: '/images/club/victory-dink-for-pink-logo.png', alt: 'VICTORY: Dink for Pink tournament logo' },
+    flyer: { src: '/images/club/victory-flyer.jpg', alt: 'VICTORY Dink for Pink flyer: divisions, $65 registration with a pickle meal and shirt, raffle, costume prizes and sponsors' },
   },
   {
     slug: 'dominate-2026',
@@ -76,6 +77,7 @@ export const events: ClubEvent[] = [
       { place: 'Bronze', amount: 25 },
     ],
     registrationOpen: false,
+    flyer: { src: '/images/club/dominate-flyer.jpg', alt: 'DOMINATE tournament flyer: June 13–14, 2026 divisions, rules, prizes and $55 registration, playing for the Us4Warriors Foundation' },
   },
 ]
 

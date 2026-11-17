@@ -294,6 +294,7 @@ export function toClubEvent(t: Tournament): ClubEventT {
     registrationOpen: i.registrationOpen,
     registrationUrl: i.registrationUrl,
     image: i.image,
+    flyer: i.flyer,
     logo: i.logo,
     featured: t.featured,
     visible: t.visible,
@@ -305,7 +306,7 @@ export async function tournamentImageUsage(src: string): Promise<string[]> {
   const rows = await getDb()
     .select({ name: tournaments.name })
     .from(tournaments)
-    .where(sql`${tournaments.info}->'image'->>'src' = ${src} or ${tournaments.info}->'logo'->>'src' = ${src}`)
+    .where(sql`${tournaments.info}->'image'->>'src' = ${src} or ${tournaments.info}->'logo'->>'src' = ${src} or ${tournaments.info}->'flyer'->>'src' = ${src}`)
   return rows.map((r) => `Tournament: ${r.name}`)
 }
 
@@ -356,6 +357,7 @@ async function importOnce(): Promise<void> {
           registrationOpen: e.registrationOpen ?? false,
           registrationUrl: e.registrationUrl,
           image: e.image,
+          flyer: e.flyer,
           logo: e.logo,
         },
         rules: DEFAULT_RULES,

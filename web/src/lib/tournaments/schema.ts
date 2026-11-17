@@ -81,8 +81,10 @@ export const Info = z.object({
   prizes: z.array(Prize).max(3).refine((p) => new Set(p.map((x) => x.place)).size === p.length, 'Each place can only appear once.'),
   registrationOpen: z.boolean(),
   registrationUrl: MainCourtLink,
-  /** Poster or photo shown large on the tournament page. */
+  /** Photo behind the tournament page's headline (and its link previews). */
   image: ImageRef.optional(),
+  /** The tournament's flyer: shown beside its charity's flyer, on its page and the Charity page. */
+  flyer: ImageRef.optional(),
   /** The tournament's own logo (each event has one); the club logo is used when empty. */
   logo: ImageRef.optional(),
 })

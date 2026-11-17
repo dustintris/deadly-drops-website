@@ -19,12 +19,13 @@ export const metadata: Metadata = pageMeta(
   '/charity/',
 )
 
-/** The charity's flyer first, then the posters of the tournaments that play for it (each image with a caption). */
+/** The charity's flyer first, then the flyers (else posters) of the tournaments that play for it (each image with a caption). */
 function mediaOf(c: CharityT, tournaments: ClubEvent[]): { img: ImageRef; caption: string }[] {
   const out: { img: ImageRef; caption: string }[] = []
   if (c.flyer) out.push({ img: { ...c.flyer, alt: c.flyer.alt || `${c.name} flyer` }, caption: `${c.name} flyer` })
   for (const t of tournaments) {
-    if (t.image) out.push({ img: { ...t.image, alt: t.image.alt || `${t.name} poster` }, caption: `${t.name} poster` })
+    if (t.flyer) out.push({ img: { ...t.flyer, alt: t.flyer.alt || `${t.name} flyer` }, caption: `${t.name} flyer` })
+    else if (t.image) out.push({ img: { ...t.image, alt: t.image.alt || `${t.name} poster` }, caption: `${t.name} poster` })
   }
   return out
 }

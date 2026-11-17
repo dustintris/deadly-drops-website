@@ -109,6 +109,8 @@ export const ClubEvent = z.object({
   registrationOpen: z.boolean(),
   registrationUrl: optional(httpsUrl),
   image: ImageRef.optional(),
+  /** the tournament's flyer */
+  flyer: ImageRef.optional(),
   /** the tournament's own logo */
   logo: ImageRef.optional(),
   featured: z.boolean(),

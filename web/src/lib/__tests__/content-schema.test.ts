@@ -30,6 +30,16 @@ describe('Theme (Admin → Logo & colours)', () => {
   })
 })
 
+describe('the shop seed', () => {
+  it('sells the DOMINATE and VICTORY tournament shirts, valid as the admin would save them', () => {
+    const products = buildSeed().products
+    expect(SECTIONS.products.safeParse(products).success).toBe(true)
+    const shirts = products.filter((p) => p.slug.endsWith('-2026-tournament-shirt'))
+    expect(shirts.map((p) => p.slug)).toEqual(['victory-2026-tournament-shirt', 'dominate-2026-tournament-shirt'])
+    expect(shirts.every((p) => p.visible && p.category === 'Apparel' && p.images.length === 2)).toBe(true)
+  })
+})
+
 describe('sectionHash / sameContent', () => {
   it('ignores object key order (PostgreSQL jsonb reorders keys)', () => {
     const a = { name: 'Deadly Drops', city: 'Chula Vista', nested: { b: 1, a: [{ y: 2, x: 1 }] } }
