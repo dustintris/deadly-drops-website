@@ -5,7 +5,6 @@
  * Photos in /public/images/stand-in are stock stand-ins, not club photos.
  */
 import type {
-  BracketRound,
   Division,
   GalleryItem,
   LadderEntry,
@@ -94,26 +93,6 @@ export const liveMatch = {
   startB: 6,
 }
 
-export const bracket: BracketRound[] = [
-  {
-    label: 'Quarterfinals',
-    matches: [
-      { a: 'Okafor / Solano', aScore: '11', b: 'Cabrera / Ferrer', bScore: '6', winner: 'a' },
-      { a: 'Aguilar / Raman', aScore: '11', b: 'Park / Estrada', bScore: '9', winner: 'a' },
-      { a: 'Villareal / Nakamura', aScore: '8', b: 'Domingo / Rondo', bScore: '11', winner: 'b' },
-      { a: 'Reyes / Cruz', aScore: '11', b: 'Ferrante / Ocampo', bScore: '4', winner: 'a' },
-    ],
-  },
-  {
-    label: 'Semifinals',
-    matches: [
-      { a: 'Okafor / Solano', aScore: '11', b: 'Aguilar / Raman', bScore: '7', winner: 'a' },
-      { a: 'Domingo / Rondo', aScore: '9', b: 'Reyes / Cruz', bScore: '11', winner: 'b' },
-    ],
-  },
-  { label: 'Final', matches: [{ a: 'Okafor / Solano', aScore: '–', b: 'Reyes / Cruz', bScore: '–', winner: null }] },
-  { label: 'Champion', matches: [{ a: 'TBD', aScore: '–', b: 'TBD', bScore: '–', winner: null }] },
-]
 
 export const champions = [
   { event: '3.5 Mixed', pair: 'Reyes / Cruz', detail: 'Beat Aguilar / Raman 11–9, 11–7', lead: memberByName('Marisol Reyes') },

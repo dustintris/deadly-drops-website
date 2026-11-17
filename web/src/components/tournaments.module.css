@@ -48,16 +48,6 @@
 @media (max-width: 1000px) { .weekend { grid-template-columns: repeat(2, 1fr); } .divs { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 600px) { .weekend, .divs { grid-template-columns: 1fr; } }
 
-/* bracket */
-.bracket { display: grid; grid-template-columns: repeat(4, minmax(200px, 1fr)); gap: 16px; overflow-x: auto; padding-bottom: 8px; }
-.bracket > div { display: flex; flex-direction: column; }
-.bracket ul { list-style: none; padding: 0; margin-top: 12px; display: flex; flex-direction: column; justify-content: space-around; gap: 12px; flex: 1; }
-.bracket li { border: 1px solid rgb(var(--accent-rgb) / .14); border-radius: 10px; overflow: hidden; background: var(--surface); }
-.bracket li[data-final='true'] { border-color: var(--accent); }
-.bracket li span { display: flex; justify-content: space-between; padding: 10px 14px; font-size: 13px; color: rgb(var(--ink-rgb) / .66); }
-.bracket li span + span { border-top: 1px solid rgb(var(--ink-rgb) / .06); }
-.bracket li span[data-win='true'] { background: rgb(var(--accent-rgb) / .12); color: var(--ink); font-weight: 600; }
-.bracket li[data-final='true'] span { color: var(--ink); }
 
 /* registration */
 .reg { max-width: 920px; }

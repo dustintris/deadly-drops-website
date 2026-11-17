@@ -70,8 +70,6 @@ export type Spotlight = Member & { quote: string; wins: number; photo: string; p
 
 export type LadderEntry = { rank: number; member: Member; points: number }
 
-export type BracketMatch = { a: string; aScore: string; b: string; bScore: string; winner: 'a' | 'b' | null }
-export type BracketRound = { label: string; matches: BracketMatch[] }
 
 export type Product = {
   slug: string
