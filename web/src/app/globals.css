@@ -6,7 +6,8 @@
  */
 *, *::before, *::after { box-sizing: border-box; margin: 0; }
 /* no smooth scrolling: keyboard focus must be visible the moment it lands */
-html { -webkit-text-size-adjust: 100%; scroll-padding-top: 96px; }
+/* the scrollbar's space is always kept, so a short page (no scrollbar) never shifts everything sideways */
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: 96px; scrollbar-gutter: stable; }
 @media (max-width: 720px) { html { scroll-padding-bottom: 80px; } }
 body {
   background: var(--bg); color: var(--ink);

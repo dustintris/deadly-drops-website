@@ -11,7 +11,7 @@ export async function AuthScreen({ initial }: { initial: 'login' | 'signup' }) {
         <img src={asset('/images/club/court-group-photo.jpg')} alt="" />
         <div className={styles.visualCopy}>
           <p className="display d-m">Everybody&rsquo;s welcome. Nobody coasts.</p>
-          <p className="muted">One account covers tournament entry, the ladder and the shop discount.</p>
+          <p className="muted">One account for the ladder and the shop discount. Tournament entry is on Main Court.</p>
           <dl>
             <div className="stat"><dt className="sr">Entry</dt><dd><strong className="accent">{event ? money(event.entryFee) : 'All'}</strong><span>{event ? 'Tournament entry' : 'Levels welcome'}</span></dd></div>
             <div className="stat"><dt className="sr">Divisions</dt><dd><strong>DUPR</strong><span>Fair divisions</span></dd></div>

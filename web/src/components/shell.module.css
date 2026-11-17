@@ -44,6 +44,10 @@
   mask: var(--sparkle-shape) center / contain no-repeat;
 }
 .actions { display: flex; align-items: center; gap: 14px; flex: none; }
+/* Register / Cart: stacked in one grid cell, so the slot keeps the wider one's width on every page */
+.ctaSlot { display: grid; justify-items: end; }
+.ctaSlot > * { grid-area: 1 / 1; }
+.ctaSlot > [data-off] { visibility: hidden; }
 .login { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .8); min-height: 44px; display: inline-flex; align-items: center; white-space: nowrap; }
 .login:hover { color: var(--accent); }
 .menuBtn { display: none; min-width: 44px; min-height: 44px; color: var(--accent); font-size: 24px; line-height: 1; text-shadow: 0 0 12px rgb(var(--accent-rgb) / .6); }

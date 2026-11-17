@@ -33,8 +33,8 @@ export function AuthForm({ initial }: { initial: 'login' | 'signup' }) {
       <h1 className="display d-m">{signup ? 'Join the club' : 'Welcome back'}</h1>
       <p className="muted">
         {signup
-          ? 'Two minutes. No rating required and no tryout. We sort your division when you register for your first event.'
-          : 'Sign in to enter tournaments, check the ladder and claim your member discount.'}
+          ? 'Two minutes. No rating required and no tryout. To enter a tournament, register on Main Court.'
+          : 'Sign in to check the ladder, your profile and your member discount.'}
       </p>
 
       <form
@@ -93,7 +93,7 @@ export function AuthForm({ initial }: { initial: 'login' | 'signup' }) {
       <button className="btn btn-ghost btn-block" onClick={() => setNote('Google sign-in connects when the club’s accounts system goes live.')}>Continue with Google</button>
       {note && <p className="small muted" role="status">{note}</p>}
       <p className={`small muted ${styles.switch}`}>
-        {signup ? 'Already a member? Use Log in above.' : 'New here? Create an account to register for tournaments.'}
+        {signup ? 'Already a member? Use Log in above.' : 'New here? Create an account to join the club ladder.'}
       </p>
     </div>
   )

@@ -1,4 +1,5 @@
-.auth { display: grid; grid-template-columns: 1fr 1fr; min-height: calc(100svh - 110px); background: var(--surface); }
+/* two equal halves whatever the form holds (minmax(0, …): content never widens a half) */
+.auth { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: calc(100svh - 110px); background: var(--surface); }
 .visual { position: relative; overflow: hidden; display: flex; align-items: flex-end; }
 .visual img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .visual::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, rgb(var(--bg-rgb) / .95) 20%, rgb(var(--bg-rgb) / .35)); }
@@ -6,7 +7,8 @@
 .visualCopy > * + * { margin-top: 16px; }
 .visualCopy dl { display: flex; gap: 36px; margin-top: 28px; flex-wrap: wrap; }
 .visualCopy dd { margin: 0; }
-.formSide { padding: clamp(40px, 6vw, 80px) clamp(20px, 6vw, 88px); display: flex; flex-direction: column; justify-content: center; gap: 18px; max-width: 640px; }
+/* the form sits centred in its half (it used to hug the left edge, leaving a wide gap on the right on big screens) */
+.formSide { padding: clamp(40px, 6vw, 80px) clamp(20px, 6vw, 88px); display: flex; flex-direction: column; justify-content: center; gap: 18px; width: 100%; max-width: 640px; justify-self: center; }
 .tabs { display: grid; grid-template-columns: 1fr 1fr; padding: 5px; border-radius: 100px; border: 1px solid rgb(var(--accent-rgb) / .22); }
 .tabs button { min-height: 44px; border-radius: 100px; font-weight: 700; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .6); transition: background-color .2s ease, color .2s ease; }
 .tabs button[aria-selected='true'] { background: var(--accent); color: var(--on-accent); }
@@ -20,7 +22,7 @@
 .or::before, .or::after { content: ''; flex: 1; height: 1px; background: rgb(var(--ink-rgb) / .12); }
 .switch { text-align: center; }
 @media (max-width: 900px) {
-  .auth { grid-template-columns: 1fr; }
+  .auth { grid-template-columns: minmax(0, 1fr); }
   .visual { min-height: 220px; }
   .visualCopy dl, .visualCopy > p:nth-child(2) { display: none; }
 }

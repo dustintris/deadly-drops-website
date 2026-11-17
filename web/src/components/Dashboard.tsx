@@ -16,7 +16,7 @@ export function Dashboard({ p, isMe = false }: { p: Profile; isMe?: boolean }) {
           <h1 className="display d-m">{m.name}</h1>
           <p className="mono small">{m.division} · Member since {m.memberSince} · #{p.ladderRank} on ladder</p>
         </div>
-        <Link href="/tournaments/#register" className="btn btn-dark">{isMe ? 'Enter the next tournament' : `Challenge ${m.first}`}</Link>
+        <Link href="/tournaments/#register" className="btn btn-dark">{isMe ? 'Register for the next tournament' : `Challenge ${m.first}`}</Link>
       </header>
 
       <dl className={styles.kpis}>

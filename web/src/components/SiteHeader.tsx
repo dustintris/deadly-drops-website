@@ -65,11 +65,13 @@ export function SiteHeader({ city, logo }: { city: string; logo: string }) {
 
         <div className={styles.actions}>
           <Link href="/login/" className={styles.login}>Log in</Link>
-          {inShop ? (
-            <Link href="/cart/" className="btn btn-accent btn-sm" aria-label={`Cart, ${count} ${count === 1 ? 'item' : 'items'}`}>Cart · {count}</Link>
-          ) : (
-            <Link href="/tournaments/#register" className="btn btn-accent btn-sm">Register to play</Link>
-          )}
+          {/* the shop shows the cart instead of Register; both share one slot as wide as the wider of the two,
+              so switching pages never moves the menu (the hidden one can't be seen, focused or clicked) */}
+          <span className={styles.ctaSlot}>
+            <Link href="/tournaments/#register" className="btn btn-accent btn-sm" data-off={inShop || undefined} aria-hidden={inShop || undefined} tabIndex={inShop ? -1 : undefined}>Register to play</Link>
+            <Link href="/cart/" className="btn btn-accent btn-sm" data-off={!inShop || undefined} aria-hidden={!inShop || undefined} tabIndex={inShop ? undefined : -1}
+              aria-label={`Cart, ${count} ${count === 1 ? 'item' : 'items'}`}>Cart · {count}</Link>
+          </span>
         </div>
 
         <button
