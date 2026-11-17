@@ -19,7 +19,7 @@ export function MobileTabBar() {
   return (
     <nav className={styles.tabbar} aria-label="Quick">
       {TABS.map((t) => (
-        <Link key={t.href} href={t.href} aria-current={t.match(path) ? 'page' : undefined}>
+        <Link key={t.href} href={t.href} aria-current={t.match(path) ? 'page' : undefined} data-burst>
           <span aria-hidden="true">✦</span>
           {t.label}
         </Link>

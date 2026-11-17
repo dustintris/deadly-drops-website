@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Club } from '@/lib/types'
 import { asset } from '@/lib/utils'
+import { MotionToggle } from './MotionToggle'
 import { NewsletterForm } from './NewsletterForm'
 import styles from './shell.module.css'
 
@@ -12,7 +13,7 @@ const COLS = [
 ]
 
 /** `logo` is the club logo from Admin → Logo & colours (the bundled badge until one is uploaded). */
-export function SiteFooter({ club, logo }: { club: Club; logo: { src: string; alt: string } }) {
+export function SiteFooter({ club, logo, motionPaused }: { club: Club; logo: { src: string; alt: string }; motionPaused: boolean }) {
   return (
     <footer className={styles.footer}>
       <div className={`wrap ${styles.footerGrid}`}>
@@ -43,6 +44,7 @@ export function SiteFooter({ club, logo }: { club: Club; logo: { src: string; al
       <div className={`wrap ${styles.footerFine}`}>
         <span>© {new Date().getFullYear()} {club.name}</span>
         <span>Tournament photography: Clara Barra and Bert Temple.</span>
+        <MotionToggle paused={motionPaused} />
       </div>
     </footer>
   )

@@ -152,7 +152,7 @@ function PlayingFor({ c, t }: { c: CharityT; t: Tournament }) {
   const titleId = `playing-for-${c.slug}`
   return (
     <section className={ch.playing} data-media={images.length > 0} aria-labelledby={titleId}>
-      <div>
+      <div data-reveal="left">
         <p className="eyebrow">Charity</p>
         <h2 id={titleId} className="display d-m">Playing for <span className="accent">{c.name}</span></h2>
         {c.tagline && <p className={ch.tagline}>{c.tagline}</p>}
@@ -165,7 +165,7 @@ function PlayingFor({ c, t }: { c: CharityT; t: Tournament }) {
         </div>
       </div>
       {images.length > 0 && (
-        <div className={ch.pair} data-count={images.length}>
+        <div className={ch.pair} data-count={images.length} data-reveal="zoom">
           {images.map((img, i) => (
             <figure key={`${i}-${img.src}`} data-kind={img.kind}>
               <img src={asset(img.src)} alt={img.alt} loading="lazy" decoding="async" />
@@ -218,7 +218,7 @@ export default async function TournamentPage({ params }: Params) {
       <div className="wrap">
         {resultsFirst && back}
         {resultsFirst && feed}
-        <div className="head-row">
+        <div className="head-row" data-reveal>
           <h2 id="results-title" className="display d-m">{resultsTitle}</h2>
           {following && (
             <p className={`mono small muted ${l.updates}`}>
@@ -333,7 +333,7 @@ export default async function TournamentPage({ params }: Params) {
           {!resultsFirst && feed}
           <div className={x.layout} data-side={hasSide}>
             <div>
-              <div className="head-row">
+              <div className="head-row" data-reveal>
                 <h2 className="display d-m">Schedule</h2>
                 {scheduleMeta && <p className="mono small muted">{scheduleMeta}</p>}
               </div>
@@ -361,7 +361,7 @@ export default async function TournamentPage({ params }: Params) {
             </div>
 
             {hasSide && (
-              <div className={x.side}>
+              <div className={x.side} data-reveal="right">
                 {info.includes.length > 0 && (
                   <div>
                     <h2 className="display d-s">What’s included</h2>
@@ -401,11 +401,11 @@ export default async function TournamentPage({ params }: Params) {
 
       <section className="section light">
         <div className="wrap">
-          <div className="head-row">
+          <div className="head-row" data-reveal>
             <h2 className="display d-m">Rules</h2>
           </div>
           <div className={x.rules} data-notes={rules.notes.length > 0}>
-            <div className={x.rulesMain}>
+            <div className={x.rulesMain} data-reveal="left">
               <h3 className={x.sub}>Scoring</h3>
               <dl className={x.ruleFacts}>
                 <div><dt>Points to win</dt><dd>{rules.gamesTo}</dd></div>
@@ -421,7 +421,7 @@ export default async function TournamentPage({ params }: Params) {
               </ol>
             </div>
             {rules.notes.length > 0 && (
-              <ul className={x.notes}>
+              <ul className={x.notes} data-reveal-stagger>
                 {rules.notes.map((n) => (
                   <li key={n.id} className={`card ${x.note}`}>
                     <h3>{n.title}</h3>

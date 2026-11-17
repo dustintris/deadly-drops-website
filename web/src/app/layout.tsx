@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from 'next'
+import { cookies } from 'next/headers'
+import { MOTION_COOKIE, MOTION_OFF } from '@/lib/motion-pref'
 import type { ThemeT } from '@/lib/content-schema'
 import { getClub, getTheme } from '@/lib/data'
 import { asset } from '@/lib/utils'
@@ -49,9 +51,11 @@ export async function generateViewport(): Promise<Viewport> {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // colours, logo and club facts come from the MIS (Admin → Logo & colours, Club info)
-  const [club, theme] = await Promise.all([getClub(), getTheme()])
+  const [club, theme, jar] = await Promise.all([getClub(), getTheme(), cookies()])
+  // the visitor paused the site's animations (footer switch): rendered in, so nothing moves even for a moment
+  const motionOff = jar.get(MOTION_COOKIE)?.value === MOTION_OFF
   return (
-    <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
+    <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`} data-motion={motionOff ? MOTION_OFF : undefined}>
       <head>
         <style dangerouslySetInnerHTML={{ __html: themeToCss(theme) }} />
       </head>

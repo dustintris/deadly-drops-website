@@ -51,7 +51,7 @@ export default async function CharityPage() {
 
       {charities.length === 0 && (
         <section className="section dark">
-          <div className="wrap stack-16">
+          <div className="wrap stack-16" data-reveal>
             <h2 className="display d-m">Charity partners coming soon</h2>
             <p className="lede">Each tournament&rsquo;s charity is announced with the tournament. <Link href="/tournaments/" className="accent">See the tournaments</Link>.</p>
           </div>
@@ -68,7 +68,7 @@ export default async function CharityPage() {
           <section key={c.id} id={charityAnchor(c)} className={cx('section', i % 2 ? 'darker' : 'dark', i > 0 && 'rule-top', last && s.lastBand)} aria-labelledby={titleId}>
             <div className={cx('wrap', s.layout)} data-media={media.length > 0}>
               <div>
-                <header className={s.head}>
+                <header className={s.head} data-reveal>
                   {c.logo && <img className={s.logo} src={asset(c.logo.src)} alt={c.logo.alt || `${c.name} logo`} width={96} height={96} />}
                   <div className="stack-8">
                     <p className="eyebrow">{supported.length ? `Supported by ${supported.map((e) => e.name).join(' & ')}` : 'Charity'}</p>
@@ -121,7 +121,7 @@ export default async function CharityPage() {
                       const sameAsCaption = img.alt.trim().toLowerCase() === caption.toLowerCase()
                       const captionId = `${charityAnchor(c)}-image-${k}`
                       return (
-                        <figure key={`${k}-${img.src}`}>
+                        <figure key={`${k}-${img.src}`} data-reveal="zoom">
                           {/* flyers are full of small print: open the full image */}
                           <a href={asset(img.src)} target="_blank" rel="noopener noreferrer" aria-describedby={sameAsCaption ? captionId : undefined}>
                             <img src={asset(img.src)} alt={sameAsCaption ? '' : img.alt} loading="lazy" decoding="async" />
@@ -142,7 +142,7 @@ export default async function CharityPage() {
       })}
 
       <section className="section light">
-        <div className={cx('wrap', s.cta)}>
+        <div className={cx('wrap', s.cta)} data-reveal>
           <h2 className="display d-m">Play for a cause</h2>
           <p className="lede">The easiest way to help is to play: every Deadly Drops tournament is a charity tournament, and every registration includes a meal and a tournament shirt.</p>
           <div className={s.actions}>

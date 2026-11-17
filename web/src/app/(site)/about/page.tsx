@@ -32,7 +32,7 @@ export default async function AboutPage() {
         photoPosition={copy.heroImage?.position}
       />
 
-      <dl className={a.stats}>
+      <dl className={a.stats} data-reveal-stagger>
         {stats.map((s) => (
           <div key={s.label} className="stat">
             <dt className="sr">{s.label}</dt>
@@ -43,7 +43,7 @@ export default async function AboutPage() {
 
       <section className="section light">
         <div className="wrap split">
-          <div className="stack-16">
+          <div className="stack-16" data-reveal="left">
             <p className="eyebrow">Who we are</p>
             <h2 className="display d-m">Tournaments with a community around them</h2>
             <p className="muted">{club.about}</p>
@@ -51,7 +51,7 @@ export default async function AboutPage() {
               {club.highlights.map((h) => <li key={h} className="tag">{h}</li>)}
             </ul>
           </div>
-          <div className={a.collage}>
+          <div className={a.collage} data-reveal="right">
             <img src={asset('/images/club/backyard-court-gathering.jpg')} alt="Social play at the backyard court" loading="lazy" />
             <img src={asset('/images/club/courtside-fuel-grill.jpg')} alt="Tournament food on the grill" loading="lazy" />
             <img src={asset('/images/club/toy-drive-celebration.jpg')} alt="Toy drive celebration with the Chula Vista Cadets" loading="lazy" />
@@ -61,8 +61,8 @@ export default async function AboutPage() {
 
       <section className="section dark">
         <div className="wrap">
-          <h2 className="display d-m">What we&rsquo;re about</h2>
-          <ul className={a.values}>
+          <h2 className="display d-m" data-reveal>What we&rsquo;re about</h2>
+          <ul className={a.values} data-reveal-stagger>
             {values.map((v, i) => (
               <li key={v.title} data-accent={i === 1}>
                 <strong className="display">{String(i + 1).padStart(2, '0')}</strong>
@@ -76,14 +76,14 @@ export default async function AboutPage() {
 
       <section className="section dark rule-top">
         <div className="wrap">
-          <div className="head-row">
+          <div className="head-row" data-reveal>
             <div className="stack-8">
               <p className="eyebrow">Who runs it</p>
               <h2 className="display d-m">All members, all volunteers</h2>
             </div>
             <Link href="/members/" className="link-arrow">Meet the full roster →</Link>
           </div>
-          <ul className={a.team}>
+          <ul className={a.team} data-reveal-stagger>
             {committee.map((c) => (
               <li key={c.member.slug} className="card">
                 <Link href={`/members/${c.member.slug}/`}>
@@ -102,13 +102,13 @@ export default async function AboutPage() {
 
       <section className="light">
         <div className={`wrap ${a.visit}`}>
-          <div className="stack-16">
+          <div className="stack-16" data-reveal="left">
             <p className="eyebrow">Come play</p>
             <h2 className="display d-m">{!event ? 'Come play' : `${eventState(event) === 'past' ? 'Latest' : 'Next on court'}: ${event.name}`}</h2>
             {event && <p className="muted">{event.summary} Entry {money(event.entryFee)}{event.entryFeeWithMeal ? `, or ${money(event.entryFeeWithMeal)} with a meal` : ''}.</p>}
             <Link href="/tournaments/" className="btn btn-dark">See tournaments</Link>
           </div>
-          <ul className={a.favs}>
+          <ul className={a.favs} data-reveal-stagger>
             {club.favorites.map((f) => (
               <li key={f.title}>
                 <strong>{f.title}</strong>

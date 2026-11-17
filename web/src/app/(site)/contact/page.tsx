@@ -44,8 +44,8 @@ export default async function ContactPage() {
       </section>
       <section className="section-tight darker rule-top">
         <div className="wrap">
-          <h2 className="display d-s">Before you write</h2>
-          <ul className={c.faqs}>
+          <h2 className="display d-s" data-reveal>Before you write</h2>
+          <ul className={c.faqs} data-reveal-stagger>
             {faqs.map((f) => (
               <li key={f.q} className="card card-pad">
                 <h3>{f.q}</h3>

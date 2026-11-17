@@ -27,7 +27,7 @@ export function Dashboard({ p, isMe = false }: { p: Profile; isMe?: boolean }) {
       </dl>
 
       <div className={styles.dashRow}>
-        <figure className={styles.trend}>
+        <figure className={styles.trend} data-reveal="left">
           <figcaption className="eyebrow">Rating trend · 12 weeks</figcaption>
           <ol aria-label={`Rating from ${p.trend[0].toFixed(2)} to ${p.trend[11].toFixed(2)}`}>
             {p.trend.map((v, i) => (
@@ -36,7 +36,7 @@ export function Dashboard({ p, isMe = false }: { p: Profile; isMe?: boolean }) {
           </ol>
           <div className={styles.trendAxis}><span>12 wks ago</span><span>{p.trend[11].toFixed(2)} now</span></div>
         </figure>
-        <div className={styles.matches}>
+        <div className={styles.matches} data-reveal="right">
           <p className="eyebrow">{isMe ? 'Your next matches' : 'Next matches'}</p>
           <ul>
             {p.nextMatches.map((x) => (
@@ -46,7 +46,7 @@ export function Dashboard({ p, isMe = false }: { p: Profile; isMe?: boolean }) {
         </div>
       </div>
 
-      <div className={styles.results}>
+      <div className={styles.results} data-reveal>
         <p className="eyebrow">Recent results</p>
         <ul>
           {p.results.map((r) => (

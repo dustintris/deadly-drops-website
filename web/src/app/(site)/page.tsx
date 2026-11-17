@@ -8,6 +8,8 @@ import { Ticker } from '@/components/Ticker'
 import page from '@/components/tournament.module.css'
 import ts from '@/components/tournaments.module.css'
 import { AccentTitle } from '@/components/AccentTitle'
+import { Countdown } from '@/components/Countdown'
+import { startLabel, tournamentStart } from '@/lib/countdown'
 import { charitiesForTournament, charityHref } from '@/lib/charities'
 import type { CharityT } from '@/lib/content-schema'
 import {
@@ -59,6 +61,10 @@ export default async function Home() {
   const hasResults = (e: ClubEvent) => withPlay.has(Number(e.id))
   const featuredResults = featured.map((e) => states[e.slug] === 'past' && hasResults(e))
   const pastResults = pastList.map(hasResults)
+  // the hero counts down to the lead tournament's start (getTournamentPage is cached: no extra query)
+  const lead = event && state !== 'past' ? await getTournamentPage(event.slug) : null
+  const start = lead ? tournamentStart(lead) : null
+  const countdown = lead && start && Date.parse(start.at) > Date.now() ? { ...start, name: lead.name, label: startLabel(start) } : null
 
   return (
     <>
@@ -88,8 +94,13 @@ export default async function Home() {
               </div>
             )}
           </div>
+          {/* a match being played takes the side; until the tournament starts, its countdown does */}
           <div className={s.heroSide}>
-            {match && <LiveScore match={match} />}
+            {match ? <LiveScore match={match} /> : countdown && (
+              <div className={s.countdownSlot}>
+                <Countdown at={countdown.at} timeKnown={countdown.timeKnown} name={countdown.name} label={countdown.label} />
+              </div>
+            )}
           </div>
         </div>
         <span className={s.scrollCue} aria-hidden="true">Scroll</span>
@@ -107,7 +118,7 @@ export default async function Home() {
               <LiveScore match={match} compact />
             </div>
           )}
-          <div className="head-row">
+          <div className="head-row" data-reveal>
             <div className="stack-8">
               <p className="eyebrow">Tournaments</p>
               <h2 id="tournaments-title" className="display d-m">
@@ -118,7 +129,7 @@ export default async function Home() {
           </div>
 
           {featured.length > 0 && (
-            <ul className={s.tCards} data-count={featured.length}>
+            <ul className={s.tCards} data-count={featured.length} data-reveal-stagger>
               {featured.map((e, i) => (
                 <li key={e.slug}>
                   <TournamentCard e={e} state={states[e.slug]} t={details[i]} charities={charitiesForTournament(charities, e.slug)} results={featuredResults[i]} />
@@ -137,11 +148,11 @@ export default async function Home() {
       {/* ---------- how a tournament runs (club content) ---------- */}
       <section className="section light" aria-labelledby="how-title">
         <div className="wrap">
-          <div className="head-row">
+          <div className="head-row" data-reveal>
             <h2 id="how-title" className="display d-m" style={{ maxWidth: '16ch' }}>How our tournaments work</h2>
             <p className="muted small" style={{ maxWidth: '38ch' }}>Play for charity, have fun, make friends, make a difference. Everyone plays with peers at their own pace.</p>
           </div>
-          <ol className={ts.weekend}>
+          <ol className={ts.weekend} data-reveal-stagger>
             {basics.map((w, i) => (
               <li key={w.title} data-variant={i === 0 ? 'dark' : i === basics.length - 1 ? 'accent' : 'card'}>
                 <strong className="display">{i + 1}</strong>
@@ -150,7 +161,7 @@ export default async function Home() {
               </li>
             ))}
           </ol>
-          <p style={{ marginTop: 20 }}><Link href="/tournaments/" className="btn btn-dark">Divisions &amp; format</Link></p>
+          <p style={{ marginTop: 20 }} data-reveal><Link href="/tournaments/" className="btn btn-dark">Divisions &amp; format</Link></p>
         </div>
       </section>
 
@@ -158,14 +169,14 @@ export default async function Home() {
       {pastList.length > 0 && (
         <section className="section dark" aria-labelledby="past-title">
           <div className="wrap">
-            <div className="head-row">
+            <div className="head-row" data-reveal>
               <div className="stack-8">
                 <p className="eyebrow">Results</p>
                 <h2 id="past-title" className="display d-m">Past tournaments</h2>
               </div>
               <Link href="/community/" className="link-arrow">Photos &amp; stories →</Link>
             </div>
-            <ul className={ts.season}>
+            <ul className={ts.season} data-reveal-stagger>
               {pastList.map((e, i) => {
                 const [day, month] = dateParts(e.date)
                 const cause = charitiesForTournament(charities, e.slug)[0]
@@ -196,14 +207,14 @@ export default async function Home() {
         <section className={cx('section darker rule-top', s.cause)} aria-labelledby="charity-title">
           <Sparkles />
           <div className={cx('wrap', s.causeInner)}>
-            <div className="head-row">
+            <div className="head-row" data-reveal>
               <div className="stack-8">
                 <p className="eyebrow">Charity</p>
                 <h2 id="charity-title" className="display d-m">Playing for a cause</h2>
               </div>
               <p className="muted small" style={{ maxWidth: '40ch' }}>Every Deadly Drops tournament is a charity tournament. These are the causes our players play for.</p>
             </div>
-            <ul className={s.charities}>
+            <ul className={s.charities} data-reveal-stagger="zoom">
               {charities.map((c) => <li key={c.id}><CharityCard c={c} events={events} /></li>)}
             </ul>
             <p style={{ marginTop: 24 }}><Link href="/charity/" className="link-arrow">About our charities →</Link></p>
@@ -216,13 +227,13 @@ export default async function Home() {
       {/* ---------- the club ---------- */}
       <section className="section light">
         <div className="wrap">
-          <div className="head-row">
+          <div className="head-row" data-reveal>
             <h2 className="display d-m" style={{ maxWidth: '14ch' }}>From lurker to lineup in three steps</h2>
             <p className="muted small" style={{ maxWidth: '36ch' }}>
               No tryout. Register, we match you to a division that fits, and you play.
             </p>
           </div>
-          <ol className={s.steps}>
+          <ol className={s.steps} data-reveal-stagger>
             {club.howItWorks.map((step, i) => (
               <li key={step.title} data-variant={i === 0 ? 'dark' : 'accent'}>
                 <strong className="display">{String(i + 1).padStart(2, '0')}</strong>

@@ -1,0 +1,80 @@
+/* Countdown to the next tournament (Countdown.tsx), on the dark home hero over the photo.
+   Glassy tiles with a faint neon rim; colours come from the theme tokens. */
+
+.countdown {
+  --cd-tile: clamp(62px, 17.5vw, 88px);
+  --cd-gap: clamp(6px, 2.2vw, 12px);
+  max-width: calc(var(--cd-tile) * 4 + var(--cd-gap) * 3);
+}
+.eyebrow { margin: 0 0 10px; }
+
+.glass {
+  position: relative; overflow: hidden; border-radius: 14px;
+  /* near-opaque instead of a blur: the hero photo drifts underneath, and a live blur would be redrawn every frame */
+  background: linear-gradient(180deg, rgb(var(--surface2-rgb) / .9), rgb(var(--surface-rgb) / .84));
+  box-shadow: var(--glow-soft), inset 0 1px 0 rgb(var(--ink-rgb) / .1);
+}
+/* soft sheen on the top half */
+.glass::before {
+  content: ''; position: absolute; inset: 0 0 50%; pointer-events: none;
+  background: linear-gradient(180deg, rgb(var(--ink-rgb) / .07), rgb(var(--ink-rgb) / 0));
+}
+
+/* ---------- days · hrs · min · sec ---------- */
+.tiles {
+  display: grid; grid-template-columns: repeat(4, var(--cd-tile)); gap: var(--cd-gap);
+  margin: 0; padding: 0; list-style: none;
+}
+.tile {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  height: calc(var(--cd-tile) * 1.06);
+}
+/* the split line of a flip clock, across the middle of the digits */
+.tile::after {
+  content: ''; position: absolute; left: 0; right: 0; top: calc(50% - 8px); height: 1px; pointer-events: none;
+  background: rgb(var(--bg-rgb) / .38);
+}
+
+/* positioned so it paints above the sheen but under the split line */
+.value {
+  position: relative; display: flex; justify-content: center;
+  font-family: var(--font-display), Impact, sans-serif; font-weight: 400; line-height: 1.1;
+  font-size: clamp(30px, 8.6vw, 44px);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  text-shadow: 0 0 18px rgb(var(--accent-rgb) / .5), 0 0 2px rgb(var(--accent-rgb) / .3);
+}
+/* every digit in a box of the same width, so nothing shifts as the numbers change */
+.digit { display: inline-block; width: 1ch; text-align: center; }
+
+.unit {
+  font-family: var(--font-mono), monospace; font-size: 11px; font-weight: 500; line-height: 1;
+  letter-spacing: .2em; text-transform: uppercase; color: var(--accent-soft);
+  /* balance the trailing letter-spacing so the label sits centred */
+  padding-left: .2em;
+}
+
+/* ---------- days only (the start time isn't announced) ---------- */
+.pill { display: inline-flex; padding: 10px 22px 10px 18px; }
+.pillInner { display: inline-flex; align-items: center; gap: 14px; }
+.pill .value { font-size: clamp(34px, 9.5vw, 48px); }
+.pill .unit { font-size: 11px; }
+
+.when {
+  margin: 12px 0 0; font-size: 13px; line-height: 1.45;
+  color: rgb(var(--ink-rgb) / .8); text-shadow: 0 1px 10px rgb(var(--bg-rgb) / .7);
+}
+
+/* a changed digit drops into place */
+@keyframes drop {
+  from { opacity: 0; transform: translateY(-45%); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .digit { animation: drop .25s cubic-bezier(.2, .8, .2, 1) both; }
+}
+
+@media (max-width: 400px) {
+  .tile { gap: 4px; border-radius: 12px; }
+  .unit { font-size: 10px; letter-spacing: .14em; padding-left: .14em; }
+}

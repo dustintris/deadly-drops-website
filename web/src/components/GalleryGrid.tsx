@@ -47,7 +47,7 @@ export function GalleryGrid({ items }: { items: GalleryItem[] }) {
         <p className="mono small muted" aria-live="polite">{list.length} photos</p>
       </div>
 
-      <ul className={styles.grid}>
+      <ul className={styles.grid} data-reveal-stagger="zoom">
         {list.map((g, i) => (
           <li key={g.id} data-wide={g.wide}>
             <button className={`photo ${styles.tile}`} onClick={() => setOpen(i)} aria-label={`Open photo: ${g.caption}`}>

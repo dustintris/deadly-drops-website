@@ -72,11 +72,11 @@ export default async function TournamentsPage() {
 
       <section className="section light">
         <div className="wrap">
-          <div className="head-row">
+          <div className="head-row" data-reveal>
             <h2 className="display d-m" style={{ maxWidth: '16ch' }}>How a Deadly Drops tournament runs</h2>
             <p className="muted small" style={{ maxWidth: '38ch' }}>Pink, spooky, friendly, community-driven. Play for charity, have fun, make friends, make a difference.</p>
           </div>
-          <ol className={t.weekend}>
+          <ol className={t.weekend} data-reveal-stagger>
             {weekend.map((w, i) => (
               <li key={w.title} data-variant={i === 0 ? 'dark' : i === 3 ? 'accent' : 'card'}>
                 <strong className="display">{i + 1}</strong>
@@ -85,7 +85,7 @@ export default async function TournamentsPage() {
               </li>
             ))}
           </ol>
-          <ul className={t.divs} aria-label="Divisions">
+          <ul className={t.divs} aria-label="Divisions" data-reveal-stagger>
             {guide.map((d) => (
               <li key={d.division} className="card">
                 <strong className="display">{d.division}</strong>
@@ -101,7 +101,7 @@ export default async function TournamentsPage() {
       {results && (
         <section className="section-tight darker" aria-labelledby="latest-results">
           <div className="wrap">
-            <div className={`card ${live.latest}`} data-live={resultsLive}>
+            <div className={`card ${live.latest}`} data-live={resultsLive} data-reveal>
               <div className="stack-8">
                 <p className="eyebrow">
                   {resultsLive ? <><span className="live-dot" aria-hidden="true" /> Playing today</> : 'Latest results'}

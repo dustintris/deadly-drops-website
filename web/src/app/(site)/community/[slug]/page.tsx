@@ -99,7 +99,7 @@ export default async function PostPage({ params }: Params) {
 
           {photos.length > 0 && (
             <section className={c.photos} aria-labelledby="post-photos">
-              <h2 id="post-photos" className="display d-m">Photos</h2>
+              <h2 id="post-photos" className="display d-m" data-reveal>Photos</h2>
               <GalleryGrid items={photos} />
             </section>
           )}
@@ -109,11 +109,11 @@ export default async function PostPage({ params }: Params) {
       {more.length > 0 && (
         <section className="section darker rule-top" aria-labelledby="more-title">
           <div className="wrap">
-            <div className="head-row">
+            <div className="head-row" data-reveal>
               <h2 id="more-title" className="display d-m">More from the community</h2>
               <Link href="/community/" className="link-arrow">All posts →</Link>
             </div>
-            <ul className={c.cards}>
+            <ul className={c.cards} data-reveal-stagger>
               {more.map((p) => <li key={p.id}><PostCard post={p} /></li>)}
             </ul>
           </div>

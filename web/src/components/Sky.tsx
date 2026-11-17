@@ -1,8 +1,8 @@
 /**
  * Twilight decoration: four-point sparkles and a cloud edge, drawn here (no artwork, no images).
  * Purely decorative: hidden from assistive tech, no pointer events, absolutely placed inside a
- * `position: relative` parent so they never move the layout. Sparkles twinkle only without
- * prefers-reduced-motion. Colours follow the theme tokens. Styles: globals.css (`.sky-*`).
+ * `position: relative` parent so they never move the layout. Sparkles twinkle and bob, shooting
+ * stars cross and the clouds drift, all only without prefers-reduced-motion. Colours follow the theme tokens. Styles: globals.css (`.sky-*`).
  */
 
 const SPARKLE = 'M12 0C12.9 7.3 16.7 11.1 24 12C16.7 12.9 12.9 16.7 12 24C11.1 16.7 7.3 12.9 0 12C7.3 11.1 11.1 7.3 12 0Z'
@@ -22,7 +22,7 @@ const STARS: Star[] = [
   { x: 90, y: 74, size: 7, delay: 2.5, wide: true },
 ]
 
-/** A field of sparkles plus faint star dust; place it first inside the decorated element. */
+/** A field of twinkling, gently bobbing sparkles, faint star dust and the odd shooting star; place it first inside the decorated element. */
 export function Sparkles({ className }: { className?: string }) {
   return (
     <span className={className ? `sky-sparkles ${className}` : 'sky-sparkles'} aria-hidden="true">
@@ -32,6 +32,8 @@ export function Sparkles({ className }: { className?: string }) {
           <path d={SPARKLE} />
         </svg>
       ))}
+      <span className="sky-meteor" />
+      <span className="sky-meteor" />
     </span>
   )
 }

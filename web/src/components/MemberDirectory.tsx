@@ -28,7 +28,7 @@ export function MemberDirectory({ members }: { members: Member[] }) {
       </div>
       <p className="mono small muted" aria-live="polite" style={{ marginBottom: 16 }}>{list.length} of {members.length} members</p>
       {list.length ? (
-        <ul className={styles.grid}>
+        <ul className={styles.grid} data-reveal-stagger>
           {list.map((m) => (
             <li key={m.slug}>
               <Link href={`/members/${m.slug}/`} className={`card card-link ${styles.card}`}>

@@ -15,8 +15,28 @@
 .heroCopy h1 { max-width: 12ch; }
 .heroSide { display: flex; justify-content: flex-end; align-self: start; padding-top: 24px; }
 .ctas { display: flex; gap: 12px; flex-wrap: wrap; padding-top: 8px; }
+/* the countdown to the next tournament: beside the copy, level with the buttons; under them once the side column folds away */
+.heroSide:has(.countdownSlot) { align-self: end; padding-top: 0; }
+@media (max-width: 900px) { .heroSide:has(.countdownSlot) { display: flex; justify-content: flex-start; } }
 
 .scrollCue { position: absolute; z-index: 2; left: 50%; bottom: 78px; transform: translateX(-50%); font-family: var(--font-mono); font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .66); }
+
+/* motion: the photo slowly drifts closer, sinks a little as the page scrolls (parallax, where the browser
+   supports scroll-linked animation), and the scroll cue bobs */
+@keyframes photo-drift { from { scale: 1.04; } to { scale: 1.13; } }
+@keyframes photo-sink { to { translate: 0 20%; } }
+@keyframes cue-bob { 50% { translate: 0 7px; opacity: 1; } }
+@media (prefers-reduced-motion: no-preference) {
+  .heroImg { transform-origin: 62% 40%; animation: photo-drift 24s ease-in-out infinite alternate; }
+  .scrollCue { animation: cue-bob 2.2s ease-in-out infinite; }
+  @supports (animation-timeline: scroll()) {
+    .heroImg {
+      animation: photo-drift 24s ease-in-out infinite alternate, photo-sink linear both;
+      animation-timeline: auto, scroll(root);
+      animation-range: normal, 0 100vh;
+    }
+  }
+}
 
 /* the live score card: beside the hero on wide screens, at the top of the tournaments on phones */
 .mobileScore { display: none; margin-bottom: 32px; }

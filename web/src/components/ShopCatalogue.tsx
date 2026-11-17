@@ -26,7 +26,7 @@ export function ShopCatalogue({ products }: { products: Product[] }) {
         </div>
         <p className="mono small muted" aria-live="polite">{list.length} items</p>
       </div>
-      <ul className={styles.grid}>
+      <ul className={styles.grid} data-reveal-stagger>
         {list.map((p) => (
           <li key={p.slug} className={`card ${styles.item}`}>
             <Link href={`/shop/${p.slug}/`} className={styles.itemLink}>

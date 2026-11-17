@@ -43,7 +43,7 @@ export default async function CommunityPage() {
       {featured && (
         <section className="section-tight darker" aria-labelledby="featured-title">
           <div className="wrap">
-            <article className={cx('card', c.featured)}>
+            <article className={cx('card', c.featured)} data-reveal>
               <Link href={postHref(featured)} className={cx('photo', c.featuredPhoto)} tabIndex={-1} aria-hidden="true">
                 {featured.cover ? (
                   <img src={asset(featured.cover.src)} alt="" style={{ objectPosition: featured.cover.position ?? '50% 50%' }} />
@@ -74,14 +74,14 @@ export default async function CommunityPage() {
 
       <section className="section dark" aria-labelledby="news-title">
         <div className="wrap">
-          <div className="head-row">
+          <div className="head-row" data-reveal>
             <div className="stack-8">
               <p className="eyebrow">Club news</p>
               <h2 id="news-title" className="display d-m">News</h2>
             </div>
           </div>
           {news.length ? (
-            <ul className={c.news}>
+            <ul className={c.news} data-reveal-stagger>
               {news.map((p) => (
                 <li key={p.id}>
                   <Link href={postHref(p)} className={c.newsLink}>
@@ -101,14 +101,14 @@ export default async function CommunityPage() {
 
       <section className="section darker rule-top" aria-labelledby="stories-title">
         <div className="wrap">
-          <div className="head-row">
+          <div className="head-row" data-reveal>
             <div className="stack-8">
               <p className="eyebrow">From the players</p>
               <h2 id="stories-title" className="display d-m">Articles &amp; stories</h2>
             </div>
           </div>
           {grid.length ? (
-            <ul className={c.cards}>
+            <ul className={c.cards} data-reveal-stagger>
               {grid.map((p) => <li key={p.id}><PostCard post={p} /></li>)}
             </ul>
           ) : (
@@ -119,7 +119,7 @@ export default async function CommunityPage() {
 
       <section className="section dark rule-top" aria-labelledby="photos-title">
         <div className="wrap">
-          <div className="head-row">
+          <div className="head-row" data-reveal>
             <div className="stack-8">
               <p className="eyebrow">On and off court</p>
               <h2 id="photos-title" className="display d-m">Community photos</h2>
@@ -136,7 +136,7 @@ export default async function CommunityPage() {
 
       <section className="section-tight darker">
         <div className="wrap">
-          <div className={c.share}>
+          <div className={c.share} data-reveal>
             <div className="stack-8">
               <h2 className="display d-s">Got photos or a story?</h2>
               <p className="muted">Send us your shots from the courts, a write-up of your best match, or news the club should know about. A member reads every message.</p>

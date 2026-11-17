@@ -20,7 +20,7 @@ export function SeasonList({ events, states, champions }: { events: ClubEvent[];
   return (
     <>
       <div className="head-row">
-        <div className="stack-8">
+        <div className="stack-8" data-reveal>
           <p className="eyebrow">Tournaments</p>
           <h2 className="display d-m">{tab === 'upcoming' ? 'Pick your weekend' : 'Past tournaments'}</h2>
         </div>
@@ -31,7 +31,7 @@ export function SeasonList({ events, states, champions }: { events: ClubEvent[];
       </div>
 
       {tab === 'upcoming' ? (
-        <ul className={styles.season}>
+        <ul className={styles.season} data-reveal-stagger>
           {upcoming.map(({ e, st }) => {
             const d = e.date ? new Date(`${e.date}T12:00:00`) : null
             const cta = eventCta(e, st)
@@ -62,7 +62,7 @@ export function SeasonList({ events, states, champions }: { events: ClubEvent[];
         </ul>
       ) : (
         <>
-        <ul className={styles.season}>
+        <ul className={styles.season} data-reveal-stagger>
           {past.map(({ e }) => {
             const d = e.date ? new Date(`${e.date}T12:00:00`) : null
             return (
@@ -85,7 +85,7 @@ export function SeasonList({ events, states, champions }: { events: ClubEvent[];
           })}
         </ul>
         <p className="eyebrow" style={{ margin: '32px 0 12px' }}>Division champions</p>
-        <ul className={styles.champs}>
+        <ul className={styles.champs} data-reveal-stagger>
           {champions.map((c) => (
             <li key={c.event} className="card">
               <Monogram member={c.lead} size="xl" round />
