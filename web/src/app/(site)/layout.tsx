@@ -5,11 +5,11 @@ import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
 import shell from '@/components/shell.module.css'
 import { isPreview } from '@/lib/content'
-import { getClub, getNotice } from '@/lib/data'
+import { getClub, getClubLogo, getNotice } from '@/lib/data'
 
 /** Public site shell: notice bar, header, footer and the phone tab bar. */
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const [club, notice, preview] = await Promise.all([getClub(), getNotice(), isPreview()])
+  const [club, logo, notice, preview] = await Promise.all([getClub(), getClubLogo(), getNotice(), isPreview()])
   return (
     <>
       <a className="skip" href="#main">Skip to content</a>
@@ -20,9 +20,9 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
             {notice.href ? <a href={notice.href}>{notice.text}</a> : notice.text}
           </p>
         )}
-        <SiteHeader city={club.city} />
+        <SiteHeader city={club.city} logo={logo.src} />
         <main id="main">{children}</main>
-        <SiteFooter club={club} />
+        <SiteFooter club={club} logo={logo} />
         <MobileTabBar />
       </CartProvider>
     </>

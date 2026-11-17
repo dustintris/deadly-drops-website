@@ -7,7 +7,7 @@ import l from '@/components/live.module.css'
 import { DivisionResults } from '@/components/results/Results'
 import x from '@/components/tournament.module.css'
 import ts from '@/components/tournaments.module.css'
-import { getClub, getEvents, getNextEvent, getTournamentLive, getTournamentPage } from '@/lib/data'
+import { getClub, getClubLogo, getEvents, getNextEvent, getTournamentLive, getTournamentPage } from '@/lib/data'
 import { eventState, type EventState } from '@/lib/events'
 import { hasPlay, plural } from '@/lib/match/present'
 import { pageMeta } from '@/lib/seo'
@@ -213,7 +213,7 @@ export default async function TournamentPage({ params }: Params) {
   const prizes = [...info.prizes].sort((a, b) => PLACE_ORDER.indexOf(a.place) - PLACE_ORDER.indexOf(b.place))
   const hasSide = info.includes.length > 0 || prizes.length > 0
   // the tournament's own logo; the club badge until one is uploaded
-  const logo = info.logo ? { src: info.logo.src, alt: info.logo.alt || `${t.name} logo` } : { src: '/logo.png', alt: `${club.name} logo` }
+  const logo = info.logo ? { src: info.logo.src, alt: info.logo.alt || `${t.name} logo` } : { src: (await getClubLogo()).src, alt: `${club.name} logo` }
 
   const [placeName, ...placeRest] = (info.venue ?? '').split(',').map((s) => s.trim()).filter(Boolean)
   const jsonLd = days.length

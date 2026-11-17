@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { logout } from '@/app/admin/actions'
 import { can, type Area, type Principal } from '@/lib/auth/permissions'
+import { asset } from '@/lib/utils'
 
 type NavItem = { href: string; label: string; area?: Area }
 
@@ -29,7 +30,7 @@ const NAV: { group?: string; items: NavItem[] }[] = [
       { href: '/admin/pages/', label: 'Page text', area: 'content' },
       { href: '/admin/settings/', label: 'Club info', area: 'content' },
       { href: '/admin/faqs/', label: 'FAQ', area: 'content' },
-      { href: '/admin/theme/', label: 'Colours', area: 'branding' },
+      { href: '/admin/theme/', label: 'Logo & colours', area: 'branding' },
       { href: '/admin/staff/', label: 'Staff', area: 'staff' },
       { href: '/admin/desktop-app/', label: 'Desktop app', area: 'staff' },
     ],
@@ -43,14 +44,15 @@ function guard(e: React.MouseEvent) {
   if (document.body.dataset.unsaved && !window.confirm('You have unsaved changes on this screen. Leave without saving?')) e.preventDefault()
 }
 
-export function AdminNav({ who }: { who: NavWho }) {
+/** `logo` is the live club logo's path (Admin → Logo & colours). */
+export function AdminNav({ who, logo }: { who: NavWho; logo: string }) {
   const path = usePathname() || '/admin/'
   const active = (href: string) => (href === '/admin/' ? path === '/admin' || path === '/admin/' : path.startsWith(href.replace(/\/$/, '')))
   // hide what this person can't open (the pages check again on the server), and any group left empty
   const groups = NAV.map((g) => ({ ...g, items: g.items.filter((n) => !n.area || can(who, n.area, 'view')) })).filter((g) => g.items.length)
   return (
     <nav className="adm-side" aria-label="Admin">
-      <div className="brand"><img src="/logo.png" alt="" />Deadly Drops</div>
+      <div className="brand"><img src={asset(logo)} alt="" />Deadly Drops</div>
       {groups.map((g) => (
         <div key={g.group ?? g.items[0].href} style={{ display: 'contents' }}>
           {g.group && <p className="group">{g.group}</p>}

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { PrintButton } from '@/components/display/PrintButton'
 import s from '@/components/print.module.css'
 import { DivisionResults } from '@/components/results/Results'
+import { getClubLogo } from '@/lib/data'
 import { loadDisplay } from '@/lib/display/access'
 import { hasPlay } from '@/lib/match/present'
 import { dayLabel } from '@/lib/tournaments/days'
@@ -28,7 +29,7 @@ export default async function PrintResults({ params }: Props) {
   )
   const any = byDay.some((ds) => ds.length > 0)
   const printed = new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles', dateStyle: 'medium', timeStyle: 'short' })
-  const logo = t.info.logo?.src ?? '/logo.png'
+  const logo = t.info.logo?.src ?? (await getClubLogo()).src // the tournament's logo, else the club's (Admin → Logo & colours)
 
   return (
     <div className={s.sheet}>

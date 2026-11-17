@@ -10,12 +10,13 @@ const COLS = [
   { title: 'More', links: [['Shop', '/shop/'], ['Gallery', '/gallery/'], ['Contact', '/contact/']] },
 ]
 
-export function SiteFooter({ club }: { club: Club }) {
+/** `logo` is the club logo from Admin → Logo & colours (the bundled badge until one is uploaded). */
+export function SiteFooter({ club, logo }: { club: Club; logo: { src: string; alt: string } }) {
   return (
     <footer className={styles.footer}>
       <div className={`wrap ${styles.footerGrid}`}>
         <div className={styles.footerBrand}>
-          <img src={asset('/logo.png')} alt="Deadly Drops Pickleball crest" width={64} height={64} />
+          <img src={asset(logo.src)} alt={logo.alt} width={64} height={64} />
           <p>
             {club.city} {club.postcode}
             <br />

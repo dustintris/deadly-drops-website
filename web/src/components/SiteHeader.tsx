@@ -20,7 +20,8 @@ export const NAV = [
 export const isActive = (path: string, href: string) =>
   href === '/' ? path === '/' : path.startsWith(href.replace(/\/$/, ''))
 
-export function SiteHeader({ city }: { city: string }) {
+/** `logo` is the club logo's path (Admin → Logo & colours); the link's label names it, so the image itself is decorative. */
+export function SiteHeader({ city, logo }: { city: string; logo: string }) {
   const path = usePathname() || '/'
   const [open, setOpen] = useState(false)
   const { count } = useCart()
@@ -40,7 +41,7 @@ export function SiteHeader({ city }: { city: string }) {
     <header className={styles.header}>
       <div className={`wrap ${styles.headerRow}`}>
         <Link href="/" className={styles.brand} aria-label="Deadly Drops Pickleball home">
-          <img src={asset('/logo.png')} alt="" width={46} height={46} />
+          <img src={asset(logo)} alt="" width={46} height={46} />
           <span>
             <strong>Deadly Drops</strong>
             <small>{city}</small>

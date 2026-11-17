@@ -60,11 +60,27 @@ const hexToRgb = (hex: string): string => {
   return `${(n >> 16) & 255} ${(n >> 8) & 255} ${n & 255}`
 }
 
-/** Renders the theme as CSS custom properties. `-rgb` variants allow alpha: rgb(var(--accent-rgb) / .3) */
+/** The colour keys, in a fixed order. The saved theme also holds the logo, which is not a colour. */
+const COLOUR_KEYS = Object.keys(defaultTheme) as (keyof Theme)[]
+
+/** Renders the theme's colours as CSS custom properties. `-rgb` variants allow alpha: rgb(var(--accent-rgb) / .3) */
 export function themeToCss(theme: Theme): string {
-  const lines = Object.entries(theme).flatMap(([key, value]) => {
+  const lines = COLOUR_KEYS.flatMap((key) => {
+    // a theme saved before a colour existed gets that colour's default
+    const value = theme[key] || defaultTheme[key]
     const name = key.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase())
     return [`--${name}: ${value};`, `--${name}-rgb: ${hexToRgb(value)};`]
   })
   return `:root{${lines.join('')}}`
+}
+
+/** The club badge that ships with the site (public/logo.png): the logo until one is uploaded in Admin → Logo & colours. */
+export const DEFAULT_LOGO = { src: '/logo.png', alt: 'Deadly Drops Pickleball crest' } as const
+
+/** The club logo to show for a saved theme: the uploaded one, else the bundled badge. */
+export function themeLogo(theme: { logo?: { src: string; alt: string } }): { src: string; alt: string } {
+  const logo = theme.logo
+  if (!logo?.src) return { ...DEFAULT_LOGO }
+  // the badge's own description would be wrong for a new picture, so an undescribed upload gets a plain name
+  return { src: logo.src, alt: logo.alt || 'Deadly Drops Pickleball logo' }
 }

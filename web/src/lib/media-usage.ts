@@ -12,5 +12,7 @@ export function findUsage(src: string, d: SiteContent): string[] {
   d.gallery.forEach((g) => has(g) && where.push(`Gallery: ${g.caption}`))
   d.posts.forEach((p) => has(p) && where.push(`Community: ${p.title}`))
   Object.entries(d.pages).forEach(([k, p]) => has(p) && where.push(`Page: ${k}`))
+  // the theme is colours plus the club logo: only the logo can match an image path
+  if (has(d.theme)) where.push('Logo & colours: club logo')
   return where
 }

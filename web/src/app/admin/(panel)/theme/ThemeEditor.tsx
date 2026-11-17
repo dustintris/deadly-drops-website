@@ -1,10 +1,11 @@
 'use client'
 
-import { SaveBar, SectionForm, useFieldError, useSection } from '@/components/admin/kit'
-import { contrastRatio, CONTRAST_RULES, type ThemeT } from '@/lib/content-schema'
-import { defaultTheme } from '@/theme/tokens'
+import { ImageField, SaveBar, SectionForm, useFieldError, useSection } from '@/components/admin/kit'
+import { contrastRatio, CONTRAST_RULES, type ThemeColourKey, type ThemeT } from '@/lib/content-schema'
+import { asset } from '@/lib/utils'
+import { defaultTheme, themeLogo } from '@/theme/tokens'
 
-const GROUPS: { title: string; keys: [keyof ThemeT, string][] }[] = [
+const GROUPS: { title: string; keys: [ThemeColourKey, string][] }[] = [
   { title: 'Brand accent', keys: [['accent', 'Accent (buttons, highlights)'], ['accentSoft', 'Accent, lighter (hovers)'], ['accentDeep', 'Accent, deeper (gradients)'], ['onAccent', 'Text on accent buttons']] },
   { title: 'Dark areas', keys: [['bg', 'Page background'], ['surface', 'Panels'], ['surface2', 'Cards and inputs'], ['ink', 'Text on dark'], ['accentTint', 'Initials tiles']] },
   { title: 'Light areas', keys: [['paper', 'Light section background'], ['paperCard', 'Cards on light sections'], ['inkDark', 'Text on light']] },
@@ -40,8 +41,16 @@ export function ThemeEditor({ initial }: { initial: ThemeT }) {
   const set = (patch: Partial<ThemeT>) => s.setValue({ ...t, ...patch })
   const ok = (h: string) => /^#[0-9a-fA-F]{6}$/.test(h)
 
+  const logo = themeLogo(t)
+
   return (
     <SectionForm errors={s.errors}>
+      <section className="adm-card" aria-labelledby="logo-h">
+        <h2 id="logo-h">Club logo</h2>
+        <ImageField label="Logo" path="logo" value={t.logo} onChange={(v) => set({ logo: v })}
+          hint="Shown in the site header and footer, on the venue screen and printed results, in the admin, and as the browser tab icon and link preview. A square picture works best: the header and footer show it in a circle on the “Behind the logo” colour. Leave it empty to use the club badge." />
+      </section>
+
       <section className="adm-card" aria-labelledby="pre-h">
         <h2 id="pre-h">Quick start</h2>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -50,7 +59,8 @@ export function ThemeEditor({ initial }: { initial: ThemeT }) {
               <span aria-hidden="true" style={{ width: 16, height: 16, borderRadius: 4, background: p.patch.accent }} />{p.name}
             </button>
           ))}
-          <button type="button" className="adm-btn danger" onClick={() => s.setValue({ ...defaultTheme })}>Reset to default</button>
+          {/* resets the colours only: the logo stays */}
+          <button type="button" className="adm-btn danger" onClick={() => s.setValue({ ...defaultTheme, logo: t.logo })}>Reset colours to default</button>
         </div>
       </section>
 
@@ -71,6 +81,8 @@ export function ThemeEditor({ initial }: { initial: ThemeT }) {
             <h2 id="pv-h">Preview</h2>
             <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgb(0 0 0 / .1)' }} aria-hidden="true">
               <div style={{ background: t.bg, color: t.ink, padding: 18 }}>
+                <img src={asset(logo.src)} alt="" width={44} height={44}
+                  style={{ display: 'block', marginBottom: 10, background: t.logoPlate, borderRadius: '50%', padding: 2, objectFit: 'contain' }} />
                 <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.2em', color: t.accent }}>NEXT UP</p>
                 <p style={{ fontFamily: 'var(--font-display)', fontSize: 30, textTransform: 'uppercase', lineHeight: 1 }}>Deadly <span style={{ color: t.accent }}>Drops</span></p>
                 <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
@@ -92,8 +104,8 @@ export function ThemeEditor({ initial }: { initial: ThemeT }) {
             <h2 id="ct-h">Readability check</h2>
             <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: 6 }}>
               {CONTRAST_RULES.map(([fg, bg, label]) => {
-                const a = t[fg as keyof ThemeT]
-                const b = t[bg as keyof ThemeT]
+                const a = t[fg as ThemeColourKey]
+                const b = t[bg as ThemeColourKey]
                 const r = ok(a) && ok(b) ? contrastRatio(a, b) : 0
                 const pass = r >= 4.5
                 return (

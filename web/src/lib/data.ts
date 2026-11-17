@@ -11,6 +11,7 @@ import { clubToday, eventState } from './events'
 import { getTournamentPlay, type TournamentPlay } from './play/repo'
 import type { CommunityPostT, PageKey } from './content-schema'
 import * as sample from '@/content/sample'
+import { themeLogo } from '@/theme/tokens'
 import { ensureImported, getTournamentBySlug, listTournaments, toClubEvent, type Tournament } from './tournaments/repo'
 import type { Club, ClubEvent, GalleryItem, Product } from './types'
 import type { Division } from './types'
@@ -18,6 +19,8 @@ import type { Division } from './types'
 export const getClub = async (): Promise<Club> => (await getContent()).settings
 export const getSettings = async () => (await getContent()).settings
 export const getTheme = async () => (await getContent()).theme
+/** The club logo (Admin → Logo & colours), the draft one while previewing; the bundled badge until one is uploaded. */
+export const getClubLogo = async () => themeLogo((await getContent()).theme)
 export const getNotice = async () => {
   const n = (await getContent()).settings.notice
   return n.enabled && n.text ? n : null
@@ -136,7 +139,6 @@ export const getMember = async (slug: string) => sample.members.find((m) => m.sl
 export const getMemberCount = async () => sample.members.length
 export const getSpotlights = async () => sample.spotlights
 export const getLadder = async () => sample.ladder
-export const getBracket = async () => sample.bracket
 export const getChampions = async () => sample.champions
 export const getDivisionGuide = async () => sample.divisionGuide
 export const getCommittee = async () => sample.committee

@@ -68,12 +68,21 @@ export const SiteSettings = z.object({
   return { ...s, phoneHref: d ? `tel:+${d.length === 10 ? '1' + d : d}` : '' }
 })
 
-export const Theme = z.object({
+const HEX_COLOUR = /^#[0-9a-fA-F]{6}$/
+const ThemeColours = z.object({
   bg: z.string(), surface: z.string(), surface2: z.string(), paper: z.string(), paperCard: z.string(), ink: z.string(), inkDark: z.string(),
   accent: z.string(), accentSoft: z.string(), accentDeep: z.string(), onAccent: z.string(), accentTint: z.string(),
   danger: z.string(), dangerOnLight: z.string(), logoPlate: z.string(),
+})
+export type ThemeColourKey = keyof z.infer<typeof ThemeColours>
+export const THEME_COLOUR_KEYS = Object.keys(ThemeColours.shape) as ThemeColourKey[]
+
+export const Theme = ThemeColours.extend({
+  /** the club logo; empty = the bundled badge (/logo.png). Optional, so themes saved before it existed still parse. */
+  logo: ImageRef.optional(),
 }).superRefine((t, ctx) => {
-  for (const [k, v] of Object.entries(t)) if (!/^#[0-9a-fA-F]{6}$/.test(v)) ctx.addIssue({ code: 'custom', path: [k], message: 'Use a colour like #C6F24E.' })
+  // colours only: the logo is an image and ImageRef already checks it
+  for (const k of THEME_COLOUR_KEYS) if (!HEX_COLOUR.test(t[k])) ctx.addIssue({ code: 'custom', path: [k], message: 'Use a colour like #C6F24E.' })
   for (const issue of themeContrastIssues(t)) ctx.addIssue({ code: 'custom', path: [issue.key], message: issue.message })
 })
 
@@ -241,11 +250,12 @@ export const CONTRAST_RULES: [fg: string, bg: string, label: string][] = [
   ['danger', 'surface', 'Error text on dark'],
   ['dangerOnLight', 'paper', 'Error text on light'],
 ]
-export function themeContrastIssues(t: Record<string, string>) {
+export function themeContrastIssues(t: Record<string, unknown>) {
   const out: { key: string; message: string; ratio: number }[] = []
   for (const [fg, bg, label] of CONTRAST_RULES) {
-    if (!/^#[0-9a-fA-F]{6}$/.test(t[fg] ?? '') || !/^#[0-9a-fA-F]{6}$/.test(t[bg] ?? '')) continue
-    const ratio = contrastRatio(t[fg], t[bg])
+    const [a, b] = [t[fg], t[bg]]
+    if (typeof a !== 'string' || typeof b !== 'string' || !HEX_COLOUR.test(a) || !HEX_COLOUR.test(b)) continue
+    const ratio = contrastRatio(a, b)
     if (ratio < 4.5) out.push({ key: fg, ratio, message: `${label} is too faint (${ratio.toFixed(1)}:1, needs 4.5:1).` })
   }
   return out
