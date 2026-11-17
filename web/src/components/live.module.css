@@ -122,3 +122,28 @@
 .division[data-variant='print'] .match,
 .division[data-variant='print'] .table tr,
 .division[data-variant='print'] .round { break-inside: avoid; }
+
+/* ---------- medals: the top 3 once every game in a division is final (the desktop app's rule) ---------- */
+.division { --gold: #d9a01e; --silver: #c9ccd6; --bronze: #d9955a; }
+.podium { list-style: none; padding: 0; margin: 0 0 18px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 8px; }
+.podium li {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 10px;
+  border: 1px solid rgb(var(--ink-rgb) / .14); border-left: 5px solid var(--medal); background: rgb(var(--ink-rgb) / .04);
+}
+.podium li[data-medal='gold'] { --medal: var(--gold); }
+.podium li[data-medal='silver'] { --medal: var(--silver); }
+.podium li[data-medal='bronze'] { --medal: var(--bronze); }
+.medal { font-size: 28px; line-height: 1; }
+.podiumText { display: grid; min-width: 0; overflow-wrap: anywhere; }
+.podiumPlace { font-family: var(--font-mono); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .72); }
+.podium strong { font-weight: 600; }
+.table tr[data-medal] .rank { color: var(--ink); }
+.table tr[data-medal='gold'] .rank { color: var(--gold); }
+.table tr[data-medal='silver'] .rank { color: var(--silver); }
+.table tr[data-medal='bronze'] .rank { color: var(--bronze); }
+.division[data-variant='board'] .podium { margin-bottom: .8em; }
+.division[data-variant='board'] .podium li { padding: .5em .8em; }
+.division[data-variant='board'] .medal { font-size: 1.8em; }
+.division[data-variant='board'] .podiumPlace { font-size: .6em; }
+.division[data-variant='board'] .podium strong { font-size: 1.2em; }
+.division[data-variant='print'] .podium li { break-inside: avoid; }

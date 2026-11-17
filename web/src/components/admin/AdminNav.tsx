@@ -31,6 +31,7 @@ const NAV: { group?: string; items: NavItem[] }[] = [
       { href: '/admin/faqs/', label: 'FAQ', area: 'content' },
       { href: '/admin/theme/', label: 'Colours', area: 'branding' },
       { href: '/admin/staff/', label: 'Staff', area: 'staff' },
+      { href: '/admin/desktop-app/', label: 'Desktop app', area: 'staff' },
     ],
   },
 ]
