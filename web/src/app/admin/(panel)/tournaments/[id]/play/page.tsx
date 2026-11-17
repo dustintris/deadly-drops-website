@@ -43,6 +43,9 @@ export default async function TournamentPlayAdmin({ params }: { params: Promise<
       firstCourt: x?.firstCourt ?? 1,
       courtCount: x?.courtCount ?? 1,
       teamLimit: x?.teamLimit ?? null,
+      playoffs: d.playoffs,
+      bronze: d.bronze,
+      playoffGamesTo: play.rules.playoffGamesTo,
       teams: d.teams.map((t) => ({ id: t.id, name: t.name, players: t.players.map((p) => ({ id: p.id, name: p.name, dupr: p.dupr })) })),
       matches: d.matches,
     }

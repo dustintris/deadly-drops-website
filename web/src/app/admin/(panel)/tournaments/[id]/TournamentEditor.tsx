@@ -516,7 +516,7 @@ export function TournamentEditor({ initial, canEdit }: { initial: Tournament; ca
                       )}
                     </div>
                     {d.playoffs !== 'none' && (
-                      <p className="adm-muted">Playoff brackets aren’t run on the website yet: medals go to the top 3 of the final standings, as in the desktop app.</p>
+                      <p className="adm-muted">The bracket is drawn from the final pool standings the moment the last pool game goes final, and winners move on by themselves. Medals come from the final{d.bronze === 'match' ? ' and the bronze match' : ''}.</p>
                     )}
                   </fieldset>
                 </>

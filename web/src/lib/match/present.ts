@@ -4,6 +4,7 @@
  */
 import type { DivisionPlay, Match, Stage } from '@/lib/play/repo'
 import { divisionBoard, type DivisionBoard } from './board'
+import { BRACKET_SIZE, gameLabel, playoffMedals, type PlayedGame, type PlayoffStage } from './bracket'
 import { formatTime12 } from './schedule'
 import type { Tiebreaker } from './types'
 
@@ -15,6 +16,21 @@ export const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0'
 export const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? '' : 's'}`
 export const hasPlay = (d: DivisionPlay) => d.teams.length > 0 || d.matches.length > 0
 export const stageLabel = (m: Pick<Match, 'stage' | 'round'>) => (m.stage === 'pool' ? `Round ${m.round}` : STAGE_LABELS[m.stage])
+/** One game's name: "Round 3", "Semifinal 2", "Final". */
+export const matchLabel = (m: Pick<Match, 'stage' | 'round' | 'slot'>) => (m.stage === 'pool' ? `Round ${m.round}` : gameLabel({ stage: m.stage, slot: m.slot }))
+
+const isPlayoff = (m: Match) => m.stage !== 'pool'
+export const playoffGames = (d: DivisionPlay) => d.matches.filter(isPlayoff)
+/**
+ * The division will have a bracket: it's drawn, or it's set to have playoffs and has the teams for one.
+ * A division set to top 8 with only 6 teams can never draw, so it's treated as having no playoffs
+ * (finished when pool play is, medals from the standings) instead of waiting forever.
+ */
+export const hasBracket = (d: DivisionPlay) =>
+  d.matches.some(isPlayoff) || (d.playoffs !== 'none' && d.teams.length >= BRACKET_SIZE[d.playoffs])
+const asPlayed = (m: Match): PlayedGame => ({
+  stage: m.stage as PlayoffStage, slot: m.slot, teamA: m.teamAId, teamB: m.teamBId, scoreA: m.scoreA, scoreB: m.scoreB, status: m.status,
+})
 
 export const boardMatches = (ms: Match[]) =>
   ms.map((m) => ({ round: m.round, teamA: m.teamAId, teamB: m.teamBId, scoreA: m.scoreA, scoreB: m.scoreB, status: m.status }))
@@ -38,20 +54,32 @@ export type DivisionStatus = {
   /** round-robin standings (playoff games only move the status) */
   board: DivisionBoard
   state: DivisionBoard['state']
-  /** "Starts 8:00 AM" | "Live · Round 2" | "Live · Playoffs" | "Final" */
+  /** "Starts 8:00 AM" | "Live · Round 2" | "Playoffs next" | "Live · Semifinals" | "Live · Medal games" | "Final" */
   status: string
   /** a pool game is final, so the ranks mean something */
   ranked: boolean
 }
 
+/** The playoff round being played: the earliest stage with an unfinished game (final and bronze together). */
+function playoffRound(playoff: Match[]): string {
+  const open = playoff.filter((m) => m.status !== 'final')
+  if (open.some((m) => m.stage === 'qf')) return STAGE_LABELS.qf
+  if (open.some((m) => m.stage === 'sf')) return STAGE_LABELS.sf
+  const medal = new Set(open.map((m) => m.stage))
+  return medal.size > 1 ? 'Medal games' : medal.has('bronze') ? STAGE_LABELS.bronze : STAGE_LABELS.final
+}
+
 export function divisionStatus(d: DivisionPlay, tiebreakers: Tiebreaker[]): DivisionStatus {
   const pool = d.matches.filter((m) => m.stage === 'pool')
+  const playoff = d.matches.filter(isPlayoff)
   const board = divisionBoard({ teams: d.teams, matches: boardMatches(pool), tiebreakers })
-  const overall = pool.length === d.matches.length ? board : divisionBoard({ teams: d.teams, matches: boardMatches(d.matches), tiebreakers })
-  const state = d.matches.length ? overall.state : 'setup'
+  const overall = playoff.length ? divisionBoard({ teams: d.teams, matches: boardMatches(d.matches), tiebreakers }) : board
+  // pool play is over but the bracket isn't drawn yet (e.g. too few teams): not finished
+  const awaiting = hasBracket(d) && !playoff.length && pool.length > 0 && overall.state === 'final'
+  const state = !d.matches.length ? 'setup' : awaiting ? 'live' : overall.state
   const status =
     state === 'final' ? 'Final'
-    : state === 'live' ? (board.liveRound !== null ? `Live · Round ${board.liveRound}` : 'Live · Playoffs')
+    : state === 'live' ? (board.liveRound !== null ? `Live · Round ${board.liveRound}` : awaiting ? 'Playoffs next' : `Live · ${playoffRound(playoff)}`)
     : `Starts ${formatTime12(d.startTime)}`
   return { board, state, status, ranked: pool.some((m) => m.status === 'final') }
 }
@@ -61,11 +89,15 @@ export const MEDAL_PLACES: MedalPlace[] = ['gold', 'silver', 'bronze']
 export const MEDAL_LABELS: Record<MedalPlace, string> = { gold: 'Gold', silver: 'Silver', bronze: 'Bronze' }
 
 /**
- * Medals the way the desktop Pickle Match app gives them: the top 3 of the standings, once every
- * game in the division is final. (No playoff brackets yet: they'd decide the medals instead.)
+ * A division's medals. With playoffs, the bracket decides them, each as soon as it's won (gold and
+ * silver from the final; bronze from the bronze match, or the semifinal loser ranked higher in the
+ * pool). Without playoffs it's the desktop Pickle Match app's rule: the top 3 of the standings once
+ * every game is final.
  */
 export function medals(d: DivisionPlay, tiebreakers: Tiebreaker[]): { place: MedalPlace; teamId: number }[] {
   const { board, state } = divisionStatus(d, tiebreakers)
-  if (state !== 'final') return []
+  const playoff = playoffGames(d)
+  if (playoff.length) return playoffMedals(playoff.map(asPlayed), board.standings.map((s) => s.teamId))
+  if (hasBracket(d) || state !== 'final') return []
   return board.standings.slice(0, 3).map((s, i) => ({ place: MEDAL_PLACES[i], teamId: s.teamId }))
 }

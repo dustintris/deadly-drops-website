@@ -2,14 +2,20 @@ import 'server-only'
 import { and, asc, eq, inArray, ne, notInArray, or, sql } from 'drizzle-orm'
 import { getDb, type Db } from '@/db/client'
 import { divisions, matches, players, teams, tournaments } from '@/db/schema'
+import { BRACKET_SIZE, bracketPlan, gameKey, gameLabel, planOf, playoffCourt, resolveBracket, type PlayedGame, type PlayoffStage } from '@/lib/match/bracket'
 import { scheduleDivision } from '@/lib/match/schedule'
 import { isGameComplete } from '@/lib/match/scoring'
+import { computeStandings } from '@/lib/match/standings'
 import type { DivisionFormat, RulesT } from '@/lib/tournaments/schema'
 
 /**
- * Tournament play (Pickle Match): teams, the round-robin schedule and scores. Every change bumps
- * the tournament's live_version and announces it on the `ddp_live` channel in the same transaction
- * (delivered on commit), so every open screen refreshes within a second.
+ * Tournament play (Pickle Match): teams, the round-robin schedule, playoffs and scores. Every change
+ * bumps the tournament's live_version and announces it on the `ddp_live` channel in the same
+ * transaction (delivered on commit), so every open screen refreshes within a second.
+ *
+ * Locking: every write here locks the tournament row first (the live_version bump needs it anyway),
+ * then the division, then matches, the same order as a tournament save. So play writes in one
+ * tournament take turns and can't deadlock each other or the editor.
  */
 
 export type MatchStatus = 'scheduled' | 'live' | 'final'
@@ -88,6 +94,27 @@ export class StaleMatchError extends Error {
     super('Someone else just updated this score. The current score is shown; check it and save again.')
   }
 }
+export class NoPlayoffsError extends Error {
+  constructor() { super('This division is set to have no playoffs. Choose top 4 or top 8 in the tournament’s divisions first.') }
+}
+export class PlayoffsExistError extends Error {
+  constructor() { super('The playoffs for this division are already drawn.') }
+}
+export class PoolNotFinishedError extends Error {
+  constructor() { super('Every pool game has to be final before the playoffs can be drawn.') }
+}
+export class TooFewTeamsError extends Error {
+  constructor(needed: number, have: number) { super(`Top ${needed} playoffs need at least ${needed} teams; this division has ${have}.`) }
+}
+export class PlayoffScoresExistError extends Error {
+  constructor() { super('Playoff games have been played, so the playoffs can’t be reset.') }
+}
+/** A result was changed after the game it feeds had started: the bracket would no longer add up. */
+export class BracketStartedError extends Error {
+  constructor(game: string) {
+    super(`That change would alter who plays in ${game}, which has already started. Clear that game’s score first.`)
+  }
+}
 
 type Tx = Parameters<Parameters<Db['transaction']>[0]>[0]
 type Executor = Db | Tx
@@ -130,7 +157,15 @@ async function bumpLive(tx: Tx, tournamentId: number): Promise<number> {
   return r.v
 }
 
+/** Take the tournament's row lock: play writes in one tournament go one at a time. */
+const lockTournament = (tx: Tx, tournamentId: number) =>
+  tx.execute(sql`select ${tournaments.id} from ${tournaments} where ${tournaments.id} = ${tournamentId} for update`)
+
 async function lockDivision(tx: Tx, divisionId: number) {
+  // a division never moves to another tournament, so reading its tournament unlocked is safe
+  const [owner] = await tx.select({ t: divisions.tournamentId }).from(divisions).where(eq(divisions.id, divisionId)).limit(1)
+  if (!owner) throw new NotFoundError('division')
+  await lockTournament(tx, owner.t)
   const [row] = await tx
     .select({ division: divisions, rules: tournaments.rules })
     .from(divisions)
@@ -295,6 +330,122 @@ export async function clearSchedule(divisionId: number): Promise<void> {
   })
 }
 
+/* ---------- playoffs ---------- */
+
+type DivisionRow = typeof divisions.$inferSelect
+const isPlayoff = (m: MatchRow) => m.stage !== 'pool'
+const touched = (m: MatchRow) => m.status !== 'scheduled' || (m.scoreA ?? 0) > 0 || (m.scoreB ?? 0) > 0
+const asPlayed = (m: MatchRow): PlayedGame => ({
+  stage: m.stage as PlayoffStage, slot: m.slot, teamA: m.teamAId, teamB: m.teamBId, scoreA: m.scoreA, scoreB: m.scoreB, status: m.status as MatchStatus,
+})
+
+/** The division's teams in pool-standings order, or null while any pool game isn't final (or there are none). */
+async function poolOrder(tx: Tx, divisionId: number, rules: RulesT, all: MatchRow[]): Promise<number[] | null> {
+  const pool = all.filter((m) => m.stage === 'pool')
+  if (!pool.length || pool.some((m) => m.status !== 'final')) return null
+  const ids = (await tx.select({ id: teams.id }).from(teams).where(eq(teams.divisionId, divisionId)).orderBy(asc(teams.sort), asc(teams.id))).map((r) => r.id)
+  const results = pool.flatMap((m) =>
+    m.teamAId !== null && m.teamBId !== null && m.scoreA !== null && m.scoreB !== null ? [{ teamA: m.teamAId, teamB: m.teamBId, scoreA: m.scoreA, scoreB: m.scoreB }] : [],
+  )
+  return computeStandings(ids, results, rules.tiebreakers).map((s) => s.teamId)
+}
+
+// in a fixed order, so the standings (and the seeds) never depend on how rows happen to be stored
+const divisionMatches = (tx: Tx, divisionId: number) => tx.select().from(matches).where(eq(matches.divisionId, divisionId)).orderBy(asc(matches.id))
+
+/** Create the bracket's games (first round seeded, later rounds empty). Caller checked it's allowed. */
+async function insertBracket(tx: Tx, division: DivisionRow, order: number[]) {
+  const plan = bracketPlan(division.playoffs as 'top4' | 'top8', division.bronze as 'standings' | 'match')
+  const teamsOf = resolveBracket(plan, order, [])
+  await tx.insert(matches).values(plan.map((g) => ({
+    tournamentId: division.tournamentId,
+    divisionId: division.id,
+    stage: g.stage,
+    round: g.round,
+    slot: g.slot,
+    court: playoffCourt(plan, g, division.firstCourt, division.courtCount),
+    // no clock time: playoffs start whenever pool play ends
+    startsAt: null,
+    teamAId: teamsOf.get(gameKey(g))!.teamA,
+    teamBId: teamsOf.get(gameKey(g))!.teamB,
+  })))
+  return plan.length
+}
+
+/**
+ * Bring the division's bracket in line with its results, after a score changed: draw it when the
+ * last pool game goes final (if the division has playoffs and enough teams), fill in winners and
+ * losers as games finish, and empty sides whose deciding game was reopened. A game already under way
+ * is never changed under its players: a correction that would do that is refused (BracketStartedError).
+ */
+async function syncBracket(tx: Tx, division: DivisionRow, rules: RulesT, changed: Stage) {
+  const all = await divisionMatches(tx, division.id)
+  const playoff = all.filter(isPlayoff)
+  if (!playoff.length) {
+    if (division.playoffs === 'none' || changed !== 'pool') return
+    const order = await poolOrder(tx, division.id, rules, all)
+    if (order && order.length >= BRACKET_SIZE[division.playoffs as 'top4' | 'top8']) await insertBracket(tx, division, order)
+    return
+  }
+  const plan = planOf(playoff.map(asPlayed))
+  // Only a pool result can move the seeds. A playoff result never re-seeds: the draw stands, even if
+  // the tiebreakers were edited since (that must not block scoring a semifinal).
+  const reseed = changed === 'pool'
+  const order = reseed ? await poolOrder(tx, division.id, rules, all) : null
+  const size = plan.some((g) => g.stage === 'qf') ? 8 : 4
+  // the expected teams of each game depend only on earlier games, so one pass in playing order is enough
+  const played = playoff.map(asPlayed)
+  for (const g of plan) {
+    const seeded = 'seed' in g.a
+    if (seeded && !reseed) continue
+    const expected = resolveBracket(plan, order ? order.slice(0, size) : null, played).get(gameKey(g))!
+    const row = playoff.find((m) => m.stage === g.stage && m.slot === g.slot)
+    if (!row || (row.teamAId === expected.teamA && row.teamBId === expected.teamB)) continue
+    if (touched(row)) throw new BracketStartedError(gameLabel(g))
+    await tx
+      .update(matches)
+      .set({ teamAId: expected.teamA, teamBId: expected.teamB, version: sql`${matches.version} + 1`, updatedAt: new Date() })
+      .where(eq(matches.id, row.id))
+    const p = played.find((x) => x.stage === g.stage && x.slot === g.slot)!
+    p.teamA = expected.teamA
+    p.teamB = expected.teamB
+  }
+}
+
+/**
+ * Draw a division's playoffs from the final pool standings. Normally this happens on its own when the
+ * last pool game is saved; this is for after a reset (or a format change). Returns the number of games.
+ */
+export async function drawPlayoffs(divisionId: number): Promise<number> {
+  return getDb().transaction(async (tx) => {
+    const { division, rules } = await lockDivision(tx, divisionId)
+    await lockMatches(tx, divisionId)
+    if (division.playoffs === 'none') throw new NoPlayoffsError()
+    const all = await divisionMatches(tx, divisionId)
+    if (all.some(isPlayoff)) throw new PlayoffsExistError()
+    const order = await poolOrder(tx, divisionId, rules, all)
+    if (!order) throw new PoolNotFinishedError()
+    const needed = BRACKET_SIZE[division.playoffs as 'top4' | 'top8']
+    if (order.length < needed) throw new TooFewTeamsError(needed, order.length)
+    const n = await insertBracket(tx, division, order)
+    await bumpLive(tx, division.tournamentId)
+    return n
+  })
+}
+
+/** Remove a division's playoff games so they can be drawn again. Refused once any of them has a score. */
+export async function resetPlayoffs(divisionId: number): Promise<void> {
+  await getDb().transaction(async (tx) => {
+    const { division } = await lockDivision(tx, divisionId)
+    await lockMatches(tx, divisionId)
+    const playoff = (await divisionMatches(tx, divisionId)).filter(isPlayoff)
+    if (playoff.some(touched)) throw new PlayoffScoresExistError()
+    if (!playoff.length) return
+    await tx.delete(matches).where(and(eq(matches.divisionId, divisionId), ne(matches.stage, 'pool')))
+    await bumpLive(tx, division.tournamentId)
+  })
+}
+
 /* ---------- scores ---------- */
 
 /**
@@ -312,8 +463,11 @@ export async function saveScore(input: {
   force?: boolean
 }): Promise<Match> {
   return getDb().transaction(async (tx) => {
+    const [owner] = await tx.select({ t: matches.tournamentId }).from(matches).where(eq(matches.id, input.matchId)).limit(1)
+    if (!owner) throw new NotFoundError('match')
+    await lockTournament(tx, owner.t)
     const [row] = await tx
-      .select({ match: matches, gamesTo: divisions.gamesTo, rules: tournaments.rules })
+      .select({ match: matches, division: divisions, rules: tournaments.rules })
       .from(matches)
       .innerJoin(divisions, eq(divisions.id, matches.divisionId))
       .innerJoin(tournaments, eq(tournaments.id, matches.tournamentId))
@@ -327,7 +481,7 @@ export async function saveScore(input: {
 
     if (input.status === 'final') {
       if (input.scoreA === input.scoreB) throw new TiedGameError()
-      const gamesTo = m.stage === 'pool' ? (row.gamesTo ?? row.rules.gamesTo) : row.rules.playoffGamesTo
+      const gamesTo = m.stage === 'pool' ? (row.division.gamesTo ?? row.rules.gamesTo) : row.rules.playoffGamesTo
       if (!input.force && !isGameComplete(input.scoreA, input.scoreB, gamesTo, row.rules.winBy2)) {
         throw new GameNotFinishedError(gamesTo, row.rules.winBy2)
       }
@@ -345,6 +499,9 @@ export async function saveScore(input: {
       })
       .where(eq(matches.id, input.matchId))
       .returning()
+    // a final (or reopened) result can draw the playoffs or move a team on; done in this transaction,
+    // so a correction the bracket can't take rolls the whole save back
+    if (status === 'final' || m.status === 'final') await syncBracket(tx, row.division, row.rules, m.stage as Stage)
     await bumpLive(tx, m.tournamentId)
     return toMatch(updated)
   })
@@ -360,6 +517,7 @@ export async function setCheckedIn(input: { tournamentId: number; playerIds: num
   const ids = [...new Set(input.playerIds)]
   if (!ids.length) return []
   return getDb().transaction(async (tx) => {
+    await lockTournament(tx, input.tournamentId)
     const own = await tx
       .select({ id: players.id })
       .from(players)

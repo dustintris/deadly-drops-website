@@ -182,6 +182,8 @@ export const matches = pgTable(
     index('matches_tournament_idx').on(t.tournamentId),
     index('matches_team_a_idx').on(t.teamAId),
     index('matches_team_b_idx').on(t.teamBId),
+    // one game per playoff slot (SF1, SF2…): a bracket can never be drawn twice
+    uniqueIndex('matches_playoff_slot_idx').on(t.divisionId, t.stage, t.slot).where(sql`${t.stage} <> 'pool'`),
     check('matches_stage_check', sql`${t.stage} in ('pool', 'qf', 'sf', 'final', 'bronze')`),
     check('matches_status_check', sql`${t.status} in ('scheduled', 'live', 'final')`),
     check('matches_score_check', sql`coalesce(${t.scoreA}, 0) between 0 and 99 and coalesce(${t.scoreB}, 0) between 0 and 99`),

@@ -8,8 +8,10 @@
  * divisions, and leaving the screen asks first.
  */
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
-import { clearScheduleAction, generateScheduleAction, setTeamsAction, type PlayResult } from '@/app/admin/play-actions'
+import { clearScheduleAction, drawPlayoffsAction, generateScheduleAction, resetPlayoffsAction, setTeamsAction, type PlayResult } from '@/app/admin/play-actions'
+import { BRACKET_SIZE } from '@/lib/match/bracket'
 import { parsePastedTeams, type PasteResult } from '@/lib/match/pasteTeams'
+import { STAGE_ORDER } from '@/lib/match/present'
 import { describePlan, formatTime12, scheduleDivision } from '@/lib/match/schedule'
 import type { Match, MatchStatus } from '@/lib/play/repo'
 
@@ -27,6 +29,9 @@ export type PlayDivision = {
   firstCourt: number
   courtCount: number
   teamLimit: number | null
+  playoffs: 'none' | 'top4' | 'top8'
+  bronze: 'standings' | 'match'
+  playoffGamesTo: number
   teams: PlayTeam[]
   matches: Match[]
 }
@@ -34,8 +39,8 @@ export type PlayDivision = {
 type PlayerRow = { key: string; id?: number; name: string; dupr: string }
 type TeamRow = { key: string; id?: number; name: string; players: PlayerRow[] }
 type Errors = Record<string, string>
-type Note = { ok: boolean; text: string; where: 'teams' | 'schedule' }
-type Busy = 'teams' | 'make' | 'clear' | null
+type Note = { ok: boolean; text: string; where: 'teams' | 'schedule' | 'playoffs' }
+type Busy = 'teams' | 'make' | 'clear' | 'draw' | 'reset' | null
 
 const MAX_TEAMS = 64
 const MAX_PLAYERS = 4
@@ -136,6 +141,7 @@ function DivisionPanel({ d, hidden, canEdit, onDirty }: { d: PlayDivision; hidde
   const panelRef = useRef<HTMLDivElement>(null)
   const scheduleHeadRef = useRef<HTMLHeadingElement>(null)
   const teamsHeadRef = useRef<HTMLHeadingElement>(null)
+  const playoffsHeadRef = useRef<HTMLHeadingElement>(null)
 
   const hasSchedule = d.matches.length > 0
   const scored = d.matches.some(isScored)
@@ -263,6 +269,30 @@ function DivisionPanel({ d, hidden, canEdit, onDirty }: { d: PlayDivision; hidde
     scheduleHeadRef.current?.focus()
   }
 
+  const pool = d.matches.filter((m) => m.stage === 'pool')
+  const playoff = d.matches.filter((m) => m.stage !== 'pool')
+  const poolDone = pool.length > 0 && pool.every((m) => m.status === 'final')
+  const playoffScored = playoff.some(isScored)
+  const bracketSize = d.playoffs === 'none' ? 0 : BRACKET_SIZE[d.playoffs]
+
+  const drawPlayoffs = async () => {
+    if (busy) return
+    setBusy('draw')
+    const res = await call(() => drawPlayoffsAction(d.id))
+    setBusy(null)
+    say({ ok: res.ok, text: res.message, where: 'playoffs' })
+    playoffsHeadRef.current?.focus()
+  }
+  const resetPlayoffs = async () => {
+    if (busy) return
+    if (!window.confirm(`Reset the playoffs for ${d.name}?\n\nIts ${playoff.length} playoff games are removed. You can draw them again from the final standings.`)) return
+    setBusy('reset')
+    const res = await call(() => resetPlayoffsAction(d.id))
+    setBusy(null)
+    say({ ok: res.ok, text: res.message, where: 'playoffs' })
+    playoffsHeadRef.current?.focus()
+  }
+
   const facts = [
     d.formatLabel,
     d.dayLabel,
@@ -372,6 +402,51 @@ function DivisionPanel({ d, hidden, canEdit, onDirty }: { d: PlayDivision; hidde
 
         {hasSchedule && <ScheduleTable d={d} />}
       </section>
+
+      {/* ---- playoffs ---- */}
+      {(d.playoffs !== 'none' || playoff.length > 0) && (
+        <section className="adm-card" aria-labelledby={`${uid}-po-h`} style={{ display: 'grid', gap: 14 }}>
+          <h3 id={`${uid}-po-h`} ref={playoffsHeadRef} tabIndex={-1} style={{ fontSize: 17 }}>
+            Playoffs{bracketSize ? `: top ${bracketSize}` : ''}{playoff.length ? ` (${playoff.length} games)` : ''}
+          </h3>
+          <p className="adm-muted">
+            {bracketSize === 8 ? 'Quarterfinals 1 v 8, 4 v 5, 2 v 7, 3 v 6, then semifinals and the final' : 'Semifinals 1 v 4 and 2 v 3, then the final'}
+            {d.bronze === 'match' ? ', plus a bronze match between the semifinal losers' : '; bronze goes to the semifinal loser who finished higher in the pool'}.
+            {' '}Playoff games are played to {d.playoffGamesTo}{d.winBy2 ? ', win by 2' : ''}.
+          </p>
+
+          {playoff.length > 0 ? (
+            <p>Drawn from the final pool standings. Winners move on by themselves as each game goes final; the games are in the schedule above.</p>
+          ) : d.teams.length < bracketSize ? (
+            <p className="adm-locknote" role="note">
+              Top {bracketSize} playoffs need at least {bracketSize} teams; this division has {d.teams.length}.
+              {canEdit ? ' Change the playoff format in the tournament details, or add teams.' : ''}
+            </p>
+          ) : !poolDone ? (
+            <p>The bracket is drawn by itself the moment the last pool game goes final.</p>
+          ) : (
+            <p className="adm-locknote" role="note">Pool play is finished but the bracket isn’t drawn yet.</p>
+          )}
+          {playoffScored && <p className="adm-locknote" role="note">Playoff games have scores, so the playoffs can’t be reset.</p>}
+
+          {canEdit && (playoff.length === 0 ? poolDone && d.teams.length >= bracketSize : !playoffScored) && (
+            <div className="adm-actions">
+              {playoff.length === 0 ? (
+                <button type="button" className="adm-btn primary" aria-disabled={busy !== null} onClick={drawPlayoffs}>
+                  {busy === 'draw' ? 'Drawing…' : 'Draw playoffs'}
+                </button>
+              ) : (
+                <button type="button" className="adm-btn danger" aria-disabled={busy !== null} onClick={resetPlayoffs}>
+                  {busy === 'reset' ? 'Resetting…' : 'Reset playoffs'}
+                </button>
+              )}
+            </div>
+          )}
+          <p role="status" className={`adm-note ${note?.where === 'playoffs' ? (note.ok ? 'good' : 'bad') : ''}`}>
+            {note?.where === 'playoffs' ? note.text : ''}
+          </p>
+        </section>
+      )}
     </div>
   )
 }
@@ -582,7 +657,7 @@ function ScheduleTable({ d }: { d: PlayDivision }) {
   const team = (id: number | null) => (id === null ? 'To be decided' : names.get(id) ?? 'Removed team')
   // one block per round (or playoff stage), each in time-slot then court order
   const groups = new Map<string, Match[]>()
-  for (const m of [...d.matches].sort((a, b) => a.round - b.round || a.slot - b.slot || (a.court ?? 0) - (b.court ?? 0) || a.id - b.id)) {
+  for (const m of [...d.matches].sort((a, b) => STAGE_ORDER[a.stage] - STAGE_ORDER[b.stage] || a.round - b.round || a.slot - b.slot || (a.court ?? 0) - (b.court ?? 0) || a.id - b.id)) {
     const key = m.stage === 'pool' ? `Round ${m.round}` : STAGES[m.stage]
     const list = groups.get(key)
     if (list) list.push(m)

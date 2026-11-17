@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "matches_playoff_slot_idx" ON "matches" USING btree ("division_id","stage","slot") WHERE "matches"."stage" <> 'pool';

@@ -7,12 +7,19 @@ import { can, type Area } from '@/lib/auth/permissions'
 import { getSession, type Session } from '@/lib/auth/session'
 import { text } from '@/lib/content-schema'
 import {
+  BracketStartedError,
   clearSchedule,
+  drawPlayoffs,
   GameNotFinishedError,
   generateSchedule,
   MatchNotReadyError,
   NotEnoughTeamsError,
   NotFoundError,
+  NoPlayoffsError,
+  PlayoffScoresExistError,
+  PlayoffsExistError,
+  PoolNotFinishedError,
+  resetPlayoffs,
   saveScore,
   ScheduleExistsError,
   ScoresExistError,
@@ -20,6 +27,7 @@ import {
   setTeams,
   StaleMatchError,
   TiedGameError,
+  TooFewTeamsError,
   type Match,
   type Player,
 } from '@/lib/play/repo'
@@ -60,7 +68,10 @@ const CheckinInput = z.object({
   checkedIn: z.boolean(),
 })
 
-const KNOWN = [ScheduleExistsError, ScoresExistError, NotEnoughTeamsError, GameNotFinishedError, TiedGameError, MatchNotReadyError, NotFoundError]
+const KNOWN = [
+  ScheduleExistsError, ScoresExistError, NotEnoughTeamsError, GameNotFinishedError, TiedGameError, MatchNotReadyError, NotFoundError,
+  NoPlayoffsError, PlayoffsExistError, PoolNotFinishedError, TooFewTeamsError, PlayoffScoresExistError, BracketStartedError,
+]
 
 const DENIED: Partial<Record<Area, string>> = {
   scoring: 'Your login can’t enter scores.',
@@ -134,6 +145,38 @@ export async function clearScheduleAction(divisionId: unknown): Promise<PlayResu
     return { ok: true, message: 'Schedule cleared. You can change the teams now.' }
   } catch (e) {
     return failure(e, 'Clearing the schedule failed on the server. Try again.')
+  }
+}
+
+/** Draw a division's playoffs from the final pool standings (normally automatic when pool play ends). */
+export async function drawPlayoffsAction(divisionId: unknown): Promise<PlayResult> {
+  const s = await allowed('tournaments')
+  if (refused(s)) return s
+  const id = Id.safeParse(divisionId)
+  if (!id.success) return { ok: false, message: 'Unknown division.' }
+  try {
+    const count = await drawPlayoffs(id.data)
+    await audit(s.email, 'playoffs_draw', `division ${id.data}: ${count} games`)
+    revalidatePath('/', 'layout')
+    return { ok: true, message: `Playoffs drawn: ${count} games.`, count }
+  } catch (e) {
+    return failure(e, 'Drawing the playoffs failed on the server. Try again.')
+  }
+}
+
+/** Remove a division's unplayed playoff games, e.g. to change its playoff format. */
+export async function resetPlayoffsAction(divisionId: unknown): Promise<PlayResult> {
+  const s = await allowed('tournaments')
+  if (refused(s)) return s
+  const id = Id.safeParse(divisionId)
+  if (!id.success) return { ok: false, message: 'Unknown division.' }
+  try {
+    await resetPlayoffs(id.data)
+    await audit(s.email, 'playoffs_reset', `division ${id.data}`)
+    revalidatePath('/', 'layout')
+    return { ok: true, message: 'Playoffs reset. Draw them again when you’re ready.' }
+  } catch (e) {
+    return failure(e, 'Resetting the playoffs failed on the server. Try again.')
   }
 }
 

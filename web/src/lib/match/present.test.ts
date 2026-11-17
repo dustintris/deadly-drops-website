@@ -57,18 +57,32 @@ describe('divisionStatus', () => {
     expect(s.ranked).toBe(true)
   })
 
-  it('shows playoffs once the pool is done, and standings ignore playoff games', () => {
+  it('shows the playoff round once the pool is done, and standings ignore playoff games', () => {
     const pool = [match({ teamAId: 1, teamBId: 2, status: 'final', scoreA: 11, scoreB: 2 })]
     const playoff = match({ stage: 'final', teamAId: 2, teamBId: 1, status: 'live', scoreA: 9, scoreB: 0 })
     const s = divisionStatus(division([...pool, playoff]), tb)
-    expect(s.status).toBe('Live · Playoffs')
+    expect(s.status).toBe('Live · Final')
     const one = s.board.standings.find((x) => x.teamId === 1)!
     expect(one.wins).toBe(1)
     expect(one.losses).toBe(0)
   })
 
-  it('is final when every match is final', () => {
+  it('names the earliest unfinished playoff round, and the final and bronze match together', () => {
+    const pool = match({ teamAId: 1, teamBId: 2, status: 'final', scoreA: 11, scoreB: 2 })
+    const sf = match({ stage: 'sf', slot: 1, teamAId: 1, teamBId: 4 })
+    const medalGames = [match({ stage: 'bronze', slot: 1, teamAId: null, teamBId: null }), match({ stage: 'final', slot: 1, teamAId: null, teamBId: null })]
+    expect(divisionStatus(division([pool, sf, ...medalGames]), tb).status).toBe('Live · Semifinals')
+    expect(divisionStatus(division([pool, { ...sf, status: 'final', scoreA: 15, scoreB: 3 }, ...medalGames]), tb).status).toBe('Live · Medal games')
+  })
+
+  it('is not finished while a division with playoffs waits for its bracket', () => {
     const s = divisionStatus(division([match({ status: 'final', scoreA: 11, scoreB: 9 })]), tb)
+    expect(s.state).toBe('live')
+    expect(s.status).toBe('Playoffs next')
+  })
+
+  it('is final when every match is final', () => {
+    const s = divisionStatus(division([match({ status: 'final', scoreA: 11, scoreB: 9 })], { playoffs: 'none' }), tb)
     expect(s.state).toBe('final')
     expect(s.status).toBe('Final')
   })
@@ -113,8 +127,8 @@ describe('medals', () => {
     expect(medals(division([]), tb)).toEqual([])
   })
 
-  it('gives gold, silver and bronze to the top 3 once every game is final', () => {
-    const d = division([done(1, 2, 11, 3), done(3, 4, 11, 9), done(1, 3, 11, 5), done(2, 4, 11, 1)])
+  it('without playoffs, gives gold, silver and bronze to the top 3 once every game is final', () => {
+    const d = division([done(1, 2, 11, 3), done(3, 4, 11, 9), done(1, 3, 11, 5), done(2, 4, 11, 1)], { playoffs: 'none' })
     expect(medals(d, tb)).toEqual([
       { place: 'gold', teamId: 1 },
       { place: 'silver', teamId: 2 },
@@ -123,7 +137,30 @@ describe('medals', () => {
   })
 
   it('gives only gold and silver with two teams', () => {
-    const d = division([done(1, 2, 9, 11)], { teams: [team(1), team(2)] })
+    const d = division([done(1, 2, 9, 11)], { teams: [team(1), team(2)], playoffs: 'none' })
     expect(medals(d, tb)).toEqual([{ place: 'gold', teamId: 2 }, { place: 'silver', teamId: 1 }])
+  })
+
+  it('treats a division too small for its bracket as having no playoffs: finished, medals from the standings', () => {
+    const d = division([done(1, 2, 11, 3), done(3, 4, 11, 9), done(1, 3, 11, 5), done(2, 4, 11, 1)], { playoffs: 'top8' })
+    expect(divisionStatus(d, tb).state).toBe('final')
+    expect(medals(d, tb).map((m) => m.teamId)).toEqual([1, 2, 3])
+  })
+
+  it('with playoffs, gives none from the standings: the bracket decides', () => {
+    const d = division([done(1, 2, 11, 3), done(3, 4, 11, 9), done(1, 3, 11, 5), done(2, 4, 11, 1)])
+    expect(medals(d, tb)).toEqual([])
+  })
+
+  it('takes gold and silver from the final and bronze from the higher pool finisher of the semifinal losers', () => {
+    const pool = [done(1, 2, 11, 3), done(3, 4, 11, 9), done(1, 3, 11, 5), done(2, 4, 11, 1)] // pool order 1, 2, 3, 4
+    const sf1 = match({ stage: 'sf', slot: 1, teamAId: 1, teamBId: 4, status: 'final', scoreA: 15, scoreB: 9 })
+    const sf2 = match({ stage: 'sf', slot: 2, teamAId: 2, teamBId: 3, status: 'final', scoreA: 13, scoreB: 15 })
+    const final = match({ stage: 'final', slot: 1, teamAId: 1, teamBId: 3, status: 'final', scoreA: 12, scoreB: 15 })
+    expect(medals(division([...pool, sf1, sf2, final]), tb)).toEqual([
+      { place: 'gold', teamId: 3 },
+      { place: 'silver', teamId: 1 },
+      { place: 'bronze', teamId: 2 },
+    ])
   })
 })

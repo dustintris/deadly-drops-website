@@ -4,10 +4,11 @@ import s from '@/components/display.module.css'
 import l from '@/components/live.module.css'
 import { LiveRefresh } from '@/components/LiveRefresh'
 import { DivisionResults } from '@/components/results/Results'
+import { getClubLogo } from '@/lib/data'
 import { loadDisplay } from '@/lib/display/access'
 import { clubToday } from '@/lib/events'
 import { courtBoard } from '@/lib/match/courts'
-import { hasPlay, stageLabel } from '@/lib/match/present'
+import { hasPlay, matchLabel } from '@/lib/match/present'
 import { formatTime12 } from '@/lib/match/schedule'
 import type { DivisionPlay, Match } from '@/lib/play/repo'
 import { asset } from '@/lib/utils'
@@ -47,7 +48,7 @@ export default async function DisplayPage({ params, searchParams }: Props) {
     .sort((a, b) => a.startTime.localeCompare(b.startTime))
   const courts = courtBoard(divisions)
   const names = new Map(divisions.flatMap((d) => d.teams.map((x) => [x.id, x.name] as const)))
-  const logo = t.info.logo?.src ?? '/logo.png'
+  const logo = t.info.logo?.src ?? (await getClubLogo()).src // the tournament's logo, else the club's (Admin → Logo & colours)
 
   return (
     <div className={s.screen}>
@@ -76,12 +77,12 @@ export default async function DisplayPage({ params, searchParams }: Props) {
                   <li key={c.court} className={s.court} data-live={c.now !== null}>
                     <p className={s.courtNo}>
                       <span>Court</span> {c.court}
-                      <em className={s.label}>{c.now ? <><span className="live-dot" aria-hidden="true" /> Live · {stageLabel(c.now)}</> : 'Free'}</em>
+                      <em className={s.label}>{c.now ? <><span className="live-dot" aria-hidden="true" /> Live · {matchLabel(c.now)}</> : 'Free'}</em>
                     </p>
                     {c.now && <CourtGame m={c.now} names={names} />}
                     {c.next && (
                       <p className={s.next}>
-                        <span className={s.label}>Next{c.next.startsAt ? ` · ${formatTime12(c.next.startsAt)}` : ''}</span>
+                        <span className={s.label}>Next · {c.next.startsAt ? formatTime12(c.next.startsAt) : matchLabel(c.next)}</span>
                         <span className={s.nextTeams}>{teamName(c.next.teamAId, names)} <i>v</i> {teamName(c.next.teamBId, names)}</span>
                       </p>
                     )}

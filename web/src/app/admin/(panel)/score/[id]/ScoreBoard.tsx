@@ -8,6 +8,7 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { ScorePad, STATUS_LABELS, type PadDraft, type PadTeam } from '@/components/admin/ScorePad'
+import { matchLabel } from '@/lib/match/present'
 import { formatTime12 } from '@/lib/match/schedule'
 import type { Match, Stage } from '@/lib/play/repo'
 
@@ -29,10 +30,17 @@ type Props = {
 type Card = { m: Match; div: BoardDivision; a: PadTeam | null; b: PadTeam | null; gamesTo: number }
 type Drafts = Record<number, PadDraft>
 
-const STAGE_LABELS: Record<Exclude<Stage, 'pool'>, string> = { qf: 'Quarterfinal', sf: 'Semifinal', final: 'Final', bronze: 'Bronze match' }
+/** Playoff games have no clock time: they're grouped by stage, after every timed slot, in playing order. */
+const PLAYOFF_GROUPS: Record<Exclude<Stage, 'pool'>, { key: string; label: string }> = {
+  qf: { key: '~1', label: 'Quarterfinals' },
+  sf: { key: '~2', label: 'Semifinals' },
+  bronze: { key: '~3', label: 'Medal games' },
+  final: { key: '~3', label: 'Medal games' },
+}
 const NEXT_SLOTS = 3
-const stageLabel = (m: Match) => (m.stage === 'pool' ? `Round ${m.round}` : STAGE_LABELS[m.stage])
-const timeLabel = (m: Match) => (m.startsAt ? formatTime12(m.startsAt) : stageLabel(m))
+/** this game's name: "Round 3", "Semifinal 1", "Final" */
+const stageLabel = (m: Match) => matchLabel(m)
+const groupLabel = (m: Match) => (m.startsAt ? formatTime12(m.startsAt) : m.stage === 'pool' ? `Round ${m.round}` : PLAYOFF_GROUPS[m.stage].label)
 const courtLabel = (m: Match) => (m.court !== null ? `Court ${m.court}` : 'Court TBD')
 const score = (n: number | null) => (n === null ? '–' : String(n))
 
@@ -40,7 +48,7 @@ const score = (n: number | null) => (n === null ? '–' : String(n))
 function bySlot(cards: Card[], latestFirst = false) {
   const groups = new Map<string, Card[]>()
   for (const c of cards) {
-    const key = c.m.startsAt ?? `~${c.m.stage}${String(c.m.round).padStart(3, '0')}`
+    const key = c.m.startsAt ?? (c.m.stage === 'pool' ? `~0${String(c.m.round).padStart(3, '0')}` : PLAYOFF_GROUPS[c.m.stage].key)
     const list = groups.get(key)
     if (list) list.push(c)
     else groups.set(key, [c])
@@ -49,7 +57,7 @@ function bySlot(cards: Card[], latestFirst = false) {
   if (latestFirst) keys.reverse()
   return keys.map((key) => {
     const list = groups.get(key)!.sort((x, y) => (x.m.court ?? 999) - (y.m.court ?? 999) || x.div.name.localeCompare(y.div.name) || x.m.id - y.m.id)
-    return { key, label: timeLabel(list[0].m), cards: list }
+    return { key, label: groupLabel(list[0].m), cards: list }
   })
 }
 
@@ -247,7 +255,7 @@ export function ScoreBoard({ tournamentId, days, todayIndex, playoffGamesTo, win
           match={open.m}
           teamA={open.a}
           teamB={open.b}
-          title={`${courtLabel(open.m)} · ${timeLabel(open.m)}`}
+          title={`${courtLabel(open.m)}${open.m.startsAt ? ` · ${formatTime12(open.m.startsAt)}` : ''}`}
           subtitle={`${open.div.name} · ${stageLabel(open.m)}`}
           gamesTo={open.gamesTo}
           winBy2={winBy2}
@@ -298,7 +306,7 @@ function MatchCard({ c, canEdit, draft, onOpen }: { c: Card; canEdit: boolean; d
     <>
       <span style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
         <strong>{courtLabel(m)}</strong>
-        <span className="adm-muted" style={{ flex: 1, minWidth: 0 }}>{timeLabel(m)} · {c.div.name} · {stageLabel(m)}</span>
+        <span className="adm-muted" style={{ flex: 1, minWidth: 0 }}>{m.startsAt ? `${formatTime12(m.startsAt)} · ` : ''}{c.div.name} · {stageLabel(m)}</span>
         <span className={`adm-badge ${m.status === 'live' ? 'on' : m.status === 'scheduled' ? 'off' : ''}`}>{STATUS_LABELS[m.status]}</span>
       </span>
       <TeamLine name={nameA} players={c.a?.players ?? []} score={score(m.scoreA)} won={winA} />
@@ -307,7 +315,7 @@ function MatchCard({ c, canEdit, draft, onOpen }: { c: Card; canEdit: boolean; d
     </>
   )
   if (!canEdit || !c.a || !c.b) return <div style={style}>{body}</div>
-  const label = `${courtLabel(m)}, ${timeLabel(m)}: ${nameA} ${score(m.scoreA)}, ${nameB} ${score(m.scoreB)}, ${STATUS_LABELS[m.status]}.${draft ? ` Not saved: ${draft.a}–${draft.b}.` : ''} Enter score`
+  const label = `${courtLabel(m)}, ${m.startsAt ? `${formatTime12(m.startsAt)}, ` : ''}${stageLabel(m)}: ${nameA} ${score(m.scoreA)}, ${nameB} ${score(m.scoreB)}, ${STATUS_LABELS[m.status]}.${draft ? ` Not saved: ${draft.a}–${draft.b}.` : ''} Enter score`
   return (
     <button type="button" data-match-card={m.id} style={{ ...style, cursor: 'pointer' }} aria-label={label} aria-haspopup="dialog" onClick={() => onOpen(m.id)}>
       {body}

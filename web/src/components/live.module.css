@@ -149,3 +149,39 @@
 .division[data-variant='print'] .podium li { break-inside: avoid; }
 /* on white paper the bright medal tones are too faint for text: darker shades, same hues */
 .division[data-variant='print'] { --gold: #8a6100; --silver: #5b6070; --bronze: #8a4f1e; }
+
+/* ---------- playoff bracket: one column per round, games centred against the round before ---------- */
+.bracket { grid-column: 1 / -1; display: grid; gap: 10px; }
+/* a drawn bracket sits above the pool rounds */
+.division > .bracket { margin-bottom: 28px; }
+.bracketNote { font-size: 14px; color: rgb(var(--ink-rgb) / .72); }
+.bracketGrid { display: grid; gap: 12px 16px; grid-template-columns: repeat(var(--rounds, 2), minmax(0, 1fr)); align-items: stretch; }
+.bracketCol { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.bracketRound { font-family: var(--font-mono); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .72); }
+.bracketCol .matches { flex: 1; grid-template-columns: 1fr; align-content: space-around; }
+/* too narrow for side-by-side rounds (team names would wrap letter by letter): one round under the other */
+@media (max-width: 900px) { .bracketGrid { grid-template-columns: 1fr; } .bracketCol .matches { align-content: start; } }
+.gameTitle { font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
+.seed {
+  flex: none; display: inline-grid; place-items: center; min-width: 1.6em; height: 1.6em; padding: 0 .3em; border-radius: 6px;
+  font-family: var(--font-mono); font-size: .75em; color: rgb(var(--ink-rgb) / .72); background: rgb(var(--ink-rgb) / .08);
+}
+.side .seed + span { min-width: 0; overflow-wrap: anywhere; }
+
+/* on the venue board the bracket takes the right half; compact cards so four quarterfinals fit */
+.division[data-variant='board'] .body:has(.bracket) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+@media (max-width: 900px) { .division[data-variant='board'] .body:has(.bracket) { grid-template-columns: 1fr; } }
+.division[data-variant='board'] .bracketRound { font-size: .6em; }
+.division[data-variant='board'] .bracketGrid { gap: .5em .8em; }
+.division[data-variant='board'] .bracketCol .matches { grid-template-columns: 1fr; gap: .4em; }
+.division[data-variant='board'] .bracket .match { padding: .35em .7em .45em; }
+.division[data-variant='board'] .bracket .matchMeta { min-height: 0; margin-bottom: .15em; }
+.division[data-variant='board'] .bracket .side { padding: .1em 0; }
+.division[data-variant='board'] .bracket .side strong { font-size: 1.35em; }
+.division[data-variant='print'] .bracket { break-inside: avoid; }
+/* paper is narrower than 900px, but the rounds fit side by side there */
+.division[data-variant='print'] .bracketGrid { grid-template-columns: repeat(var(--rounds, 2), minmax(0, 1fr)); }
+/* a big division on the venue board: team names only, so every row fits */
+.division[data-variant='board'][data-many] .table .players { display: none; }
+.division[data-variant='board'][data-many] .table th,
+.division[data-variant='board'][data-many] .table td { padding-block: .3em; }
