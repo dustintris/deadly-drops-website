@@ -62,6 +62,31 @@
 .mobileMenu li a:not(:global(.btn)):hover { color: var(--accent-soft); }
 .mobileMenu li a[aria-current='page'] { color: var(--accent); text-shadow: 0 0 16px rgb(var(--accent-rgb) / .55); }
 .menuCtas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 18px; }
+/* opening the phone menu: the panel unrolls from the header, the pages slide in one after another with a
+   neon flash along their rule, and the menu icon spins between ≡ and ✕ (only the opening animates: closing is instant) */
+.menuIcon { display: inline-block; }
+@keyframes menu-unroll { from { clip-path: inset(0 0 100% 0); opacity: .4; } to { clip-path: inset(0 0 0 0); opacity: 1; } }
+@keyframes menu-item { from { opacity: 0; translate: -28px 0; } }
+@keyframes menu-rule { from { border-bottom-color: var(--accent); box-shadow: 0 6px 12px -8px rgb(var(--accent-rgb) / .9); } }
+@keyframes menu-icon { from { rotate: -120deg; scale: .3; opacity: 0; } 70% { scale: 1.15; } }
+@media (prefers-reduced-motion: no-preference) {
+  .mobileMenu:not([hidden]) { animation: menu-unroll .42s cubic-bezier(.2, .8, .2, 1); }
+  /* each row's delay is a custom property, so the slide (li) and the rule flash (its link) share one beat */
+  .mobileMenu:not([hidden]) li { animation: menu-item .5s cubic-bezier(.2, .8, .2, 1) var(--d, 0s) backwards; }
+  .mobileMenu:not([hidden]) li a:not(:global(.btn)) { animation: menu-rule .9s ease-out var(--d, 0s) backwards; }
+  .mobileMenu li:nth-child(1) { --d: .06s; }
+  .mobileMenu li:nth-child(2) { --d: .1s; }
+  .mobileMenu li:nth-child(3) { --d: .14s; }
+  .mobileMenu li:nth-child(4) { --d: .18s; }
+  .mobileMenu li:nth-child(5) { --d: .22s; }
+  .mobileMenu li:nth-child(6) { --d: .26s; }
+  .mobileMenu li:nth-child(7) { --d: .3s; }
+  .mobileMenu li:nth-child(8) { --d: .34s; }
+  .mobileMenu li:nth-child(9) { --d: .38s; }
+  .mobileMenu li:nth-child(10) { --d: .42s; }
+  .mobileMenu li:nth-child(n + 11) { --d: .46s; }
+  .menuIcon[data-spin] { animation: menu-icon .4s cubic-bezier(.3, .7, .4, 1); }
+}
 
 /* eight pages: tighter, and the brand name gives way to the logo so the menu fits, then the phone menu */
 @media (max-width: 1240px) {

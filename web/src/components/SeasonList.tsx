@@ -50,9 +50,9 @@ export function SeasonList({ events, states, champions }: { events: ClubEvent[];
                 </div>
                 <span className="tag">{money(e.entryFee)}{e.entryFeeWithMeal ? ` / ${money(e.entryFeeWithMeal)}` : ''}</span>
                 {cta.external ? (
-                  <a href={cta.href} className="btn btn-accent btn-sm" target="_blank" rel="noopener noreferrer">{st === 'open' ? 'Enter' : cta.label} <span className="sr">{e.name}, opens in a new tab</span></a>
+                  <a href={cta.href} className="btn btn-accent btn-sm" target="_blank" rel="noopener noreferrer">{st === 'open' ? 'Register' : cta.label} <span className="sr">for {e.name} on Main Court (opens in a new tab)</span></a>
                 ) : (
-                  <Link href={cta.href} className="btn btn-accent btn-sm">{st === 'open' ? 'Enter' : cta.label}<span className="sr"> for {e.name}</span></Link>
+                  <Link href={cta.href} className="btn btn-accent btn-sm">{cta.label}<span className="sr"> for {e.name}</span></Link>
                 )}
               </li>
             )

@@ -71,7 +71,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
             <div className="adm-stat"><span className="adm-muted">Date</span><strong>{event.date ? event.dateLabel : 'Not set'}</strong></div>
             <div className="adm-stat"><span className="adm-muted">Entry</span><strong>{money(event.entryFee)}</strong></div>
             <div className="adm-stat"><span className="adm-muted">Registration</span><strong>{event.registrationOpen ? 'Open' : 'Closed'}</strong></div>
-            <div className="adm-stat"><span className="adm-muted">Sign-up link</span><strong>{event.registrationUrl ? 'Set' : 'Missing'}</strong></div>
+            <div className="adm-stat"><span className="adm-muted">Main Court link</span><strong>{event.registrationUrl ? 'Set' : 'Missing'}</strong></div>
           </div>
           {!event.date && <p className="adm-muted">Add the date when it is confirmed: the tournament page then shows a countdown.</p>}
         </section>

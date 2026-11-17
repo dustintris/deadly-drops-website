@@ -25,6 +25,8 @@ export const isActive = (path: string, href: string) =>
 export function SiteHeader({ city, logo }: { city: string; logo: string }) {
   const path = usePathname() || '/'
   const [open, setOpen] = useState(false)
+  // the menu icon only spins once the visitor has used the button
+  const [toggled, setToggled] = useState(false)
   const { count } = useCart()
   const inShop = path.startsWith('/shop') || path.startsWith('/cart')
   const current = NAV.find((n) => n.href !== '/' && isActive(path, n.href))
@@ -66,7 +68,7 @@ export function SiteHeader({ city, logo }: { city: string; logo: string }) {
           {inShop ? (
             <Link href="/cart/" className="btn btn-accent btn-sm" aria-label={`Cart, ${count} ${count === 1 ? 'item' : 'items'}`}>Cart · {count}</Link>
           ) : (
-            <Link href="/signup/" className="btn btn-accent btn-sm">Sign up to play</Link>
+            <Link href="/tournaments/#register" className="btn btn-accent btn-sm">Register to play</Link>
           )}
         </div>
 
@@ -74,15 +76,17 @@ export function SiteHeader({ city, logo }: { city: string; logo: string }) {
           className={styles.menuBtn}
           aria-expanded={open}
           aria-controls="mobile-menu"
-          onClick={() => setOpen((o) => !o)}
+          onClick={() => { setOpen((o) => !o); setToggled(true) }}
         >
           <span className="sr">{open ? 'Close menu' : 'Open menu'}</span>
-          <span aria-hidden="true">{open ? '✕' : '≡'}</span>
+          {/* keyed, so the icon spins in again each time it swaps (not when the page first loads) */}
+          <span key={open ? 'close' : 'open'} className={styles.menuIcon} data-spin={toggled || undefined} aria-hidden="true">{open ? '✕' : '≡'}</span>
         </button>
       </div>
 
       <div id="mobile-menu" className={styles.mobileMenu} hidden={!open}>
-        <ul className="wrap">
+        {/* any link closes the menu, also one to a spot on the same page (e.g. /tournaments/#register) */}
+        <ul className="wrap" onClick={(e) => { if (e.target instanceof Element && e.target.closest('a')) setOpen(false) }}>
           {NAV.map((n) => (
             <li key={n.href}>
               <Link href={n.href} aria-current={isActive(path, n.href) ? 'page' : undefined}>{n.label}</Link>
@@ -92,7 +96,7 @@ export function SiteHeader({ city, logo }: { city: string; logo: string }) {
           <li><Link href="/cart/">Cart ({count})</Link></li>
           <li className={styles.menuCtas}>
             <Link href="/login/" className="btn btn-ghost">Log in</Link>
-            <Link href="/signup/" className="btn btn-accent">Sign up to play</Link>
+            <Link href="/tournaments/#register" className="btn btn-accent">Register to play</Link>
           </li>
         </ul>
       </div>

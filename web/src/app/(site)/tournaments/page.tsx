@@ -3,8 +3,8 @@ import Link from 'next/link'
 import { EntriesCard } from '@/components/EntriesCard'
 import { eventTags } from '@/components/EventBits'
 import live from '@/components/live.module.css'
+import { MainCourtRegister } from '@/components/MainCourtRegister'
 import { PageHero } from '@/components/PageHero'
-import { RegistrationForm } from '@/components/RegistrationForm'
 import { SeasonList } from '@/components/SeasonList'
 import page from '@/components/tournament.module.css'
 import t from '@/components/tournaments.module.css'
@@ -55,7 +55,7 @@ export default async function TournamentsPage() {
             {cta.external ? (
               <a href={cta.href} className="btn btn-accent" target="_blank" rel="noopener noreferrer">{cta.label} <span className="sr">(opens in a new tab)</span></a>
             ) : (
-              <Link href={state === 'open' ? '#register' : cta.href} className="btn btn-accent">{cta.label}</Link>
+              <Link href={cta.href} className="btn btn-accent">{cta.label}</Link>
             )}
             <Link href={`/tournaments/${event.slug}/`} className="link-arrow">Schedule &amp; rules →<span className="sr"> for {event.name}</span></Link>
           </div>
@@ -116,13 +116,7 @@ export default async function TournamentsPage() {
         </section>
       )}
 
-      {event && state === 'open' && !event.registrationUrl && (
-        <section className="section light" id="register">
-          <div className="wrap">
-            <RegistrationForm event={event} />
-          </div>
-        </section>
-      )}
+      <MainCourtRegister events={events} states={states} />
     </>
   )
 }

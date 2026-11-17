@@ -424,10 +424,10 @@ export function TournamentEditor({ initial, canEdit }: { initial: Tournament; ca
         </fieldset>
         <fieldset className="adm-card" style={SUB}>
           <legend className="lbl" style={LEGEND}>Registration</legend>
-          <Check label="Registration is open" path="info.registrationOpen" checked={info.registrationOpen} onChange={(v) => setInfo({ registrationOpen: v })} />
-          <TextField label="Registration link" path="info.registrationUrl" value={info.registrationUrl ?? ''} placeholder="https://…"
-            hint="Where players sign up and pay. When set, every Register button goes there."
+          <TextField label="Main Court link" path="info.registrationUrl" value={info.registrationUrl ?? ''} placeholder="https://maincourt.com/events-list/…"
+            hint="All registration is on Main Court: open the tournament there and copy its web address. Every Register button on the site goes to it."
             onChange={(v) => setInfo({ registrationUrl: v || undefined })} />
+          <Check label="Registration is open on Main Court (shows the Register buttons)" path="info.registrationOpen" checked={info.registrationOpen} onChange={(v) => setInfo({ registrationOpen: v })} />
         </fieldset>
         <div className="adm-grid">
           <ImageField label="Poster or photo" path="info.image" value={info.image} onChange={(v) => setInfo({ image: v })} />

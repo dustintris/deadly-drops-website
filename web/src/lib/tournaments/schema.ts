@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { httpsUrl, ImageRef, isoDate, lines, Money, optional, optText, Prize, Slug, text } from '@/lib/content-schema'
+import { isMainCourtUrl } from '@/lib/maincourt'
 
 /**
  * Tournament model used by the admin editor and checked on the server before every save.
@@ -53,6 +54,17 @@ export const DEFAULT_RULES: RulesT = {
   notes: [],
 }
 
+/** A link the general link check already explains (not https://, or a name/password before the host): one message is enough. */
+function hasOwnMessage(u: string): boolean {
+  if (!u.startsWith('https://')) return true
+  try {
+    const p = new URL(u)
+    return !!p.username || !!p.password
+  } catch {
+    return true
+  }
+}
+
 /** Everything the public page shows about a tournament besides its days and divisions. */
 export const Info = z.object({
   summary: text(10, 200, 'Summary'),
@@ -65,12 +77,16 @@ export const Info = z.object({
   format: text(3, 120, 'Format summary'),
   prizes: z.array(Prize).max(3).refine((p) => new Set(p.map((x) => x.place)).size === p.length, 'Each place can only appear once.'),
   registrationOpen: z.boolean(),
-  registrationUrl: optional(httpsUrl),
+  /** The tournament's page on Main Court, where all registration happens. */
+  registrationUrl: optional(httpsUrl.refine((u) => hasOwnMessage(u) || isMainCourtUrl(u), 'Paste the tournament’s Main Court link (https://maincourt.com/…).')),
   /** Poster or photo shown large on the tournament page. */
   image: ImageRef.optional(),
   /** The tournament's own logo (each event has one); the club logo is used when empty. */
   logo: ImageRef.optional(),
-}).refine((i) => i.entryFeeWithMeal === undefined || i.entryFeeWithMeal > i.entryFee, { message: 'The with-meal price must be higher than the entry fee.', path: ['entryFeeWithMeal'] })
+})
+  .refine((i) => i.entryFeeWithMeal === undefined || i.entryFeeWithMeal > i.entryFee, { message: 'The with-meal price must be higher than the entry fee.', path: ['entryFeeWithMeal'] })
+  // registration happens on Main Court, so an open tournament needs somewhere to send players
+  .refine((i) => !i.registrationOpen || !!i.registrationUrl, { message: 'Add the Main Court link before opening registration.', path: ['registrationUrl'] })
 export type InfoT = z.infer<typeof Info>
 
 export const DivisionInput = z.object({

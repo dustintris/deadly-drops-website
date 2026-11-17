@@ -11,13 +11,13 @@ import ts from '@/components/tournaments.module.css'
 import ch from '@/app/(site)/charity/charity.module.css'
 import { charityHref, websiteLabel } from '@/lib/charities'
 import type { CharityT } from '@/lib/content-schema'
-import { getClub, getClubLogo, getEvents, getNextEvent, getTournamentCharities, getTournamentLive, getTournamentPage } from '@/lib/data'
+import { getClub, getClubLogo, getEvents, getTournamentCharities, getTournamentLive, getTournamentPage } from '@/lib/data'
 import { eventState, type EventState } from '@/lib/events'
 import { hasPlay, plural } from '@/lib/match/present'
 import { pageMeta } from '@/lib/seo'
 import { dayLabel } from '@/lib/tournaments/days'
 import { BRONZE_LABELS, FORMAT_LABELS, PLAYOFF_LABELS, TIEBREAKER_LABELS } from '@/lib/tournaments/schema'
-import type { Club, ClubEvent } from '@/lib/types'
+import type { ClubEvent } from '@/lib/types'
 import { asset, money } from '@/lib/utils'
 
 type Params = { params: Promise<{ slug: string }> }
@@ -82,22 +82,27 @@ function stateOf(t: Tournament, events: ClubEvent[]): EventState {
   )
 }
 
-/** Register button while sign-up is open on an outside page, otherwise one line on where things stand. */
-function Registration({ t, state, formOnList, club }: { t: Tournament; state: EventState; formOnList: boolean; club: Club }) {
+/**
+ * Registration is on Main Court: while it's open, the button goes to this tournament's Main Court page;
+ * otherwise one line on where things stand.
+ */
+function Registration({ t, state }: { t: Tournament; state: EventState }) {
   const url = t.info.registrationUrl
   if (state === 'open' && url) {
     return (
-      <a href={url} className="btn btn-accent" target="_blank" rel="noopener noreferrer">
-        Register now <span className="sr">for {t.name} (opens in a new tab)</span>
-      </a>
+      <div className={x.register}>
+        <a href={url} className="btn btn-accent" target="_blank" rel="noopener noreferrer">
+          Register on Main Court <span className="sr">for {t.name} (opens in a new tab)</span>
+        </a>
+        <p className="small muted">Divisions, entry and payment are on Main Court. <Link href="/tournaments/#register">How to register</Link></p>
+      </div>
     )
   }
-  if (state === 'open' && formOnList) return <Link href="/tournaments/#register" className="btn btn-accent">Reserve your spot</Link>
   if (state === 'open') {
-    return <p className={x.stateLine}>Registration is open. Email <a href={`mailto:${club.email}`}>{club.email}</a> to reserve your spot.</p>
+    return <p className={x.stateLine}>Registration is open on Main Court. <Link href="/tournaments/#register">See how to register</Link>.</p>
   }
   if (state === 'upcoming') {
-    return <p className={x.stateLine}>Registration opens soon. <Link href="/tournaments/#join-email">Join the email list</Link> to hear the moment it does.</p>
+    return <p className={x.stateLine}>Registration opens soon on Main Court. <Link href="/tournaments/#join-email">Join the email list</Link> to hear the moment it does.</p>
   }
   if (state === 'tba') {
     return <p className={x.stateLine}>The date is still to be announced. <Link href="/tournaments/#join-email">Join the email list</Link> to hear first.</p>
@@ -180,14 +185,12 @@ function PlayingFor({ c, t }: { c: CharityT; t: Tournament }) {
 
 export default async function TournamentPage({ params }: Params) {
   const slug = (await params).slug
-  const [t, events, next, club, charities] = await Promise.all([getTournamentPage(slug), getEvents(), getNextEvent(), getClub(), getTournamentCharities(slug)])
+  const [t, events, club, charities] = await Promise.all([getTournamentPage(slug), getEvents(), getClub(), getTournamentCharities(slug)])
   if (!t) notFound()
   const play = await getTournamentLive(t.id)
 
   const { info, rules, days } = t
   const state = stateOf(t, events)
-  // the tournaments page only carries a sign-up form for the event it leads with
-  const formOnList = next?.slug === t.slug && !info.registrationUrl
   const pageUrl = `${SITE}/tournaments/${t.slug}/`
 
   const dayCount = Math.max(1, days.length)
@@ -322,7 +325,7 @@ export default async function TournamentPage({ params }: Params) {
             )}
           </p>
         )}
-        <Registration t={t} state={state} formOnList={formOnList} club={club} />
+        <Registration t={t} state={state} />
       </PageHero>
 
       {resultsFirst && resultsSection}

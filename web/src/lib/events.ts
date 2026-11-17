@@ -18,10 +18,13 @@ export function eventState(e: ClubEvent, now = new Date()): EventState {
 export const eventEyebrow = (s: EventState) =>
   s === 'past' ? 'Latest tournament' : s === 'open' ? 'Next up · registration open' : s === 'upcoming' ? 'Next up · registration opens soon' : 'Next up · date to be announced'
 
-/** The main call to action for a tournament. External sign-up pages open in a new tab. */
+/**
+ * The main call to action for a tournament. Registration is on Main Court: while it's open, the button
+ * opens the tournament's Main Court page in a new tab (or, without one yet, the how-to on /tournaments/).
+ */
 export function eventCta(e: ClubEvent, s: EventState): { label: string; href: string; external: boolean } {
   if (s === 'past') return { label: 'See photos and stories', href: '/community/', external: false }
-  if (s === 'open' && e.registrationUrl) return { label: 'Register now', href: e.registrationUrl, external: true }
-  if (s === 'open') return { label: 'Reserve your spot', href: '/tournaments/#register', external: false }
+  if (s === 'open' && e.registrationUrl) return { label: 'Register on Main Court', href: e.registrationUrl, external: true }
+  if (s === 'open') return { label: 'How to register', href: '/tournaments/#register', external: false }
   return { label: 'Get notified', href: '#join-email', external: false }
 }

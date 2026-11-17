@@ -99,6 +99,10 @@ export const tickerItems = [
 
 export const faqs = [
   {
+    q: 'How do I register for a tournament?',
+    a: 'On Main Court, the free pickleball app for iPhone and Android (or maincourt.com). Tap Register on the tournament here, sign in to Main Court, pick your division, tap Register Now and pay by card. Your entry then shows under My Tournaments.',
+  },
+  {
     q: 'Do I need to be a strong player to enter?',
     a: 'No. Tournaments are built around age brackets and DUPR levels so you play with peers at your pace, and charity events focus on fun, friendly games. They are a great first taste of competitive play.',
   },
