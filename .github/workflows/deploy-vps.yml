@@ -1,4 +1,4 @@
-# Test, then deploy web/ to the VPS (https://ddptournament.com) on every push to main or the working
+# Test, then deploy web/ to the VPS (https://ddptournaments.com) on every push to main or the working
 # branch, or by hand: GitHub → Actions → deploy-vps → Run workflow (any branch).
 # The deploy key can only run /root/deadly-drops/ci-deploy.sh on the server (forced command).
 # Secrets: VPS_HOST, VPS_SSH_KEY (private deploy key), VPS_KNOWN_HOSTS (ssh-keyscan of the host).
@@ -32,6 +32,12 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci --no-audit --no-fund
+      # Blocks a deploy only on a CRITICAL advisory in what the running server uses (--omit=dev: TypeScript,
+      # vitest, drizzle-kit and embedded-postgres only build and test it). A critical hole in next, react or
+      # postgres is worth a stopped deploy; anything less, and dev-only advisories, don't block: they arrive
+      # as Dependabot pull requests. It asks the npm registry, so if npm is down this fails too: re-run the job.
+      - name: No critical advisories in production dependencies
+        run: npm audit --omit=dev --audit-level=critical
       - run: npm run typecheck
       - run: npm test
 
@@ -39,6 +45,12 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # The deploy key is root on the server. Keep VPS_SSH_KEY / VPS_KNOWN_HOSTS / VPS_HOST as secrets of this
+    # environment (Settings → Environments → production) with its deployment branches limited, so a workflow edited on
+    # some other branch and run by hand can't read them.
+    environment:
+      name: production
+      url: https://ddptournaments.com
     steps:
       - uses: actions/checkout@v4
       - name: Ship to the VPS and rebuild
@@ -54,7 +66,38 @@ jobs:
             --exclude=web/.pgdata --exclude='web/.env*' web deploy/vps \
             | ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=30 "root@$HOST" deploy
       - name: Check the live site
+        timeout-minutes: 5
+        shell: bash
+        env:
+          SITE: https://ddptournaments.com
+          WWW: https://www.ddptournaments.com
         run: |
-          for p in /robots.txt / /tournaments/; do
-            curl -fsS -o /dev/null -w "$p %{http_code}\n" "https://ddptournament.com$p"
-          done
+          # Caddy may still be getting a certificate (first deploy on a server) and the app warming up, so each
+          # check gets up to 6 tries, 10 s apart. Once one check has used them all, the site has had its minute:
+          # the rest get one try each, so the log lists every broken check without waiting again.
+          tries=6
+          failed=0
+          check() {  # check <url> <expected status, a regex such as 200 or 301|308> [<expected Location>]
+            local url=$1 want=$2 want_loc=${3:-} out code loc n
+            for ((n = 1; n <= tries; n++)); do
+              out="$(curl -sS -o /dev/null --connect-timeout 5 --max-time 20 \
+                -w '%{http_code} %{redirect_url}' "$url" || true)"
+              code=${out%% *}
+              loc=${out#* }
+              if [[ $code =~ ^($want)$ && $loc == "$want_loc" ]]; then
+                echo "ok    $url -> $code${loc:+ -> $loc}"
+                return 0
+              fi
+              echo "wait  $url -> ${code:-000}${loc:+ -> $loc} (try $n of $tries)"
+              if ((n < tries)); then sleep 10; fi
+            done
+            echo "::error title=Live check failed::$url answered ${code:-000}${loc:+ -> $loc}; expected $want${want_loc:+ -> $want_loc}"
+            failed=1
+            tries=1
+          }
+          check "$SITE/robots.txt" 200      # prerendered, no database: the app is up
+          check "$SITE/" 200
+          check "$SITE/tournaments/" 200
+          check "$SITE/admin/login/" 200    # rendered per request: reads the database
+          check "$WWW/" '301|308' "$SITE/"  # Caddy sends www to the apex
+          exit "$failed"

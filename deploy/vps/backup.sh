@@ -33,10 +33,15 @@ mkdir -p "$OUT"
 # truncated file that would count toward the 14 kept
 trap 'rm -f "$OUT"/*.partial' EXIT
 
-docker compose -f "$DIR/docker-compose.yml" exec -T db pg_dump -U ddp -Fc ddp > "$OUT/ddp-$TS.dump.partial"
+# from the project folder, so its .env picks the compose file (COMPOSE_FILE) this server uses
+cd "$DIR"
+docker compose exec -T db pg_dump -U ddp -Fc ddp > "$OUT/ddp-$TS.dump.partial"
+# a dump pg_restore can't read (cut short, empty) never replaces a good one
+docker compose exec -T db pg_restore -l < "$OUT/ddp-$TS.dump.partial" > /dev/null
 mv "$OUT/ddp-$TS.dump.partial" "$OUT/ddp-$TS.dump"
 
-tar -czf "$OUT/uploads-$TS.tar.gz.partial" -C "$DIR/data" uploads
+# tar exits 1 when a photo changes while it's read (an upload during the backup): that copy is still usable
+tar -czf "$OUT/uploads-$TS.tar.gz.partial" -C "$DIR/data" uploads || [ $? -eq 1 ]
 mv "$OUT/uploads-$TS.tar.gz.partial" "$OUT/uploads-$TS.tar.gz"
 
 # Names sort by time, so the newest come first in reverse order

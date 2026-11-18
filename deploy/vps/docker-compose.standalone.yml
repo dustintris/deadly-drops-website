@@ -1,0 +1,118 @@
+# Deadly Drops on a server of its own: Caddy (HTTPS) + Next.js (Node) + PostgreSQL.
+#
+# Lives at /root/deadly-drops on the server, next to docker-compose.yml (the variant for a shared
+# server whose proxy is someone else's). The server's ./.env picks this file with
+#   COMPOSE_FILE=docker-compose.standalone.yml
+# so every `docker compose` there (deploys, backups, by hand) uses it.
+#
+# Caddy gets and renews the HTTPS certificates for SITE_DOMAIN (and www.SITE_DOMAIN, which redirects)
+# and is the only thing published (ports 80/443). The app and the database talk on a private network;
+# the database is never reachable from outside.
+#
+# Secrets: ./.env (see .env.example). Uploaded images: ./data. Backups: backup.sh.
+
+name: deadly-drops
+
+# Cap container logs
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp" # HTTP/3
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:?set SITE_DOMAIN in .env, e.g. ddptournaments.com}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data # certificates: keep, or Let's Encrypt rate limits bite on a rebuild
+      - caddy_config:/config
+    depends_on:
+      - web
+    # the only published container: no privileges beyond binding 80/443
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    mem_limit: 128m
+    pids_limit: 256
+    networks:
+      - edge
+    logging: *logging
+
+  web:
+    build:
+      context: ./app
+      args:
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://${SITE_DOMAIN}}
+    image: deadly-drops-web:latest
+    restart: unless-stopped
+    # Only what the app needs, filled from ./.env (the app never sees POSTGRES_PASSWORD on its own)
+    environment:
+      DATABASE_URL: postgres://ddp:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/ddp
+      CONTENT_DIR: /data
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH:-}
+    volumes:
+      - ./data:/data
+    # Lets the non-root node user bind port 80 inside the container
+    sysctls:
+      net.ipv4.ip_unprivileged_port_start: 0
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    mem_limit: 1g
+    pids_limit: 256
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internal
+      - edge
+    logging: *logging
+
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ddp
+      POSTGRES_DB: ddp
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_INITDB_ARGS: --encoding=UTF8
+    # PostgreSQL 18 images keep data in /var/lib/postgresql/18/docker:
+    # mount the parent, not .../data as with older images
+    volumes:
+      - pgdata:/var/lib/postgresql
+    # the image starts as root and drops to the postgres user itself; nothing may gain privileges after that
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 768m
+    pids_limit: 256
+    healthcheck:
+      # TCP, not the socket: the temporary server during first-boot init listens
+      # only on the socket, so this stays "starting" until the real server is up
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "ddp", "-d", "ddp"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+    networks:
+      - internal
+    logging: *logging
+
+networks:
+  internal:
+    internal: true # no way out to the internet: the database needs none
+  edge:
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:

@@ -128,21 +128,21 @@ audit log in the database (`audit_log`).
 
 ## Hosting
 
-Production runs at https://ddptournament.com on the VPS as two containers (Next.js standalone server + PostgreSQL 18)
-behind the shared Caddy proxy. Pages render per request from the database, so the build needs no database.
+Production runs at https://ddptournaments.com on a dedicated VPS as three containers: its own Caddy (HTTPS,
+certificates renewed automatically), the Next.js standalone server and PostgreSQL 18
+(`deploy/vps/docker-compose.standalone.yml`). Pages render per request from the database, so the build needs no
+database. **Operations (deploys, rollback, backup and restore, logs, rebuilding the server, DNS) are in
+[`deploy/vps/RUNBOOK.md`](../deploy/vps/RUNBOOK.md).** Until it is retired, the old shared server (`ssh smj`) still
+serves https://ddptournament.com from the same scripts, with `docker-compose.yml` behind its shared proxy.
 
-- **Deploy:** every push to `main` that touches `web/` or `deploy/vps/` runs the GitHub Actions workflow
-  `deploy-vps` (typecheck + tests, then upload, build on the server, wait for the health check). Watch it under
-  GitHub → Actions; *Run workflow* there redeploys by hand. The deploy key can only run `ci-deploy.sh` on the server.
-  Fallback from a laptop with `ssh smj` access: `bash deploy/vps/deploy.sh` from the repo root.
+- **Deploy:** every push to `main` or the working branch that touches `web/` or `deploy/vps/` runs the GitHub
+  Actions workflow `deploy-vps` (typecheck + tests, then upload, build on the server, wait for the health check).
+  Watch it under GitHub → Actions. Laptop fallback: `bash deploy/vps/deploy.sh` from the repo root
+  (`DEPLOY_HOST=smj` for the old server).
 - **Roll back the code** (not database migrations), on the server in `/root/deadly-drops`:
   `docker tag deadly-drops-web:previous deadly-drops-web:latest && docker compose up -d web`.
-- **Secrets** live in `/root/deadly-drops/.env` (see `deploy/vps/.env.example`). A new owner password: run
-  `npm run admin:setup` locally, put the new `ADMIN_PASSWORD_HASH` (single-quoted) in that file, then
-  `docker compose up -d web`.
-- **Backups:** `deploy/vps/backup.sh` runs nightly at 03:15 (database dump + uploaded images, 14 kept, in
-  `/root/deadly-drops/backups/`). Restore steps are at the top of the script. They sit on the same disk: copy them
-  off the server now and then.
+- **Secrets and server settings** live in `/root/deadly-drops/.env` (see `deploy/vps/.env.example`).
+- **Backups** run nightly into `/root/deadly-drops/backups/`, on the same disk: copy them off the server now and then.
 
 Environment (`.env.local`, never committed; see `.env.example`): `DATABASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH`
 (the owner), `CONTENT_DIR` (uploaded images), `NEXT_PUBLIC_SITE_URL`. Staff logins live in the database.

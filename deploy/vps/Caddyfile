@@ -1,0 +1,13 @@
+# Caddy for docker-compose.standalone.yml: HTTPS for SITE_DOMAIN (certificates from Let's Encrypt, renewed
+# automatically) in front of the app. The app sends its own security headers, so none are added here
+# (each header goes out once). The live-score stream (/live/…) passes straight through: Caddy flushes
+# text/event-stream responses as they come.
+
+{$SITE_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy web:80
+}
+
+www.{$SITE_DOMAIN} {
+	redir https://{$SITE_DOMAIN}{uri} permanent
+}

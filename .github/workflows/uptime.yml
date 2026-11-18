@@ -1,0 +1,81 @@
+# Uptime check for https://ddptournaments.com every 15 minutes: the home and tournaments pages must answer
+# 200, and the HTTPS certificates must have more than 14 days left. A problem fails the run, and GitHub
+# emails about failed runs of a scheduled workflow to whoever last changed its `cron` line (GitHub →
+# Settings → Notifications → Actions must allow email, e.g. "Only notify for failed workflows").
+# Run by hand: GitHub → Actions → uptime → Run workflow. No checkout and no Node: one short job of curl and
+# openssl, which costs nothing in a public repo.
+#
+# Schedules run only from the default branch (main). In a public repo GitHub DISABLES scheduled workflows
+# after 60 days without repository activity (commits and the like); the check then stops running, and a
+# check that doesn't run sends no failure emails. Re-enable it: GitHub → Actions → uptime → "Enable
+# workflow", or `gh workflow enable uptime.yml`.
+name: uptime
+
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'  # every 15 minutes, off the hour (GitHub's schedules run late on the hour)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SITE: https://ddptournaments.com
+      TLS_HOSTS: ddptournaments.com www.ddptournaments.com
+      MIN_DAYS: 14
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Pages answer 200
+        run: |
+          # 3 tries each (a blip or a container restart isn't an outage), 15 s apart, 30 s at most per try
+          failed=0
+          for path in / /tournaments/; do
+            url="$SITE$path"
+            for n in 1 2 3; do
+              code="$(curl -sS -o /dev/null --connect-timeout 10 --max-time 30 -w '%{http_code}' "$url" || true)"
+              if [ "$code" = 200 ]; then break; fi
+              echo "try $n: $url -> ${code:-000}"
+              if [ "$n" -lt 3 ]; then sleep 15; fi
+            done
+            if [ "$code" = 200 ]; then
+              echo "ok  $url -> 200"
+            else
+              echo "::error title=Site down::$url answered ${code:-000} (000 = no answer), not 200, 3 tries in a row"
+              failed=1
+            fi
+          done
+          exit "$failed"
+
+      - name: Certificates have more than ${{ env.MIN_DAYS }} days left
+        if: ${{ !cancelled() }}  # report the certificates even when the pages failed
+        run: |
+          # Caddy renews when a third of the certificate's life is left (30 days of Let's Encrypt's 90), so
+          # 14 days left means renewal is failing. If certificates get shorter (Let's Encrypt is moving
+          # toward 45 days), lower MIN_DAYS so the normal renewal point stays above it.
+          failed=0
+          now=$(date +%s)
+          for host in $TLS_HOSTS; do
+            end="$(timeout 20 openssl s_client -connect "$host:443" -servername "$host" </dev/null 2>/dev/null \
+              | openssl x509 -noout -enddate 2>/dev/null || true)"
+            end=${end#notAfter=}
+            if [ -z "$end" ]; then
+              echo "::error title=No certificate::$host:443 gave no TLS certificate (down, or not serving HTTPS)"
+              failed=1
+              continue
+            fi
+            end_s=$(date -d "$end" +%s)
+            days=$(( (end_s - now) / 86400 ))
+            if [ "$end_s" -gt $(( now + MIN_DAYS * 86400 )) ]; then
+              echo "ok  $host: certificate valid until $end ($days days)"
+            else
+              echo "::error title=Certificate expiring::$host certificate expires $end ($days days left, want more than $MIN_DAYS): check Caddy's logs on the server"
+              failed=1
+            fi
+          done
+          exit "$failed"

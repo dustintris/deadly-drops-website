@@ -1,0 +1,65 @@
+# Dependabot version updates: pull requests on Mondays, never merged by themselves. Each pull request that touches
+# web/ is checked by ci.yml (typecheck, tests, build) before it's merged; merging into main then deploys it, and
+# deploy-vps runs the audit, typecheck and tests again first and stops the deploy if they fail.
+# - No target-branch: Dependabot uses the default branch (main), and security updates always go there.
+# - No labels: Dependabot's defaults are "dependencies" plus the ecosystem ("javascript", "docker",
+#   "github_actions"), and it creates those itself. Custom labels would have to be created in the repo first,
+#   or Dependabot leaves them off.
+version: 2
+updates:
+  # The site's npm packages. Minor and patch bumps arrive together in one PR; each major bump gets a PR of its
+  # own, since a major can need code changes. TypeScript is pinned to 5.8 in package.json, and its minor
+  # releases can break the typecheck, so it comes on its own too instead of holding up the group.
+  - package-ecosystem: npm
+    directory: /web
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    groups:
+      npm-minor-and-patch:
+        patterns: ['*']
+        exclude-patterns: [typescript]
+        update-types: [minor, patch]
+    ignore:
+      # @types/node follows the Node major the site runs (24: web/Dockerfile and the deploy-vps workflow).
+      # Raise this bound when the site moves to a newer Node LTS.
+      - dependency-name: '@types/node'
+        versions: ['>=25']
+    # Supply-chain guard: a hijacked release is usually pulled within days, so wait before proposing one.
+    # Security updates are not delayed.
+    cooldown:
+      default-days: 3
+      semver-major-days: 7
+    commit-message:
+      prefix: deps
+      prefix-development: deps-dev
+
+  # Base images in web/Dockerfile (node:24-slim). The Node major isn't bumped here: it moves together with
+  # node-version in the deploy-vps workflow, and only to an LTS line, which Dependabot can't tell apart.
+  # A floating tag like 24-slim has nothing else to bump; pin its digest (node:24-slim@sha256:…) and
+  # Dependabot will send the weekly digest updates that carry Debian and Node patch fixes.
+  - package-ecosystem: docker
+    directory: /web
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 2
+    ignore:
+      - dependency-name: node
+        update-types: ['version-update:semver-major']
+    commit-message:
+      prefix: docker
+
+  # Actions used by the workflows in .github/workflows, all in one PR.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 2
+    groups:
+      github-actions:
+        patterns: ['*']
+    commit-message:
+      prefix: ci
