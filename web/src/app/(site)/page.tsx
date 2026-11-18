@@ -71,7 +71,7 @@ export default async function Home() {
       <section className={s.hero}>
         <picture>
           {copy.heroImageMobile && <source media="(max-width: 720px)" srcSet={asset(copy.heroImageMobile.src)} />}
-          <img className={s.heroImg} src={asset(hero.src)} alt={hero.alt} style={{ objectPosition: hero.position }} fetchPriority="high" />
+          <img className={s.heroImg} src={asset(hero.src)} alt={hero.alt} style={{ objectPosition: hero.position, transformOrigin: hero.position }} fetchPriority="high" />
         </picture>
         <Sparkles />
         <div className={`wrap ${s.heroInner}`}>

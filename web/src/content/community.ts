@@ -40,7 +40,7 @@ export const communityPosts: CommunityPostT[] = [
       '## Behind the scenes',
       'Volunteers showed up as early as 6 AM to set up, and one came all the way from Escondido. Our official photographers truly made the most of the June weather over the two days, capturing every pickleball moment with skill and dedication. Thank you for your time and your unmatched energy.',
     ].join('\n\n'),
-    cover: img('dominate-podium-1', 'Players on the DOMINATE podium with medals'),
+    cover: img('dominate-podium-1', 'Players on the DOMINATE podium with medals', '50% 12%'),
     photos: [
       img('dominate-podium-2', 'Medal winners on the podium'),
       img('dominate-play-1', 'Doubles play on court'),

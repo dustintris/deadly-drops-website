@@ -4,7 +4,7 @@ import { Countdown } from '@/components/Countdown'
 import { eventTags } from '@/components/EventBits'
 import live from '@/components/live.module.css'
 import { MainCourtRegister } from '@/components/MainCourtRegister'
-import { PageHero } from '@/components/PageHero'
+import { DEFAULT_HERO_PHOTO, PageHero } from '@/components/PageHero'
 import { SeasonList } from '@/components/SeasonList'
 import page from '@/components/tournament.module.css'
 import t from '@/components/tournaments.module.css'
@@ -53,8 +53,8 @@ export default async function TournamentsPage() {
           eyebrow={eventEyebrow(state)}
           title={<Link href={`/tournaments/${event.slug}/`} className={page.titleLink}>{event.name}</Link>}
           lede={event.summary}
-          photo={event.image?.src ?? '/images/club/dominate-podium-1.jpg'}
-          photoPosition={event.image?.position ?? '50% 40%'}
+          photo={event.image?.src ?? DEFAULT_HERO_PHOTO.src}
+          photoPosition={event.image ? event.image.position : DEFAULT_HERO_PHOTO.position}
           aside={heroSide}
         >
           <p className={t.heroWhen}>{event.dateLabel}</p>
@@ -72,7 +72,7 @@ export default async function TournamentsPage() {
           </div>
         </PageHero>
       ) : (
-        <PageHero eyebrow="Tournaments" title="Next tournament coming soon" lede="New tournaments are announced by email first. Join the list at the bottom of the page." photo="/images/club/dominate-podium-1.jpg" />
+        <PageHero eyebrow="Tournaments" title="Next tournament coming soon" lede="New tournaments are announced by email first. Join the list at the bottom of the page." photo={DEFAULT_HERO_PHOTO.src} photoPosition={DEFAULT_HERO_PHOTO.position} />
       )}
 
       <section className="section dark">

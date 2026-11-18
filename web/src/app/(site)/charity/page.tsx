@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { AccentTitle } from '@/components/AccentTitle'
-import { PageHero } from '@/components/PageHero'
+import { DEFAULT_HERO_PHOTO, PageHero } from '@/components/PageHero'
 import { CloudEdge } from '@/components/Sky'
 import community from '@/components/community.module.css'
 import { charityAnchor, websiteLabel } from '@/lib/charities'
@@ -39,7 +39,8 @@ export default async function CharityPage() {
         eyebrow="Charity"
         title={<AccentTitle title="Every tournament *gives back*" />}
         lede="Deadly Drops Pickleball runs charity tournaments: play for charity, have fun, make friends, make a difference. Each tournament supports a cause. Here are the charities our players play for, and the tournaments that support them."
-        photo="/images/club/dominate-podium-1.jpg"
+        photo={DEFAULT_HERO_PHOTO.src}
+        photoPosition={DEFAULT_HERO_PHOTO.position}
       >
         {charities.length > 1 && (
           <nav aria-label="Charities on this page">

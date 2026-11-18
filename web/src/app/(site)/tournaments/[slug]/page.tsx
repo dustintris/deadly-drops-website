@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { LiveRefresh } from '@/components/LiveRefresh'
-import { PageHero } from '@/components/PageHero'
+import { DEFAULT_HERO_PHOTO, PageHero } from '@/components/PageHero'
 import { CloudEdge, Sparkles } from '@/components/Sky'
 import l from '@/components/live.module.css'
 import { DivisionResults } from '@/components/results/Results'
@@ -26,7 +26,6 @@ type Division = Tournament['divisions'][number]
 
 const ORIGIN = process.env.NEXT_PUBLIC_SITE_URL || 'https://deadlydropspickleball.com'
 const SITE = ORIGIN + (process.env.NEXT_PUBLIC_BASE_PATH || '')
-const DEFAULT_PHOTO = '/images/club/dominate-podium-1.jpg'
 const PLACE_ORDER = ['Gold', 'Silver', 'Bronze']
 
 const EYEBROW: Record<EventState, string> = {
@@ -321,8 +320,8 @@ export default async function TournamentPage({ params }: Params) {
         eyebrow={EYEBROW[state]}
         title={t.name}
         lede={info.summary}
-        photo={info.image?.src ?? DEFAULT_PHOTO}
-        photoPosition={info.image?.position ?? '50% 40%'}
+        photo={info.image?.src ?? DEFAULT_HERO_PHOTO.src}
+        photoPosition={info.image ? info.image.position : DEFAULT_HERO_PHOTO.position}
         aside={
           <div className={x.heroSide}>
             <img className={x.heroLogo} src={asset(logo.src)} alt={logo.alt} width={184} height={184} />
