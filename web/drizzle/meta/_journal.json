@@ -57,6 +57,13 @@
       "when": 1794937468945,
       "tag": "0007_tournament_flyers",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795020212893,
+      "tag": "0008_beauty_in_the_beast",
+      "breakpoints": true
     }
   ]
 }

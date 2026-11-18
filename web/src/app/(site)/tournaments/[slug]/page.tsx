@@ -196,6 +196,30 @@ function PlayingFor({ c, t }: { c: CharityT; t: Tournament }) {
   )
 }
 
+/** A tournament with its flyer but no charity partner named yet: the flyer gets the band "Playing for" would use. */
+function OwnFlyer({ t, flyer }: { t: Tournament; flyer: NonNullable<Tournament['info']['flyer']> }) {
+  return (
+    <section className={ch.playing} data-media="true" aria-labelledby="tournament-flyer">
+      <div data-reveal="left">
+        <p className="eyebrow">Flyer</p>
+        <h2 id="tournament-flyer" className="display d-m">The <span className="accent">flyer</span></h2>
+        <p className="lede">Everything on one page: save it, print it, or send it to your partner.</p>
+        <div className={ch.actions} style={{ marginTop: 24 }}>
+          <a href={asset(flyer.src)} className="btn btn-ghost" target="_blank" rel="noopener noreferrer">
+            Open full size <span aria-hidden="true">↗</span><span className="sr"> (the {t.name} flyer opens in a new tab)</span>
+          </a>
+        </div>
+      </div>
+      <div className={ch.pair} data-count={1} data-reveal="zoom">
+        <figure data-kind="flyer">
+          <img src={asset(flyer.src)} alt={flyer.alt || `${t.name} flyer`} loading="lazy" decoding="async" />
+          <figcaption>{t.name} flyer</figcaption>
+        </figure>
+      </div>
+    </section>
+  )
+}
+
 export default async function TournamentPage({ params }: Params) {
   const slug = (await params).slug
   const [t, events, club, charities] = await Promise.all([getTournamentPage(slug), getEvents(), getClub(), getTournamentCharities(slug)])
@@ -431,11 +455,13 @@ export default async function TournamentPage({ params }: Params) {
 
       {!resultsFirst && resultsSection}
 
-      {charities.length > 0 && (
+      {(charities.length > 0 || t.info.flyer) && (
         <section className={`section darker rule-top ${ch.playingBand}`}>
           <Sparkles />
           <div className={`wrap ${ch.playingInner}`}>
-            {charities.map((c) => <PlayingFor key={c.id} c={c} t={t} />)}
+            {charities.length > 0
+              ? charities.map((c) => <PlayingFor key={c.id} c={c} t={t} />)
+              : t.info.flyer && <OwnFlyer t={t} flyer={t.info.flyer} />}
           </div>
           {/* the night sky melts into pink clouds above the rules (a light section) */}
           <CloudEdge />
