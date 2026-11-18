@@ -1,5 +1,4 @@
 import { cookies } from 'next/headers'
-import { CartProvider } from '@/components/CartContext'
 import { MobileTabBar } from '@/components/MobileTabBar'
 import { Motion } from '@/components/Motion'
 import { PreviewBar } from '@/components/PreviewBar'
@@ -17,19 +16,17 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   return (
     <>
       <a className="skip" href="#main">Skip to content</a>
-      <CartProvider>
-        {preview && <PreviewBar />}
-        {notice && (
-          <p className={shell.notice}>
-            {notice.href ? <a href={notice.href}>{notice.text}</a> : notice.text}
-          </p>
-        )}
-        <SiteHeader city={club.city} logo={logo.src} />
-        <main id="main">{children}</main>
-        <SiteFooter club={club} logo={logo} motionPaused={motionPaused} />
-        <MobileTabBar />
-        <Motion />
-      </CartProvider>
+      {preview && <PreviewBar />}
+      {notice && (
+        <p className={shell.notice}>
+          {notice.href ? <a href={notice.href}>{notice.text}</a> : notice.text}
+        </p>
+      )}
+      <SiteHeader city={club.city} logo={logo.src} />
+      <main id="main">{children}</main>
+      <SiteFooter club={club} logo={logo} motionPaused={motionPaused} />
+      <MobileTabBar />
+      <Motion />
     </>
   )
 }

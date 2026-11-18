@@ -8,8 +8,10 @@ import { pageMeta } from '@/lib/seo'
 
 export const metadata: Metadata = pageMeta('Contact us', 'Contact Deadly Drops Pickleball in Chula Vista, CA about joining, tournaments, coaching or a shop order. Email info@deadlydropspickleball.com.', '/contact/')
 
-export default async function ContactPage() {
-  const [club, faqs, copy] = await Promise.all([getClub(), getFaqs(), getPageCopy('contact')])
+export default async function ContactPage({ searchParams }: { searchParams: Promise<{ about?: string | string[] }> }) {
+  const [club, faqs, copy, query] = await Promise.all([getClub(), getFaqs(), getPageCopy('contact'), searchParams])
+  // ?about=<product> (a product page's "Message us about this item") starts a shop order about it
+  const about = typeof query.about === 'string' ? query.about.replace(/[\u0000-\u001f\u007f]+/g, ' ').trim().slice(0, 80) : ''
   const photo = copy.heroImage ?? { src: '/images/club/dominate-play-3.jpg', alt: '' }
   return (
     <>
@@ -19,7 +21,8 @@ export default async function ContactPage() {
             {copy.eyebrow && <p className="eyebrow">{copy.eyebrow}</p>}
             <h1 className="display d-l"><AccentTitle title={copy.title} /></h1>
             {copy.lede && <p className="lede">{copy.lede}</p>}
-            <ContactForm email={club.email} />
+            {/* keyed so a different ?about= starts a fresh form */}
+            <ContactForm key={about} email={club.email} about={about || undefined} />
           </div>
           <aside className={c.side}>
             <div className={`photo ${c.photo}`}>

@@ -64,6 +64,20 @@
       "when": 1795020212893,
       "tag": "0008_beauty_in_the_beast",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1795020599092,
+      "tag": "0009_inbox",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1795021727415,
+      "tag": "0010_retire_preview_content",
+      "breakpoints": true
     }
   ]
 }

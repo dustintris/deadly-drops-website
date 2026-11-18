@@ -80,16 +80,11 @@ export function SettingsEditor({ initial }: { initial: SiteSettingsT }) {
 
       <section className="adm-card" aria-labelledby="sh-h">
         <h2 id="sh-h">Shop</h2>
+        {/* no member discount here: the shop is a catalogue with no checkout or member accounts (the saved value is kept, unused) */}
         <div className="adm-grid">
-          <div className="adm-field">
-            <label htmlFor="f-shop.memberDiscount">Member discount (%)</label>
-            <input id="f-shop.memberDiscount" className="adm-input" type="number" min={0} max={50} step={1}
-              value={Math.round(v.shop.memberDiscount * 1000) / 10}
-              onChange={(e) => set({ shop: { ...v.shop, memberDiscount: Math.round(Math.min(50, Math.max(0, Number(e.target.value) || 0)) * 10) / 1000 } })} />
-            <p className="hint">Taken off at checkout for signed-in members. 0 turns it off.</p>
-          </div>
-          <TextField label="Pickup note" path="shop.pickupNote" value={v.shop.pickupNote} max={80} onChange={(x) => set({ shop: { ...v.shop, pickupNote: x } })} />
+          <TextField label="How to buy" path="shop.pickupNote" value={v.shop.pickupNote} max={80} onChange={(x) => set({ shop: { ...v.shop, pickupNote: x } })} />
         </div>
+        <p className="hint">Shown on the shop and on every product, above the “Message us about this item” button.</p>
       </section>
 
       <SaveBar s={s} />

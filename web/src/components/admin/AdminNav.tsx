@@ -17,6 +17,8 @@ const NAV: { group?: string; items: NavItem[] }[] = [
       { href: '/admin/tournaments/', label: 'Tournaments', area: 'tournaments' },
       { href: '/admin/score/', label: 'Scoring', area: 'scoring' },
       { href: '/admin/checkin/', label: 'Check-in', area: 'checkin' },
+      // contact-form messages and the email list (personal data: same access as the rest of the website content)
+      { href: '/admin/inbox/', label: 'Inbox', area: 'content' },
       { href: '/admin/announcements/', label: 'Announcements', area: 'content' },
       { href: '/admin/products/', label: 'Shop & prices', area: 'shop' },
       { href: '/admin/media/', label: 'Photos', area: 'content' },

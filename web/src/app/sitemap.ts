@@ -1,18 +1,17 @@
 import type { MetadataRoute } from 'next'
-import { getCommunityPosts, getEvents, getMembers, getProducts } from '@/lib/data'
+import { getCommunityPosts, getEvents, getProducts } from '@/lib/data'
 
 // built per request from the database, so new products and posts appear without a rebuild
 export const dynamic = 'force-dynamic'
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://deadlydropspickleball.com') + (process.env.NEXT_PUBLIC_BASE_PATH || '')
 
-/** Public pages only; account and checkout pages are noindex and left out. */
+/** Public pages only; account and checkout pages are noindex and left out, and members are hidden until real accounts exist. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [members, products, posts, events] = await Promise.all([getMembers(), getProducts(), getCommunityPosts(), getEvents()])
+  const [products, posts, events] = await Promise.all([getProducts(), getCommunityPosts(), getEvents()])
   const paths = [
-    '/', '/tournaments/', '/charity/', '/about/', '/members/', '/shop/', '/community/', '/gallery/', '/contact/',
+    '/', '/tournaments/', '/charity/', '/about/', '/shop/', '/community/', '/gallery/', '/contact/',
     ...events.map((e) => `/tournaments/${e.slug}/`),
-    ...members.map((m) => `/members/${m.slug}/`),
     ...products.map((p) => `/shop/${p.slug}/`),
     ...posts.map((p) => `/community/${p.slug}/`),
   ]

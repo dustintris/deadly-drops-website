@@ -2,17 +2,16 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import type { Champions } from '@/lib/champions'
 import type { ClubEvent } from '@/lib/types'
 import { eventCta, type EventState } from '@/lib/events'
 import { asset, cx, money } from '@/lib/utils'
-import { Monogram } from './Monogram'
-import type { Member } from '@/lib/types'
+import l from './live.module.css'
 import page from './tournament.module.css'
 import styles from './tournaments.module.css'
 
-type Champion = { event: string; pair: string; detail: string; lead: Member }
-
-export function SeasonList({ events, states, champions }: { events: ClubEvent[]; states: Record<string, EventState>; champions: Champion[] }) {
+/** `champions`: the latest finished tournament's gold medallists from its recorded play, or null (then no champions show). */
+export function SeasonList({ events, states, champions }: { events: ClubEvent[]; states: Record<string, EventState>; champions: Champions | null }) {
   const withState = events.map((e) => ({ e, st: states[e.slug] ?? 'tba' }))
   const upcoming = withState.filter((x) => x.st !== 'past')
   const past = withState.filter((x) => x.st === 'past').sort((a, b) => (b.e.date ?? '').localeCompare(a.e.date ?? ''))
@@ -85,19 +84,27 @@ export function SeasonList({ events, states, champions }: { events: ClubEvent[];
             )
           })}
         </ul>
-        <p className="eyebrow" style={{ margin: '32px 0 12px' }}>Division champions</p>
-        <ul className={styles.champs} data-reveal-stagger>
-          {champions.map((c) => (
-            <li key={c.event} className="card">
-              <Monogram member={c.lead} size="xl" round />
-              <div>
-                <p className="eyebrow">{c.event} · last season</p>
-                <strong>{c.pair}</strong>
-                <span>{c.detail}</span>
-              </div>
-            </li>
-          ))}
-        </ul>
+        {champions && (
+          <>
+            <p className="eyebrow" style={{ margin: '32px 0 12px' }}>Division champions · {champions.tournament}</p>
+            <ul className={styles.champs} data-reveal-stagger>
+              {champions.winners.map((c) => (
+                <li key={c.divisionId} className="card">
+                  {/* the gold medal from the results page's podium */}
+                  <div className={l.medal} aria-hidden="true">🥇</div>
+                  <div>
+                    <p className="eyebrow">{c.division}</p>
+                    <strong>{c.team}</strong>
+                    {c.players && c.players !== c.team && <span>{c.players}</span>}
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <p style={{ marginTop: 16 }}>
+              <Link href={`/tournaments/${champions.slug}/#results`} className="link-arrow">All results &amp; standings →<span className="sr"> for {champions.tournament}</span></Link>
+            </p>
+          </>
+        )}
         </>
       )}
     </>

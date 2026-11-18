@@ -6,10 +6,11 @@ import { NewsletterForm } from './NewsletterForm'
 import styles from './shell.module.css'
 
 // same order as the header menu: Tournaments · Charity · Shop · Community · Gallery · About us · Contact us
+// (Members, My play and the season ladder come back with real member accounts)
 const COLS = [
-  { title: 'Play', links: [['Tournaments', '/tournaments/'], ['Charity', '/charity/'], ['Register', '/tournaments/#register'], ['Ladder', '/tournaments/#ladder']] },
-  { title: 'Club', links: [['Shop', '/shop/'], ['Community', '/community/'], ['Gallery', '/gallery/'], ['Members', '/members/']] },
-  { title: 'More', links: [['About us', '/about/'], ['Contact us', '/contact/'], ['My play', '/me/']] },
+  { title: 'Play', links: [['Tournaments', '/tournaments/'], ['Charity', '/charity/'], ['Register', '/tournaments/#register']] },
+  { title: 'Club', links: [['Shop', '/shop/'], ['Community', '/community/'], ['Gallery', '/gallery/']] },
+  { title: 'More', links: [['About us', '/about/'], ['Contact us', '/contact/']] },
 ]
 
 /** `logo` is the club logo from Admin → Logo & colours (the bundled badge until one is uploaded). */

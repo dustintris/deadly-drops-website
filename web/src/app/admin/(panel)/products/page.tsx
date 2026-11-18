@@ -10,7 +10,8 @@ export const metadata = { title: 'Shop & prices' }
 export default async function ProductsAdmin() {
   const s = await requirePermission('shop', 'view') // each page checks: a layout check alone can be skipped by partial rendering
   const { draft, library } = await getAdminData()
-  const discount = Math.round(draft.settings.shop.memberDiscount * 100)
+  // the shop is a catalogue (no online checkout): the "how to buy" note is what visitors act on
+  const pickupNote = draft.settings.shop.pickupNote
   return (
     <MediaLibraryProvider initial={library}>
       <div className="adm-head">
@@ -21,10 +22,11 @@ export default async function ProductsAdmin() {
       </div>
       <div className="adm-card" style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
         <p style={{ marginRight: 'auto' }}>
-          Members currently get <strong>{discount}% off</strong> every product.
+          The shop has no online checkout. Each product says how to buy:{' '}
+          {pickupNote ? <strong>“{pickupNote}”</strong> : <em>no note yet</em>}, with a button to message the club about it.
         </p>
-        {/* the discount lives in Club info, which is website content */}
-        {can(s, 'content', 'edit') && <Link className="adm-btn" href="/admin/settings/">Change the member discount</Link>}
+        {/* the note lives in Club info, which is website content */}
+        {can(s, 'content', 'edit') && <Link className="adm-btn" href="/admin/settings/">Change how to buy</Link>}
       </div>
       <EditGate canEdit={can(s, 'shop', 'edit')}>
         <ProductsEditor initial={draft.products} rev={draft.rev} />

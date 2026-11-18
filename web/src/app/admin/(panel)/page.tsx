@@ -6,6 +6,7 @@ import { ensureImported, listTournaments, toClubEvent, type Tournament } from '@
 import { money } from '@/lib/utils'
 import { AREAS, AREA_LABELS, can, type Area } from '@/lib/auth/permissions'
 import { requireAdmin } from '@/lib/auth/session'
+import { countOpenMessages } from '@/lib/inbox/repo'
 
 export const metadata = { title: 'Dashboard' }
 
@@ -23,12 +24,13 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   // the activity log covers every area (and sign-ins), so it is for people who oversee staff
   const seeActivity = can(s, 'staff')
 
-  const [draft, live, log, next, tournaments] = await Promise.all([
+  const [draft, live, log, next, tournaments, openMessages] = await Promise.all([
     readDraft(),
     readPublished(),
     seeActivity ? recentAudit(8) : Promise.resolve<AuditEntry[]>([]),
     seeTournaments ? getNextEvent() : Promise.resolve(null),
     seeTournaments ? ensureImported().then(() => listTournaments()) : Promise.resolve<Tournament[]>([]),
+    seeContent ? countOpenMessages() : Promise.resolve(0),
   ])
   // the one the website leads with; while none is shown, the first (hidden) one so it can be finished
   const tournament = next ? tournaments.find((t) => t.slug === next.slug) : tournaments[0]
@@ -42,6 +44,9 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const noFlyer = live.charities.filter((c) => !c.flyer).length
 
   const todos = [
+    seeContent && openMessages > 0 && (
+      <li key="inbox">{openMessages} {openMessages === 1 ? 'message' : 'messages'} from the Contact page to answer. <Link href="/admin/inbox/">Open the Inbox</Link>.</li>
+    ),
     seeContent && <li key="photos">{standIns} places still use stock stand-in photos. <Link href="/admin/media/">Upload club photos</Link>.</li>,
     seeContent && noFlyer > 0 && <li key="flyers">{noFlyer} {noFlyer === 1 ? 'charity has' : 'charities have'} no flyer yet. <Link href="/admin/charities/">Add charity flyers</Link>.</li>,
     seeShop && <li key="shop">{noPhoto} shop products have no photo yet. <Link href="/admin/products/">Add product photos</Link>.</li>,

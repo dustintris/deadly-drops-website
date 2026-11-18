@@ -204,3 +204,36 @@ export const auditLog = pgTable('audit_log', {
   action: text('action').notNull(),
   detail: text('detail').notNull().default(''),
 })
+
+/** Messages sent from the public Contact form, read in Admin → Inbox (newest first by id). */
+export const contactMessages = pgTable(
+  'contact_messages',
+  {
+    id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+    name: text('name').notNull(),
+    email: text('email').notNull(),
+    topic: text('topic').notNull(),
+    message: text('message').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    // set when someone in the admin marks it dealt with
+    handledAt: timestamp('handled_at', { withTimezone: true }),
+    handledBy: text('handled_by'),
+  },
+  (t) => [
+    check('contact_messages_size_check', sql`length(${t.name}) <= 100 and length(${t.email}) <= 254 and length(${t.topic}) <= 40 and length(${t.message}) <= 4000`),
+  ],
+)
+
+/** The mailing list ("Join the list"): one row per address, stored lower-case. */
+export const emailSignups = pgTable(
+  'email_signups',
+  {
+    id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+    email: text('email').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('email_signups_email_idx').on(t.email),
+    check('email_signups_email_check', sql`${t.email} = lower(${t.email}) and length(${t.email}) <= 254`),
+  ],
+)

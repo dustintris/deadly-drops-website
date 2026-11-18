@@ -1,10 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Monogram } from '@/components/Monogram'
 import { PageHero } from '@/components/PageHero'
 import a from '@/components/about.module.css'
 import { AccentTitle } from '@/components/AccentTitle'
-import { getClub, getCommittee, getNextEvent, getPageCopy } from '@/lib/data'
+import { getClub, getNextEvent, getPageCopy } from '@/lib/data'
 import { eventState } from '@/lib/events'
 import { asset, money } from '@/lib/utils'
 import { pageMeta } from '@/lib/seo'
@@ -12,7 +11,8 @@ import { pageMeta } from '@/lib/seo'
 export const metadata: Metadata = pageMeta('About us', 'Founded by a retired U.S. Navy combat veteran, Deadly Drops Pickleball is a Chula Vista apparel brand and community hub for players of every level.', '/about/')
 
 export default async function AboutPage() {
-  const [club, committee, event, copy] = await Promise.all([getClub(), getCommittee(), getNextEvent(), getPageCopy('about')])
+  // (the "Who runs it" committee is left out until the real volunteers are on the site: it listed invented people)
+  const [club, event, copy] = await Promise.all([getClub(), getNextEvent(), getPageCopy('about')])
 
   const stats = [
     { value: 'USN', label: 'Veteran owned', accent: true },
@@ -68,32 +68,6 @@ export default async function AboutPage() {
                 <strong className="display">{String(i + 1).padStart(2, '0')}</strong>
                 <h3>{v.title}</h3>
                 <p>{v.body}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section className="section dark rule-top">
-        <div className="wrap">
-          <div className="head-row" data-reveal>
-            <div className="stack-8">
-              <p className="eyebrow">Who runs it</p>
-              <h2 className="display d-m">All members, all volunteers</h2>
-            </div>
-            <Link href="/members/" className="link-arrow">Meet the full roster →</Link>
-          </div>
-          <ul className={a.team} data-reveal-stagger>
-            {committee.map((c) => (
-              <li key={c.member.slug} className="card">
-                <Link href={`/members/${c.member.slug}/`}>
-                  <div className={a.teamTile}><Monogram member={c.member} /></div>
-                  <div className={a.teamBody}>
-                    <strong>{c.member.name}</strong>
-                    <span className="eyebrow">{c.role}</span>
-                    <p>{c.note}</p>
-                  </div>
-                </Link>
               </li>
             ))}
           </ul>

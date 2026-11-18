@@ -4,13 +4,14 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import styles from './shell.module.css'
 
-// the site is about the tournaments and the causes they play for; Members is still in the menu and footer
+// the site is about the tournaments, the causes they play for and the photos from the day; the other
+// pages are in the menu and footer (a "Me" tab comes back with real member accounts)
 const TABS = [
   { href: '/', label: 'Home', match: (p: string) => p === '/' },
   { href: '/tournaments/', label: 'Events', match: (p: string) => p.startsWith('/tournaments') },
   { href: '/charity/', label: 'Charity', match: (p: string) => p.startsWith('/charity') },
-  { href: '/shop/', label: 'Shop', match: (p: string) => p.startsWith('/shop') || p.startsWith('/cart') },
-  { href: '/me/', label: 'Me', match: (p: string) => p.startsWith('/me') || p.startsWith('/login') || p.startsWith('/signup') },
+  { href: '/shop/', label: 'Shop', match: (p: string) => p.startsWith('/shop') },
+  { href: '/gallery/', label: 'Gallery', match: (p: string) => p.startsWith('/gallery') },
 ]
 
 /** Phone-only bottom navigation from the mobile mockups. */

@@ -9,7 +9,6 @@ import { charities } from './charities'
 import { aboutPoints, club, faqs, tickerItems } from './club'
 import { communityPosts } from './community'
 import { clubGallery, shopProducts } from './real'
-import { MEMBER_DISCOUNT } from './sample'
 
 const id = (prefix: string, i: number) => `${prefix}-${String(i + 1).padStart(3, '0')}`
 
@@ -22,8 +21,10 @@ export function buildSeed(): SiteContent {
       ...club,
       social: club.social ?? {},
       aboutPoints,
-      notice: { enabled: true, text: 'Preview build · member names and ratings are sample content' },
-      shop: { memberDiscount: MEMBER_DISCOUNT, pickupNote: '' },
+      // no banner until the owner writes one (Admin → Settings)
+      notice: { enabled: false, text: '' },
+      // the shop is a catalogue (no online checkout): no member pricing, and a note on how to buy
+      shop: { memberDiscount: 0, pickupNote: 'Buy at tournament check-in, or message us to hold your size.' },
     },
     theme: { ...defaultTheme },
     ticker: tickerItems.map((t, i) => ({ id: id('tick', i), text: t, visible: true })),

@@ -28,11 +28,13 @@ Migrations apply automatically when the server starts.
 | Printable results | `/display/[slug]/print` |
 | Community: news, articles, photo stories, community photos | `/community`, `/community/[slug]` |
 | About us | `/about` |
-| Shop, product, cart | `/shop`, `/shop/[slug]`, `/cart` |
+| Shop and product: a catalogue (no online checkout); each product says how to buy and links to Contact | `/shop`, `/shop/[slug]` (`/cart` redirects to `/shop`) |
 | Gallery with lightbox | `/gallery` |
-| Contact | `/contact` |
-| Members directory and player profile (sample data) | `/members`, `/members/[slug]` |
-| Log in / sign up (preview), member app (sample) | `/login`, `/signup`, `/me` |
+| Contact (messages go to Admin → Inbox; `?about=<product>` starts a shop order) | `/contact` |
+
+The members directory, player log in / sign up and "My play" ran on sample data, so they answer "not found" until
+real member accounts exist (the components are still in `src/components`). The footer's "Join the list" saves the
+address to the email list in Admin → Inbox.
 
 ## Owner admin (MIS)
 
@@ -56,6 +58,7 @@ can give access to staff accounts, and nobody can hand out access they don't hav
 | Scoring | phone-first score pad for every match, live to every screen within a second |
 | Check-in | tap players in at the desk; several devices stay in step |
 | Desktop app | the key that lets the Pickle Match desktop app download tournaments and teams (owner only) |
+| Inbox | messages from the Contact page (reply by email, mark as dealt with, delete) and the email list (download as CSV, remove an address). Needs website content access. Each address can send 5 of each an hour, the whole site 200 |
 | Announcements | the top bar and the homepage ticker |
 | Shop & prices | products, prices, stock (sold out / only N left), options, up to 6 photos each, visibility |
 | Photos | upload (resized in the browser, JPEG/PNG/WebP, 5 MB max), descriptions, see where each photo is used, delete unused |

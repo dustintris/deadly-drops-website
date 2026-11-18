@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { asset } from '@/lib/utils'
-import { useCart } from './CartContext'
 import styles from './shell.module.css'
 
 export const NAV = [
@@ -27,8 +26,6 @@ export function SiteHeader({ city, logo }: { city: string; logo: string }) {
   const [open, setOpen] = useState(false)
   // the menu icon only spins once the visitor has used the button
   const [toggled, setToggled] = useState(false)
-  const { count } = useCart()
-  const inShop = path.startsWith('/shop') || path.startsWith('/cart')
   const current = NAV.find((n) => n.href !== '/' && isActive(path, n.href))
 
   const [menuPath, setMenuPath] = useState(path)
@@ -63,15 +60,9 @@ export function SiteHeader({ city, logo }: { city: string; logo: string }) {
           </ul>
         </nav>
 
+        {/* member log-in and the cart come back with real accounts and online orders */}
         <div className={styles.actions}>
-          <Link href="/login/" className={styles.login}>Log in</Link>
-          {/* the shop shows the cart instead of Register; both share one slot as wide as the wider of the two,
-              so switching pages never moves the menu (the hidden one can't be seen, focused or clicked) */}
-          <span className={styles.ctaSlot}>
-            <Link href="/tournaments/#register" className="btn btn-accent btn-sm" data-off={inShop || undefined} aria-hidden={inShop || undefined} tabIndex={inShop ? -1 : undefined}>Register to play</Link>
-            <Link href="/cart/" className="btn btn-accent btn-sm" data-off={!inShop || undefined} aria-hidden={!inShop || undefined} tabIndex={inShop ? undefined : -1}
-              aria-label={`Cart, ${count} ${count === 1 ? 'item' : 'items'}`}>Cart · {count}</Link>
-          </span>
+          <Link href="/tournaments/#register" className="btn btn-accent btn-sm">Register to play</Link>
         </div>
 
         <button
@@ -94,15 +85,11 @@ export function SiteHeader({ city, logo }: { city: string; logo: string }) {
               <Link href={n.href} aria-current={isActive(path, n.href) ? 'page' : undefined}>{n.label}</Link>
             </li>
           ))}
-          <li><Link href="/members/">Members</Link></li>
-          <li><Link href="/cart/">Cart ({count})</Link></li>
           <li className={styles.menuCtas}>
-            <Link href="/login/" className="btn btn-ghost">Log in</Link>
             <Link href="/tournaments/#register" className="btn btn-accent">Register to play</Link>
           </li>
         </ul>
       </div>
-      <p className="sr" role="status" aria-atomic="true">{count} {count === 1 ? 'item' : 'items'} in cart</p>
     </header>
   )
 }

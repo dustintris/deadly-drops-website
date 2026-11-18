@@ -8,8 +8,9 @@ import { DEFAULT_HERO_PHOTO, PageHero } from '@/components/PageHero'
 import { SeasonList } from '@/components/SeasonList'
 import page from '@/components/tournament.module.css'
 import t from '@/components/tournaments.module.css'
+import { getLatestChampions } from '@/lib/champions'
 import { startLabel, tournamentStart } from '@/lib/countdown'
-import { getChampions, getDivisionGuide, getEvents, getNextEvent, getTournamentBasics, getTournamentLive, getTournamentPage } from '@/lib/data'
+import { getDivisionGuide, getEvents, getNextEvent, getTournamentBasics, getTournamentLive, getTournamentPage } from '@/lib/data'
 import { clubToday, eventCta, eventEyebrow, eventState } from '@/lib/events'
 import { pageMeta } from '@/lib/seo'
 import { asset, money } from '@/lib/utils'
@@ -25,7 +26,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TournamentsPage() {
-  const [event, events, guide, champions, weekend] = await Promise.all([getNextEvent(), getEvents(), getDivisionGuide(), getChampions(), getTournamentBasics()])
+  // champions are the real gold medallists of the latest finished tournament (none until one has results)
+  const [event, events, guide, champions, weekend] = await Promise.all([getNextEvent(), getEvents(), getDivisionGuide(), getLatestChampions(), getTournamentBasics()])
 
   const state = event ? eventState(event) : 'tba'
   const cta = event ? eventCta(event, state) : null

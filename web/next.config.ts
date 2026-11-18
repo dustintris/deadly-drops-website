@@ -26,10 +26,10 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/:path*',
+        // Strict-Transport-Security, X-Content-Type-Options and Referrer-Policy come from the server's shared
+        // Caddy proxy (the ft_common snippet) for every site on it; sending them here too doubled them, with two
+        // different HSTS values. Hosting this app anywhere else? Add those three back.
         headers: [
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=()' },
           { key: 'Content-Security-Policy', value: "frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'" },
         ],

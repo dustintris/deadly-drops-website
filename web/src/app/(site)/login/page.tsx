@@ -1,9 +1,7 @@
-import type { Metadata } from 'next'
-import { AuthScreen } from '@/components/AuthScreen'
-import { pageMeta } from '@/lib/seo'
+import { notFound } from 'next/navigation'
 
-export const metadata: Metadata = pageMeta('Log in', 'Log in to your Deadly Drops Pickleball account.', '/login/', { noindex: true })
-
-export default function LoginPage() {
-  return <AuthScreen initial="login" />
+// Hidden until real member accounts exist: there is nothing to log in to yet. AuthScreen and AuthForm
+// stay in src/components for then. No metadata: Next marks a 404 noindex by itself.
+export default function LoginPage(): never {
+  notFound()
 }

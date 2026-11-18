@@ -65,4 +65,6 @@ SELECT
   ),
   false,
   true
-WHERE NOT EXISTS (SELECT 1 FROM "tournaments" WHERE "slug" = 'beauty-in-the-beast-2027');
+WHERE NOT EXISTS (SELECT 1 FROM "tournaments" WHERE "slug" = 'beauty-in-the-beast-2027')
+-- belt and braces: a copy saved in between can never make startup fail
+ON CONFLICT ("slug") DO NOTHING;

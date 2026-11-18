@@ -44,15 +44,9 @@
   mask: var(--sparkle-shape) center / contain no-repeat;
 }
 .actions { display: flex; align-items: center; gap: 14px; flex: none; }
-/* Register / Cart: stacked in one grid cell, so the slot keeps the wider one's width on every page */
-.ctaSlot { display: grid; justify-items: end; }
-.ctaSlot > * { grid-area: 1 / 1; }
-.ctaSlot > [data-off] { visibility: hidden; }
-.login { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .8); min-height: 44px; display: inline-flex; align-items: center; white-space: nowrap; }
-.login:hover { color: var(--accent); }
 .menuBtn { display: none; min-width: 44px; min-height: 44px; color: var(--accent); font-size: 24px; line-height: 1; text-shadow: 0 0 12px rgb(var(--accent-rgb) / .6); }
 .mobileTitle { display: none; }
-/* the phone menu scrolls inside itself, so all eight pages and the buttons stay reachable on a short screen */
+/* the phone menu scrolls inside itself, so all eight pages and the Register button stay reachable on a short screen */
 .mobileMenu {
   max-height: calc(100dvh - 64px); overflow-y: auto; overscroll-behavior: contain;
   border-top: 1px solid rgb(var(--accent-rgb) / .2);
@@ -65,7 +59,7 @@
 }
 .mobileMenu li a:not(:global(.btn)):hover { color: var(--accent-soft); }
 .mobileMenu li a[aria-current='page'] { color: var(--accent); text-shadow: 0 0 16px rgb(var(--accent-rgb) / .55); }
-.menuCtas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 18px; }
+.menuCtas { display: grid; padding-top: 18px; }
 /* opening the phone menu: the panel unrolls from the header, the pages slide in one after another with a
    neon flash along their rule, and the menu icon spins between ≡ and ✕ (only the opening animates: closing is instant) */
 .menuIcon { display: inline-block; }
