@@ -78,6 +78,13 @@
       "when": 1795021727415,
       "tag": "0010_retire_preview_content",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1795068545776,
+      "tag": "0011_tournament_medals",
+      "breakpoints": true
     }
   ]
 }

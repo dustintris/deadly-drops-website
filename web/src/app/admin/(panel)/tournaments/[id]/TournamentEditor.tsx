@@ -435,6 +435,20 @@ export function TournamentEditor({ initial, canEdit }: { initial: Tournament; ca
           <ImageField label="Tournament logo" path="info.logo" value={info.logo} hint="Shown on the tournament page and its cards; the club logo is used when empty."
             onChange={(v) => setInfo({ logo: v })} />
         </div>
+        <fieldset className="adm-card" style={SUB}>
+          <legend className="lbl" style={LEGEND}>Medal</legend>
+          <p className="adm-muted">Shown in its own block on the tournament page. Leave empty to hide the block.</p>
+          <div className="adm-grid">
+            <ImageField label="Medal" path="info.medal" value={info.medal} hint="The medal design or a photo of it: one picture can show the front and the back."
+              onChange={(v) => setInfo({ medal: v })} />
+            <ImageField label="Medal, second view (optional)" path="info.medalBack" value={info.medalBack} hint="For example the back, when it’s a separate picture."
+              onChange={(v) => setInfo({ medalBack: v })} />
+          </div>
+          <TextField label="Medal note (optional)" path="info.medalNote" value={info.medalNote ?? ''} max={160}
+            placeholder="Gold, silver and bronze in every division"
+            hint="One line under the medal. When empty, the page says it’s the medal made for this tournament."
+            onChange={(v) => setInfo({ medalNote: v || undefined })} />
+        </fieldset>
       </section>
 
       <section className="adm-card" aria-labelledby="tb-divisions">

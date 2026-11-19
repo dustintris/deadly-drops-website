@@ -1,5 +1,5 @@
 /* Charity page (/charity/): one section per charity, its story beside the charity flyer and the tournament posters.
-   Also the "Playing for …" block on each tournament's page (.playing, .pair below).
+   Also the "Playing for …", flyer and medal blocks on each tournament's page (.playing, .pair below).
    Colours, type and buttons come from the global theme classes; only layout lives here. */
 
 /* the story on the left; beside it a glowing panel (website + tournaments) that stays in view, then the flyer and posters */
@@ -76,6 +76,10 @@
 /* a logo (no poster or flyer yet) is shown whole on the theme's logo plate */
 .pair figure[data-kind='logo'] img { aspect-ratio: 1; object-fit: contain; background: var(--logo-plate); padding: 12px; }
 .pair figcaption { margin-top: 8px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .66); }
+/* the medal block (data-shape='wide'): medal photos are usually landscape, often front and back in one picture, so a
+   single one may grow wider than a flyer, and landscape space is kept while it loads. Same border, radius and glow. */
+.pair[data-shape='wide'][data-count='1'] { max-width: 640px; }
+.pair[data-shape='wide'] img { aspect-ratio: auto 16 / 10; }
 
 /* the last charity band ends in pink clouds that melt into the blush call to action (no overflow clip: the panel stays sticky) */
 .lastBand { --cloud-fill: var(--paper-gloss); position: relative; isolation: isolate; padding-bottom: calc(clamp(56px, 8vw, 96px) + 64px); }
@@ -91,4 +95,6 @@
 }
 @media (max-width: 560px) {
   .logo { width: 72px; height: 72px; border-radius: 10px; padding: 4px; }
+  /* a medal's front and back side by side would be too small on a phone: one above the other */
+  .pair[data-shape='wide'] { grid-template-columns: minmax(0, 1fr); }
 }

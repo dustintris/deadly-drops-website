@@ -87,10 +87,17 @@ export const Info = z.object({
   flyer: ImageRef.optional(),
   /** The tournament's own logo (each event has one); the club logo is used when empty. */
   logo: ImageRef.optional(),
+  /** The medal made for this tournament, shown in its own block on the tournament page; a second view (e.g. the back) is optional. */
+  medal: ImageRef.optional(),
+  medalBack: ImageRef.optional(),
+  /** One line under the medal ("Gold, silver and bronze in every division"); a neutral line is shown when empty. */
+  medalNote: optText(160, 'Medal note'),
 })
   .refine((i) => i.entryFeeWithMeal === undefined || i.entryFeeWithMeal > i.entryFee, { message: 'The with-meal price must be higher than the entry fee.', path: ['entryFeeWithMeal'] })
   // registration happens on Main Court, so an open tournament needs somewhere to send players
   .refine((i) => !i.registrationOpen || !!i.registrationUrl, { message: 'Add the Main Court link before opening registration.', path: ['registrationUrl'] })
+  // the medal block shows only with the main picture: a second view on its own would never appear
+  .refine((i) => !i.medalBack || !!i.medal, { message: 'Add the main medal picture first.', path: ['medalBack'] })
 export type InfoT = z.infer<typeof Info>
 
 export const DivisionInput = z.object({

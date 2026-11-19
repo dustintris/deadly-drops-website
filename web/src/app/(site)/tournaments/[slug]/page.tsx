@@ -220,6 +220,41 @@ function OwnFlyer({ t, flyer }: { t: Tournament; flyer: NonNullable<Tournament['
   )
 }
 
+/**
+ * The medal made for this tournament, after the charity or flyer in the same night band. Medal photos are usually
+ * landscape (often front and back in one picture), so the images take the wide shape, not the flyer's portrait one.
+ */
+function MedalBlock({ t, medal, back }: { t: Tournament; medal: NonNullable<Tournament['info']['medal']>; back: Tournament['info']['medalBack'] }) {
+  const images = [
+    { ...medal, alt: medal.alt || `${t.name} medal`, caption: back ? 'Front' : `${t.name} medal` },
+    ...(back ? [{ ...back, alt: back.alt || `${t.name} medal, back`, caption: 'Back' }] : []),
+  ]
+  return (
+    <section className={ch.playing} data-media="true" aria-labelledby="tournament-medal">
+      <div data-reveal="left">
+        <p className="eyebrow">Medal</p>
+        <h2 id="tournament-medal" className="display d-m">The <span className="accent">medal</span></h2>
+        {/* the organiser's own line, else a neutral one: it never promises who wins a medal */}
+        <p className="lede">{t.info.medalNote || `The medal made for ${t.name}.`}</p>
+        <div className={ch.actions} style={{ marginTop: 24 }}>
+          <a href={asset(medal.src)} className="btn btn-ghost" target="_blank" rel="noopener noreferrer">
+            Open full size <span aria-hidden="true">↗</span>
+            <span className="sr"> ({back ? 'the front of the' : 'the'} {t.name} medal opens in a new tab)</span>
+          </a>
+        </div>
+      </div>
+      <div className={ch.pair} data-count={images.length} data-shape="wide" data-reveal="zoom">
+        {images.map((img, i) => (
+          <figure key={`${i}-${img.src}`} data-kind="medal">
+            <img src={asset(img.src)} alt={img.alt} loading="lazy" decoding="async" />
+            <figcaption>{img.caption}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 export default async function TournamentPage({ params }: Params) {
   const slug = (await params).slug
   const [t, events, club, charities] = await Promise.all([getTournamentPage(slug), getEvents(), getClub(), getTournamentCharities(slug)])
@@ -455,13 +490,15 @@ export default async function TournamentPage({ params }: Params) {
 
       {!resultsFirst && resultsSection}
 
-      {(charities.length > 0 || t.info.flyer) && (
+      {(charities.length > 0 || t.info.flyer || t.info.medal) && (
         <section className={`section darker rule-top ${ch.playingBand}`}>
           <Sparkles />
           <div className={`wrap ${ch.playingInner}`}>
             {charities.length > 0
               ? charities.map((c) => <PlayingFor key={c.id} c={c} t={t} />)
               : t.info.flyer && <OwnFlyer t={t} flyer={t.info.flyer} />}
+            {/* last in the band, so it sits above the clouds; .playing + .playing spaces it from the block before */}
+            {t.info.medal && <MedalBlock t={t} medal={t.info.medal} back={t.info.medalBack} />}
           </div>
           {/* the night sky melts into pink clouds above the rules (a light section) */}
           <CloudEdge />

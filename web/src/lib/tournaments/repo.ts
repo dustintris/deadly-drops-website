@@ -301,12 +301,14 @@ export function toClubEvent(t: Tournament): ClubEventT {
   }
 }
 
-/** Tournaments that use this image as their poster or logo (so the photo library won't delete it). */
+/** Tournaments that use this image (hero photo, logo, flyer or medal), so the photo library won't delete it. */
 export async function tournamentImageUsage(src: string): Promise<string[]> {
+  const i = tournaments.info
   const rows = await getDb()
     .select({ name: tournaments.name })
     .from(tournaments)
-    .where(sql`${tournaments.info}->'image'->>'src' = ${src} or ${tournaments.info}->'logo'->>'src' = ${src} or ${tournaments.info}->'flyer'->>'src' = ${src}`)
+    .where(sql`${i}->'image'->>'src' = ${src} or ${i}->'logo'->>'src' = ${src} or ${i}->'flyer'->>'src' = ${src}
+      or ${i}->'medal'->>'src' = ${src} or ${i}->'medalBack'->>'src' = ${src}`)
   return rows.map((r) => `Tournament: ${r.name}`)
 }
 
