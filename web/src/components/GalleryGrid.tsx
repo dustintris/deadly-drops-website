@@ -3,13 +3,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { GalleryItem } from '@/lib/types'
 import { asset } from '@/lib/utils'
+import { GalleryCarousel } from './GalleryCarousel'
 import styles from './gallery.module.css'
 
 const ORDER = ['Tournaments', 'Community', 'Socials', 'Ladder', 'Clinics'] as const
 type Album = 'All' | GalleryItem['album']
 
-/** `initialAlbum` (from /gallery/?album=…, e.g. a tournament's "See all the photos") opens on that album when it has photos. */
-export function GalleryGrid({ items, initialAlbum }: { items: GalleryItem[]; initialAlbum?: string }) {
+/**
+ * `initialAlbum` (from /gallery/?album=…, e.g. a tournament's "See all the photos") opens on that album when it has photos.
+ * `carousel` puts the featured photos above the grid (the Gallery page); the album chips and the photo viewer serve both.
+ */
+export function GalleryGrid({ items, initialAlbum, carousel = false }: { items: GalleryItem[]; initialAlbum?: string; carousel?: boolean }) {
   // only offer albums that have photos; hide the chips when there is just one
   const albums: Album[] = ['All', ...ORDER.filter((a) => items.some((g) => g.album === a))]
   const [album, setAlbum] = useState<Album>(() => albums.find((a) => a !== 'All' && a === initialAlbum) ?? 'All')
@@ -47,6 +51,8 @@ export function GalleryGrid({ items, initialAlbum }: { items: GalleryItem[]; ini
         </div>
         <p className="mono small muted" aria-live="polite">{list.length} photos</p>
       </div>
+
+      {carousel && <GalleryCarousel items={list} album={album} onOpen={setOpen} held={open !== null} />}
 
       <ul className={styles.grid} data-reveal-stagger="zoom">
         {list.map((g, i) => (

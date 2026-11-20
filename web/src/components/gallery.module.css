@@ -24,3 +24,74 @@
 .lbSide dt { color: rgb(var(--ink-rgb) / .66); }
 .lbSide dd { margin: 0; }
 @media (max-width: 760px) { .lbInner { grid-template-columns: 1fr; } .lbPhoto img { max-height: 45svh; } }
+
+/* ---------- featured carousel (GalleryCarousel.tsx): one big photo at a time, above the grid ---------- */
+.carousel { margin-bottom: 40px; }
+/* about 16:9 on a wide screen, never taller than the window; a tall 4:5 on phones */
+.stage { position: relative; aspect-ratio: 16 / 9; max-height: 76svh; border-radius: 16px; overflow: hidden; background: var(--surface); border: 1px solid rgb(var(--accent-rgb) / .25); }
+/* the slides side by side, one per screen: swiping is the browser's own scroll, snapping to each photo in turn */
+.track {
+  position: absolute; inset: 0; display: flex;
+  overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none;
+}
+.track::-webkit-scrollbar { display: none; }
+.slide { flex: 0 0 100%; min-width: 0; height: 100%; scroll-snap-align: start; scroll-snap-stop: always; }
+.slideBtn { position: relative; display: block; width: 100%; height: 100%; padding: 0; text-align: left; cursor: zoom-in; }
+.slideBtn img { width: 100%; height: 100%; object-fit: cover; user-select: none; -webkit-user-drag: none; }
+/* the stage clips anything outside it, so the photo's focus ring sits just inside its edge */
+.track .slideBtn:focus-visible { outline: 3px solid var(--accent); outline-offset: -7px; border-radius: 14px; box-shadow: none; }
+/* the caption on a fade from the night colour, dark enough to read over any photo */
+.slideCap {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 80px 24px 22px; color: var(--ink);
+  /* dark enough where the small pink line sits for it to stay readable over a near-white photo */
+  background: linear-gradient(0deg, rgb(var(--bg-rgb) / .94), rgb(var(--bg-rgb) / .8) 50%, rgb(var(--bg-rgb) / 0));
+}
+.slideCap strong { display: block; max-width: 56ch; font-size: clamp(17px, 2vw, 22px); line-height: 1.25; text-wrap: balance; }
+.slideCap small { display: block; margin-top: 6px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+
+/* the controls float over the photo, above the track */
+.nav, .play, .count { position: absolute; z-index: 1; }
+.nav {
+  top: 50%; translate: 0 -50%; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; font-size: 18px;
+  background: rgb(var(--bg-rgb) / .7); border: 1px solid rgb(var(--ink-rgb) / .3); color: var(--ink); backdrop-filter: blur(6px);
+  transition: border-color .15s ease, color .15s ease;
+}
+.navPrev { left: 14px; }
+.navNext { right: 14px; }
+.play {
+  top: 14px; left: 14px; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 100px;
+  background: rgb(var(--bg-rgb) / .7); border: 1px solid rgb(var(--ink-rgb) / .3); color: var(--ink); backdrop-filter: blur(6px);
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+  transition: border-color .15s ease, color .15s ease;
+}
+.play span[aria-hidden='true'] { font-size: 10px; letter-spacing: 0; color: var(--accent); }
+.nav:hover, .play:hover { border-color: var(--accent); color: var(--accent); }
+/* "3 / 17": only to look at, so a swipe that starts on it still moves the photos */
+.count {
+  top: 14px; right: 14px; padding: 6px 12px; border-radius: 100px; pointer-events: none;
+  background: rgb(var(--bg-rgb) / .7); font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em;
+}
+
+/* the dots: each one a 44 px target around a small mark; the current one is a lit pill, the end ones shrink while there are more */
+/* each dot keeps its 44px target: on the narrowest phones (320px) a row of 7 wraps rather than shrinking them */
+.dots { display: flex; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
+.dot { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 50%; }
+.dot::before {
+  content: ''; width: 10px; height: 10px; border-radius: 100px; background: rgb(var(--ink-rgb) / .5);
+  transition: width .2s ease, background-color .2s ease, scale .2s ease;
+}
+.dot:hover::before { background: var(--ink); }
+.dot[aria-current='true']::before { width: 26px; background: var(--accent); box-shadow: 0 0 10px rgb(var(--accent-rgb) / .6); }
+.dot[data-edge]::before { scale: .6; }
+:global(html[data-motion='off']) .dot::before { transition: none; }
+
+@media (max-width: 720px) {
+  .stage { aspect-ratio: 4 / 5; border-radius: 12px; }
+  .slideCap { padding: 64px 16px 16px; }
+  .slideCap strong { font-size: 16px; }
+  .nav { width: 44px; height: 44px; }
+  .navPrev { left: 10px; }
+  .navNext { right: 10px; }
+  .play { top: 10px; left: 10px; }
+  .count { top: 10px; right: 10px; }
+}

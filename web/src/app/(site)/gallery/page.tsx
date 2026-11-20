@@ -9,7 +9,7 @@ export const metadata: Metadata = pageMeta('Gallery', 'Photos from Deadly Drops 
 
 export default async function GalleryPage({ searchParams }: { searchParams: Promise<{ album?: string | string[] }> }) {
   const [items, copy, query] = await Promise.all([getGallery(), getPageCopy('gallery'), searchParams])
-  // ?album=Tournaments opens the grid on that album (an unknown one is simply ignored)
+  // ?album=Tournaments opens the carousel and grid on that album (an unknown one is simply ignored)
   const album = typeof query.album === 'string' ? query.album : undefined
   return (
     <section className="section dark">
@@ -22,7 +22,7 @@ export default async function GalleryPage({ searchParams }: { searchParams: Prom
           </div>
           <Link href="/contact/" className="btn btn-line">Submit a photo</Link>
         </div>
-        <GalleryGrid items={items} initialAlbum={album} />
+        <GalleryGrid items={items} initialAlbum={album} carousel />
       </div>
     </section>
   )
