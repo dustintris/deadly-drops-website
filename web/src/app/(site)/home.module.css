@@ -15,8 +15,10 @@
 .heroCopy h1 { max-width: 12ch; }
 .heroSide { display: flex; justify-content: flex-end; align-self: start; padding-top: 24px; }
 .ctas { display: flex; gap: 12px; flex-wrap: wrap; padding-top: 8px; }
-/* the countdown to the next tournament: beside the copy, level with the buttons; under them once the side column folds away */
-.heroSide:has(.countdownSlot) { align-self: end; padding-top: 0; }
+/* the countdown to the next tournament: beside the copy, level with the title (centred in the hero); under the
+   buttons once the side column folds away. Its big tiles need an even split of the width */
+.heroSide:has(.countdownSlot) { align-self: center; padding-top: 0; }
+@media (min-width: 901px) { .heroInner:has(.countdownSlot) { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 900px) { .heroSide:has(.countdownSlot) { display: flex; justify-content: flex-start; } }
 
 .scrollCue { position: absolute; z-index: 2; left: 50%; bottom: 78px; transform: translateX(-50%); font-family: var(--font-mono); font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .66); }

@@ -51,6 +51,8 @@
 .heroCopy > * + * { margin-top: 18px; }
 .heroCopy h1 { max-width: 14ch; }
 .heroAside { min-width: 300px; }
+/* a countdown sits level with the title (the hero's middle), not down by its foot */
+.heroAside:has([role='timer']) { align-self: center; }
 @media (max-width: 900px) {
   .heroInner { grid-template-columns: 1fr; }
   .heroAside { min-width: 0; }
