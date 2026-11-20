@@ -360,7 +360,7 @@ export function ImagePicker({ current, onPick, onClose }: { current?: string; on
           {images.map((img) => (
             <li key={img.src} className="adm-thumb" aria-pressed={img.src === current}>
               <img src={asset(img.src)} alt="" loading="lazy" />
-              <span className="cap">{img.stand ? 'Stand-in · ' : ''}{img.label}</span>
+              <span className="cap">{img.stand ? 'Stock · ' : ''}{img.label}</span>
               <button className="pick" onClick={() => onPick(img)} aria-label={`Use ${img.label}`} />
             </li>
           ))}

@@ -40,7 +40,7 @@
 .adm-btn:disabled { opacity: .5; cursor: not-allowed; }
 .adm-btn.primary { background: var(--ink-dark); color: var(--ink); border-color: var(--ink-dark); }
 .adm-btn.accent { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
-.adm-btn.danger { color: var(--danger-on-light); border-color: rgb(179 38 30 / .4); }
+.adm-btn.danger { color: var(--danger-on-light); border-color: rgb(var(--danger-on-light-rgb) / .4); }
 .adm-btn.small { min-height: 34px; padding: 0 10px; font-size: 13px; }
 .adm-btn.icon { min-width: 40px; padding: 0; min-height: 40px; }
 
@@ -120,7 +120,7 @@ textarea.adm-input { min-height: 110px; resize: vertical; line-height: 1.5; }
 .adm-facts > div { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .adm-facts dt { color: rgb(var(--ink-dark-rgb) / .68); }
 .adm-facts dd { margin: 0; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
-.adm-badge.bad { background: rgb(179 38 30 / .12); color: var(--danger-on-light); }
+.adm-badge.bad { background: rgb(var(--danger-on-light-rgb) / .12); color: var(--danger-on-light); }
 .adm-locknote { padding: 8px 12px; border-radius: 8px; background: rgb(var(--ink-dark-rgb) / .05); font-size: 14px; }
 .adm-locknote code { font-family: var(--font-mono), ui-monospace, monospace; font-size: 13px; }
 .adm-staff > .body { gap: 0; padding: 0 16px; border-top: 1px solid rgb(var(--ink-dark-rgb) / .1); }

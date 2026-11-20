@@ -37,10 +37,40 @@ export type Theme = {
 }
 
 /**
- * "Twilight": a deep indigo night sky fading to orchid, neon pink and lilac highlights, blush-pink light
- * sections and near-black accents. Every text pair the admin checks is WCAG AA (see `themeContrastIssues`).
+ * "Blossom", the club owner's palette: a navy-black night (#0D111A) with plum-tinted panels, pink
+ * (#ED7BAB) for accent text and buttons, magenta (#E42278) for gradients and glows only (it is under
+ * 4.5:1 on the navy, so it never carries text there), blush (#F5D3DD) light sections with off-white
+ * (#F9F9F9) cards and text. Every text pair the admin checks is WCAG AA (see `themeContrastIssues`).
  */
-export const defaultTheme: Theme = {
+export const BLOSSOM_THEME: Theme = {
+  bg: '#0D111A',
+  surface: '#1A1828',
+  surface2: '#262036',
+  paper: '#F5D3DD',
+  paperCard: '#F9F9F9',
+  ink: '#F9F9F9',
+  inkDark: '#0D111A',
+  accent: '#ED7BAB',
+  accentSoft: '#F5D3DD',
+  accentDeep: '#E42278',
+  onAccent: '#0D111A',
+  accentTint: '#3A1830',
+  danger: '#FFA680',
+  dangerOnLight: '#A11D1D',
+  // the crest artwork has a pure white ground, so its plate stays white rather than the off-white
+  logoPlate: '#FFFFFF',
+}
+
+/** The site's colours until an admin picks others in Logo & colours: Blossom. */
+export const defaultTheme: Theme = BLOSSOM_THEME
+
+/**
+ * "Twilight": a deep indigo night sky fading to orchid, neon pink and lilac highlights, blush-pink light
+ * sections and near-black accents. The default until Blossom; kept as an admin preset. Migration
+ * `drizzle/0012_blossom_theme.sql` moved content saved with these exact colours to Blossom once (its test
+ * checks both palettes there match this file). Every text pair the admin checks is WCAG AA.
+ */
+export const TWILIGHT_THEME: Theme = {
   bg: '#120A2E',
   surface: '#1C1142',
   surface2: '#281A57',

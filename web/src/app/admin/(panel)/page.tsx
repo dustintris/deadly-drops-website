@@ -47,9 +47,13 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     seeContent && openMessages > 0 && (
       <li key="inbox">{openMessages} {openMessages === 1 ? 'message' : 'messages'} from the Contact page to answer. <Link href="/admin/inbox/">Open the Inbox</Link>.</li>
     ),
-    seeContent && <li key="photos">{standIns} places still use stock stand-in photos. <Link href="/admin/media/">Upload club photos</Link>.</li>,
+    seeContent && standIns > 0 && (
+      <li key="photos">{standIns} {standIns === 1 ? 'place still uses a stock photo instead of a club photo' : 'places still use stock photos instead of club photos'}. <Link href="/admin/media/">Upload club photos</Link>.</li>
+    ),
     seeContent && noFlyer > 0 && <li key="flyers">{noFlyer} {noFlyer === 1 ? 'charity has' : 'charities have'} no flyer yet. <Link href="/admin/charities/">Add charity flyers</Link>.</li>,
-    seeShop && <li key="shop">{noPhoto} shop products have no photo yet. <Link href="/admin/products/">Add product photos</Link>.</li>,
+    seeShop && noPhoto > 0 && (
+      <li key="shop">{noPhoto} shop {noPhoto === 1 ? 'product has' : 'products have'} no photo yet. <Link href="/admin/products/">Add product photos</Link>.</li>
+    ),
     seeContent && <li key="posts">{live.posts.filter((p) => p.status === 'published').length} community posts are live. <Link href="/admin/community/">Write news</Link>.</li>,
   ].filter(Boolean)
 
@@ -84,7 +88,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
       {todos.length > 0 && (
         <section className="adm-card">
-          <h2>To do before launch</h2>
+          <h2>To do</h2>
           <ul style={{ paddingLeft: 18, display: 'grid', gap: 6 }}>{todos}</ul>
         </section>
       )}

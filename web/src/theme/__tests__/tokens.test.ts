@@ -1,15 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import { Theme, THEME_COLOUR_KEYS, themeContrastIssues } from '@/lib/content-schema'
-import { DEFAULT_LOGO, defaultTheme, LEGACY_LIME_THEME, themeLogo, themeToCss } from '../tokens'
+import { BLOSSOM_THEME, DEFAULT_LOGO, defaultTheme, LEGACY_LIME_THEME, themeLogo, themeToCss, TWILIGHT_THEME } from '../tokens'
 
 const LOGO = { src: '/media/0123456789abcdef01234567.png', alt: 'Deadly Drops oni badge' }
+const PALETTES = { Blossom: BLOSSOM_THEME, Twilight: TWILIGHT_THEME, Lime: LEGACY_LIME_THEME }
 
 describe('themeToCss', () => {
   it('writes every colour as a CSS variable with an -rgb twin', () => {
     const css = themeToCss(defaultTheme)
-    expect(css).toContain('--bg: #120A2E;')
-    expect(css).toContain('--bg-rgb: 18 10 46;')
-    expect(css).toContain('--accent: #FF5CB8;')
+    expect(css).toContain('--bg: #0D111A;')
+    expect(css).toContain('--bg-rgb: 13 17 26;')
+    expect(css).toContain('--accent: #ED7BAB;')
+    expect(css).toContain('--danger-on-light-rgb: 161 29 29;')
     expect(css).toContain('--logo-plate: #FFFFFF;')
   })
 
@@ -38,20 +40,30 @@ describe('themeLogo', () => {
   })
 })
 
-describe('default and legacy palettes', () => {
-  it('passes every readability check the theme editor enforces (WCAG AA 4.5:1)', () => {
-    expect(themeContrastIssues(defaultTheme)).toEqual([])
-    expect(themeContrastIssues(LEGACY_LIME_THEME)).toEqual([])
-    expect(Theme.safeParse({ ...defaultTheme }).success).toBe(true)
+describe('default and preset palettes', () => {
+  it.each(Object.entries(PALETTES))('%s passes every readability check the theme editor enforces (WCAG AA 4.5:1)', (_name, palette) => {
+    expect(themeContrastIssues(palette)).toEqual([])
+    expect(Theme.safeParse({ ...palette }).success).toBe(true)
   })
 
-  it('both define exactly the colours the saved theme holds', () => {
-    expect(Object.keys(defaultTheme).sort()).toEqual([...THEME_COLOUR_KEYS].sort())
-    expect(Object.keys(LEGACY_LIME_THEME).sort()).toEqual([...THEME_COLOUR_KEYS].sort())
+  it.each(Object.entries(PALETTES))('%s defines exactly the colours the saved theme holds', (_name, palette) => {
+    expect(Object.keys(palette).sort()).toEqual([...THEME_COLOUR_KEYS].sort())
   })
 
-  it('keeps the original lime design as the legacy palette', () => {
+  it('defaults to Blossom, built from the club owner’s palette', () => {
+    expect(defaultTheme).toEqual(BLOSSOM_THEME)
+    expect(BLOSSOM_THEME).toMatchObject({
+      bg: '#0D111A', inkDark: '#0D111A', onAccent: '#0D111A', // navy-black
+      ink: '#F9F9F9', paperCard: '#F9F9F9', // off-white
+      paper: '#F5D3DD', accentSoft: '#F5D3DD', // blush
+      accent: '#ED7BAB', // pink: the accent text on the navy page
+      accentDeep: '#E42278', // magenta: gradients and glows only (under 4.5:1 on the navy)
+    })
+  })
+
+  it('keeps Twilight and the original lime design as presets', () => {
+    expect(TWILIGHT_THEME).toMatchObject({ bg: '#120A2E', accent: '#FF5CB8', paper: '#FDE8F3', onAccent: '#1A0D22' })
     expect(LEGACY_LIME_THEME).toMatchObject({ bg: '#080808', accent: '#C6F24E', paper: '#F2F2EE', onAccent: '#111111' })
-    expect(defaultTheme.accent).not.toBe(LEGACY_LIME_THEME.accent)
+    expect(new Set(Object.values(PALETTES).map((p) => p.accent)).size).toBe(3)
   })
 })

@@ -24,7 +24,7 @@ export default async function MediaAdmin() {
       .map(async (img) => ({
         src: img.src,
         name: img.label,
-        kind: img.stand ? 'Stock stand-in, replace before launch' : img.src.startsWith('/images/club/') ? 'Club photo' : 'Club crest',
+        kind: img.stand ? 'Stock photo, not of the club' : img.src.startsWith('/images/club/') ? 'Club photo' : 'Club crest',
         stand: !!img.stand,
         usedBy: await findUsage(img.src, draft),
       })),

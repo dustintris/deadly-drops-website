@@ -40,7 +40,7 @@ export function MediaManager({ uploads, bundled }: { uploads: UploadedPhoto[]; b
 
       <section aria-labelledby="bundled-h" style={{ display: 'grid', gap: 12 }}>
         <h2 id="bundled-h">Photos that came with the site</h2>
-        <p className="adm-muted">These can be picked like your own photos but can't be changed or deleted here. Stock stand-ins are placeholders: swap them for real club photos before the site goes live.</p>
+        <p className="adm-muted">These can be picked like your own photos but can't be changed or deleted here. Stock photos are general pickleball pictures, not of the club, so a club photo is usually the better pick.</p>
         <ul style={grid}>
           {bundled.map((b) => (
             <li key={b.src} className="adm-card" style={{ padding: 12, display: 'grid', gap: 8 }}>

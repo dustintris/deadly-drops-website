@@ -14,7 +14,7 @@ export default async function AnnouncementsAdmin() {
       <div className="adm-head">
         <div>
           <h1>Announcements</h1>
-          <p className="adm-muted">The bar at the very top of every page, and the scrolling lime ticker on the homepage.</p>
+          <p className="adm-muted">The bar at the very top of every page, and the scrolling ticker in the accent colour on the homepage.</p>
         </div>
       </div>
       <EditGate canEdit={can(s, 'content', 'edit')}>

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { getSql } from '@/db/client'
-import { defaultTheme, LEGACY_LIME_THEME } from '@/theme/tokens'
+import { LEGACY_LIME_THEME, TWILIGHT_THEME } from '@/theme/tokens'
 
 /*
  * drizzle/0005_twilight_theme.sql moves saved content still on the original lime colours to the Twilight
@@ -28,7 +28,7 @@ describe('the Twilight theme migration', () => {
     await store('published', { ...LEGACY_LIME_THEME, logo: LOGO })
     await sql().unsafe(MIGRATION)
     const row = await themeOf('published')
-    expect(row.t).toEqual({ ...defaultTheme, logo: LOGO })
+    expect(row.t).toEqual({ ...TWILIGHT_THEME, logo: LOGO })
     expect(row.x).toEqual(['kept'])
   })
 
@@ -36,7 +36,7 @@ describe('the Twilight theme migration', () => {
     const { logoPlate: _missing, ...older } = LEGACY_LIME_THEME
     await store('draft', Object.fromEntries(Object.entries(older).map(([k, v]) => [k, v.toLowerCase()])))
     await sql().unsafe(MIGRATION)
-    expect((await themeOf('draft')).t).toEqual(defaultTheme)
+    expect((await themeOf('draft')).t).toEqual(TWILIGHT_THEME)
   })
 
   it('leaves a theme with any colour the owner picked exactly as it is', async () => {

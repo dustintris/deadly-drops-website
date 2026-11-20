@@ -8,7 +8,8 @@
 .steps li[data-variant='dark'] strong { color: var(--accent); }
 .steps li[data-variant='accent'] { background: var(--accent) linear-gradient(160deg, rgb(var(--paper-card-rgb) / .28), rgb(var(--paper-card-rgb) / 0) 55%); color: var(--on-accent); border-color: var(--ink-dark); box-shadow: 0 14px 30px -14px rgb(var(--accent-rgb) / .7); }
 .steps li[data-variant='accent'] strong { color: var(--on-accent); }
-.steps strong { display: block; font-size: 40px; line-height: 1; color: var(--accent-deep); }
+/* the deep pink of the light sections' eyebrows: plain accentDeep can fall under 4.5:1 on the white tiles */
+.steps strong { display: block; font-size: 40px; line-height: 1; color: color-mix(in srgb, var(--accent-deep) 62%, var(--ink-dark)); }
 .steps h3 { margin-top: 12px; font-size: 19px; font-weight: 600; }
 .steps p { margin-top: 8px; font-size: 14px; opacity: .84; }
 

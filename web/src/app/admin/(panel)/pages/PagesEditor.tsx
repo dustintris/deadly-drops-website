@@ -31,7 +31,7 @@ export function PagesEditor({ initial }: { initial: Record<PageKey, PageCopyT> }
             <div className="body">
               <TextField label="Small label above the headline (optional)" path={`${key}.eyebrow`} value={p.eyebrow ?? ''} max={40} onChange={(v) => set(key, { eyebrow: v || undefined })} />
               <TextField label="Headline" path={`${key}.title`} value={p.title} max={80} onChange={(v) => set(key, { title: v })}
-                hint="Put *stars* around one word to colour it lime, e.g. Everybody's welcome. *Nobody* coasts." />
+                hint="Put *stars* around one word to show it in the accent colour, e.g. Everybody's welcome. *Nobody* coasts." />
               <p className="adm-muted" aria-hidden="true" style={{ fontFamily: 'var(--font-display)', textTransform: 'uppercase', fontSize: 22, color: 'var(--ink-dark)' }}>
                 {accentSegments(p.title).map((seg, i) => <span key={i} style={seg.accent ? { background: 'var(--accent)', padding: '0 4px' } : undefined}>{seg.text}</span>)}
               </p>

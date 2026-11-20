@@ -19,7 +19,7 @@ const CATEGORIES: { value: ProductT['category']; label: string }[] = [
 const TAGS: { value: NonNullable<ProductT['tag']> | ''; label: string }[] = [
   { value: '', label: 'No label' },
   { value: 'NEW', label: 'NEW' },
-  { value: 'MEMBER', label: 'MEMBER (best seller)' },
+  { value: 'MEMBER', label: 'Best seller' }, // saved as MEMBER, so products saved before keep their label
   { value: 'LOW', label: 'LOW (running low)' },
 ]
 const MAX_IMAGES = 6
@@ -74,7 +74,7 @@ export function ProductsEditor({ initial, rev }: { initial: ProductT[]; rev: num
                   onChange={(v) => set({ ...p, tag: v })} />
               </div>
               <div className="adm-grid">
-                <MoneyField label="Price" path={path('price')} value={p.price} hint="Members get the member discount off this price."
+                <MoneyField label="Price" path={path('price')} value={p.price} hint="Shown in the shop and on the product's own page."
                   onChange={(v) => set({ ...p, price: v ?? 0 })} />
                 <NumberField label="How many in stock" path={path('stock')} value={p.stock} min={0} max={100000} allowEmpty
                   hint="Leave empty if you don't count stock. Enter 0 to show it as sold out. 1 to 5 shows “Only N left”."
@@ -179,7 +179,7 @@ const splitValues = (raw: string) => raw.split(/[,\n]/).map((v) => v.trim()).fil
 function OptionsEditor({ path, options, onChange }: { path: string; options: Opt[]; onChange: (v: Opt[]) => void }) {
   return (
     <div style={{ display: 'grid', gap: 16 }}>
-      <p className="adm-muted">Let shoppers pick, for example, a size or colour. Up to {MAX_OPTIONS} choices. Leave empty if there is nothing to pick.</p>
+      <p className="adm-muted">List what it comes in, for example sizes or colours. The product page shows them as “Available in: S · M · L”. Up to {MAX_OPTIONS} choices. Leave empty if it comes in one version only.</p>
       {options.map((o, k) => (
         <div key={k} className="adm-grid" style={{ alignItems: 'start' }}>
           <TextField label={`Choice ${k + 1} name`} path={`${path}.${k}.label`} value={o.label} max={20} placeholder="e.g. Size"

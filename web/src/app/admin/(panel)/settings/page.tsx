@@ -14,7 +14,7 @@ export default async function SettingsAdmin() {
       <div className="adm-head">
         <div>
           <h1>Club info</h1>
-          <p className="adm-muted">Contact details, the about text and the shop discount. Used across the whole site.</p>
+          <p className="adm-muted">Contact details, the about text and how to buy from the shop. Used across the whole site.</p>
         </div>
       </div>
       <EditGate canEdit={can(s, 'content', 'edit')}>

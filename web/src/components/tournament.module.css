@@ -107,7 +107,8 @@
 .ruleFacts dd { margin-top: 8px; font-family: var(--font-display); font-weight: 400; font-size: 40px; line-height: 1; text-transform: uppercase; }
 .tiebreakers { list-style: none; padding: 0; counter-reset: tb; display: grid; gap: 8px; }
 .tiebreakers li { counter-increment: tb; display: flex; align-items: center; gap: 16px; min-height: 50px; padding: 0 18px; border-radius: 10px; background: var(--paper-card); border: 1px solid rgb(var(--ink-dark-rgb) / .85); font-weight: 500; }
-.tiebreakers li::before { content: counter(tb); min-width: 16px; font-family: var(--font-display); font-size: 26px; line-height: 1; color: var(--accent-deep); }
+/* the deep pink of the light sections' eyebrows (like .rules h3.sub): plain accentDeep can fall under 4.5:1 on white */
+.tiebreakers li::before { content: counter(tb); min-width: 16px; font-family: var(--font-display); font-size: 26px; line-height: 1; color: color-mix(in srgb, var(--accent-deep) 62%, var(--ink-dark)); }
 .notes { list-style: none; padding: 0; display: grid; gap: 12px; }
 .note { padding: 20px 22px; }
 .note h3 { font-size: 17px; font-weight: 600; line-height: 1.3; }
