@@ -14,6 +14,10 @@ SITE_URL="${SITE_URL:-https://ddptournament.com}"
 
 chmod 600 .env
 chmod 755 backup.sh
+# the desktop release key's forced command and the public key it checks releases with (RUNBOOK.md, Desktop app
+# releases); absent from bundles before them
+if [ -f receive-desktop-release.sh ]; then chmod 755 receive-desktop-release.sh; fi
+if [ -f desktop-update-signing.pub.pem ]; then chmod 644 desktop-update-signing.pub.pem; fi
 mkdir -p data/uploads backups
 chmod 700 backups
 chown -Rh 1000:1000 data   # the image's node user (uid 1000) writes the uploads; -h: never follow symlinks
@@ -34,6 +38,37 @@ show_logs() {
 services="$(docker compose config --services)"
 own_proxy=0
 if grep -qx caddy <<<"$services"; then own_proxy=1; fi
+
+# The desktop app (own Caddy only; the shared server offers no downloads)
+if [ "$own_proxy" = 1 ]; then
+  # Its installers and update feed, written by receive-desktop-release.sh. Caddy (no CAP_DAC_OVERRIDE) and the
+  # app (uid 1000) both read them through read-only mounts, so: owned by root, folders 755, files 644. Created
+  # when missing, never emptied.
+  install -d -m 755 -o root -g root downloads downloads/desktop
+  find downloads -type d ! -perm 755 -exec chmod 755 {} +
+  find downloads -type f ! -perm 644 -exec chmod 644 {} +
+  chown -Rh root:root downloads
+  # The key the app stores activation codes under (an HMAC). Made once and never printed. Keep it: a new one
+  # voids the codes not used yet (activated copies keep working). A problem here only warns: the site deploys
+  # anyway, and only making and using activation codes fails until it's fixed.
+  code_secret="$(sed -n 's/^DESKTOP_CODE_SECRET=//p' .env | tail -n 1 | tr -d "\"'\r[:space:]")"
+  if [ -z "$code_secret" ]; then
+    code_secret="$(openssl rand -hex 32 2>/dev/null || true)"
+    if [[ $code_secret =~ ^[0-9a-f]{64}$ ]]; then
+      sed -i '/^DESKTOP_CODE_SECRET=/d' .env   # an empty one, e.g. from .env.example
+      printf '\n# The desktop app'"'"'s activation codes are keyed with this (made by server-steps.sh). Keep it.\nDESKTOP_CODE_SECRET=%s\n' \
+        "$code_secret" >> .env
+      chmod 600 .env
+      echo "Added a new DESKTOP_CODE_SECRET to .env."
+    else
+      echo "WARNING: couldn't make DESKTOP_CODE_SECRET (openssl missing or failing): desktop activation codes won't" \
+        "work until .env has one (64 hex characters, e.g. from \`openssl rand -hex 32\`)" >&2
+    fi
+  elif [[ ! $code_secret =~ ^[0-9a-f]{32,}$ ]]; then
+    echo "WARNING: DESKTOP_CODE_SECRET in .env isn't 32+ lowercase hex characters (value not shown): check it" >&2
+  fi
+  unset code_secret
+fi
 
 # keep the running image for a quick rollback:
 #   docker tag deadly-drops-web:previous deadly-drops-web:latest && docker compose up -d web

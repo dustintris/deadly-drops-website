@@ -37,6 +37,8 @@
 #      Then set the GitHub secrets VPS_HOST (the server's IP), VPS_SSH_KEY (the private half; then
 #      delete the local copy) and VPS_KNOWN_HOSTS (`ssh-keyscan -t ed25519 <IP>`, compared with
 #      `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` on the server). CI deploys only to VPS_HOST.
+#   9. Desktop app releases (the dedicated server): a second key, for the desktop repo's CI, whose forced
+#      command is receive-desktop-release.sh. See RUNBOOK.md, Desktop app releases.
 #
 # The image is built on the server (Linux binaries, no registry). The image that
 # was running before is kept as deadly-drops-web:previous. To roll back the code
@@ -82,9 +84,13 @@ tar -C web -czf - \
 # Swap the new tree in. Two renames, but nothing reads app/ until the build below
 ssh "$HOST" "cd $REMOTE && rm -rf app.old && { [ ! -d app ] || mv app app.old; } && mv app.new app && rm -rf app.old"
 # Both compose variants go to every server; its .env (COMPOSE_FILE) picks one
+# (receive-desktop-release.sh: the desktop release key's forced command, checking releases with
+# desktop-update-signing.pub.pem; publish-desktop.sh stays on the laptop)
 scp -q deploy/vps/docker-compose.yml deploy/vps/docker-compose.standalone.yml deploy/vps/Caddyfile \
-  deploy/vps/backup.sh deploy/vps/server-steps.sh deploy/vps/ci-deploy.sh "$HOST:$REMOTE/"
-ssh "$HOST" "chmod 755 $REMOTE/ci-deploy.sh $REMOTE/server-steps.sh"
+  deploy/vps/backup.sh deploy/vps/server-steps.sh deploy/vps/ci-deploy.sh deploy/vps/receive-desktop-release.sh \
+  deploy/vps/desktop-update-signing.pub.pem "$HOST:$REMOTE/"
+ssh "$HOST" "chmod 755 $REMOTE/ci-deploy.sh $REMOTE/server-steps.sh $REMOTE/receive-desktop-release.sh &&
+  chmod 644 $REMOTE/desktop-update-signing.pub.pem"
 
 echo "==> Building and starting on $HOST"
 # DEPLOY_SHOW_LOGS=1: from a laptop, a failed deploy prints the container logs here (CI keeps them on the server)

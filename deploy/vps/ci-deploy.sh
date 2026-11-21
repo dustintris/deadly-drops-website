@@ -33,10 +33,14 @@ rm -rf app.old
 if [ -d app ]; then mv app app.old; fi
 mv incoming/web app
 rm -rf app.old
-# The first three are required above. The last two are optional, so a bundle from before them still
+# The first three are required above. The rest are optional, so a bundle from before them still
 # deploys. Fixed names, copied into this folder only. -T: fail rather than copy into a folder of the
-# same name (Docker creates one when a bind-mounted file such as ./Caddyfile is missing)
-for f in docker-compose.yml backup.sh server-steps.sh docker-compose.standalone.yml Caddyfile; do
+# same name (Docker creates one when a bind-mounted file such as ./Caddyfile is missing).
+# receive-desktop-release.sh is the desktop release key's forced command, and desktop-update-signing.pub.pem
+# the key it checks releases with; like backup.sh (run by root's cron) they come from the bundle, which
+# already decides what server-steps.sh runs as root. (Installed apps check updates with their own copy.)
+for f in docker-compose.yml backup.sh server-steps.sh docker-compose.standalone.yml Caddyfile \
+  receive-desktop-release.sh desktop-update-signing.pub.pem; do
   if [ -f "incoming/deploy/vps/$f" ]; then cp -T "incoming/deploy/vps/$f" "$f"; fi
 done
 rm -rf incoming

@@ -1,11 +1,47 @@
 # Caddy for docker-compose.standalone.yml: HTTPS for SITE_DOMAIN (certificates from Let's Encrypt, renewed
-# automatically) in front of the app. The app sends its own security headers, so none are added here
-# (each header goes out once). The live-score stream (/live/…) passes straight through: Caddy flushes
+# automatically) in front of the app. The app sends its own security headers, so none are added to its pages
+# here (each header goes out once). The live-score stream (/live/…) passes straight through: Caddy flushes
 # text/event-stream responses as they come.
 
 {$SITE_DOMAIN} {
-	encode zstd gzip
-	reverse_proxy web:80
+	# The desktop app's installers and update feed: ./downloads/desktop on the server (receive-desktop-release.sh
+	# puts them there), mounted read-only at /srv/downloads. Each request first goes to the app's check, with its
+	# own headers (Cookie, Authorization) plus X-Forwarded-Method and X-Forwarded-Uri. A 2xx answer lets it
+	# through; anything else (401/403) goes back to the client as the app sent it. With web down, it's a 502: shut.
+	# The matcher and file_server both work on the cleaned path, so only files in that folder can ever be served.
+	handle /downloads/desktop/* {
+		# in this order: a refusal goes out with the app's headers only, not ours as well
+		route {
+			forward_auth web:80 {
+				uri /api/desktop/download-check/
+			}
+			header {
+				X-Content-Type-Options nosniff
+				# installers and blockmaps carry the version in their name: a browser may keep them,
+				# but asks again each time (a 304 from the ETag), so the check runs every time
+				Cache-Control "private, no-cache"
+			}
+			@feed path /downloads/desktop/latest.yml
+			header @feed Cache-Control no-store
+			# No `encode`: the files are compressed already, and compressing would break the Range requests
+			# that the updater's differential and resumed downloads use. No `browse`: no folder listings.
+			# Dot-named files (the receiver's half-uploaded temp files, its lock) are never served.
+			file_server {
+				root /srv
+				hide .*
+			}
+		}
+	}
+
+	# nothing else under /downloads/ exists, and it never reaches the app
+	handle /downloads/* {
+		respond 404
+	}
+
+	handle {
+		encode zstd gzip
+		reverse_proxy web:80
+	}
 }
 
 www.{$SITE_DOMAIN} {

@@ -10,6 +10,8 @@
 # the database is never reachable from outside.
 #
 # Secrets: ./.env (see .env.example). Uploaded images: ./data. Backups: backup.sh.
+# The desktop app's installers and update feed: ./downloads/desktop (receive-desktop-release.sh writes them;
+# Caddy serves them to whoever the app's check lets in; the app reads latest.yml for the admin).
 
 name: deadly-drops
 
@@ -32,6 +34,8 @@ services:
       SITE_DOMAIN: ${SITE_DOMAIN:?set SITE_DOMAIN in .env, e.g. ddptournaments.com}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # root-owned, folders 755 and files 644: this Caddy has no CAP_DAC_OVERRIDE (server-steps.sh sets them)
+      - ./downloads:/srv/downloads:ro
       - caddy_data:/data # certificates: keep, or Let's Encrypt rate limits bite on a rebuild
       - caddy_config:/config
     depends_on:
@@ -60,8 +64,12 @@ services:
       CONTENT_DIR: /data
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH:-}
+      # the desktop app's activation codes are stored keyed with it; server-steps.sh creates it in .env
+      DESKTOP_CODE_SECRET: ${DESKTOP_CODE_SECRET:-}
+      DOWNLOADS_DIR: /downloads
     volumes:
       - ./data:/data
+      - ./downloads:/downloads:ro # reads desktop/latest.yml to show the published version
     # Lets the non-root node user bind port 80 inside the container
     sysctls:
       net.ipv4.ip_unprivileged_port_start: 0

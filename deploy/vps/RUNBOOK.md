@@ -18,11 +18,14 @@ Unless noted otherwise, run commands as root in `/root/deadly-drops` on the serv
 |---|---|
 | `app/` | The uploaded `web/` source; the image is built from it. Every deploy replaces it, so don't edit it. |
 | `data/uploads/` | Uploaded images, mounted at `/data` in **web** and owned by uid 1000 (the image's `node` user). |
+| `downloads/desktop/` | The desktop app's update feed and installers (see Desktop app releases). Read-only in **caddy** and **web**. |
 | `backups/` | Nightly `ddp-<UTC>.dump` and `uploads-<UTC>.tar.gz` (newest 14 of each) and `backup.log`. |
 | `.env` | Secrets and this server's settings (chmod 600). See `deploy/vps/.env.example`. |
 | `docker-compose.standalone.yml` | This server's stack. `docker-compose.yml` is the shared-server variant (unused here). |
-| `Caddyfile` | HTTPS for `SITE_DOMAIN`, `www.` redirect, proxy to **web**. |
+| `Caddyfile` | HTTPS for `SITE_DOMAIN`, `www.` redirect, the gated `/downloads/desktop/`, proxy to **web**. |
 | `server-steps.sh`, `backup.sh`, `ci-deploy.sh` | Build and start; nightly backup; the CI key's forced command. |
+| `receive-desktop-release.sh` | Puts a desktop-app release live: the desktop release key's forced command. |
+| `desktop-update-signing.pub.pem` | The public half of the desktop release signing key; the receiver checks each release with it. |
 
 The Docker volumes are `deadly-drops_pgdata` (the database) and `deadly-drops_caddy_data` (certificates). The
 images are `deadly-drops-web:latest` (running) and `deadly-drops-web:previous` (the one before). `docker compose down`
@@ -58,6 +61,107 @@ docker tag deadly-drops-web:previous deadly-drops-web:latest && docker compose u
 
 This goes back one release only, and it does not undo database migrations. Also revert the bad commit and push,
 or the next deploy brings it back.
+
+## Desktop app releases
+
+The club's Windows app (desktop repo `dustintris/DeadlyDropsPickleBall`, `apps/desktop`) is downloaded from this
+server, and its copies update themselves from here. Downloads and updates are both for the club only: see Gating.
+
+**Releasing.** Raise `version` in `apps/desktop/package.json` and merge to `main`; that's all. The desktop repo's
+`.github/workflows/release-desktop.yml` stops if the tag `desktop-v<version>` already exists, else builds the
+installer on Windows, signs `latest.yml` in a separate job (see The signing key), pipes `latest.yml`,
+`DeadlyDropsPickleball-Setup-<version>.exe` and its `.blockmap` as a tar over ssh to `root@VPS_HOST`, then pushes
+the tag. That key may only run `receive-desktop-release.sh`, which puts the release live, or refuses it, and prints
+why in the Actions log:
+
+- the upload must arrive within 15 minutes, 600 MB at most: only those files, plain and at the top level, none
+  unpacking to more than that (a sparse entry is caught before it touches the disk);
+- `latest.yml`'s version (X.Y.Z), path and its one file entry (name, sha512, size) must match the installer, and
+  its `ddpSignature` line must verify with the release key's public half (`desktop-update-signing.pub.pem`);
+- the version must be above the live one. The same version and the same build again: "already live", exit 0
+  (a re-run is harmless). The same version built again (another sha512), or a lower one: refused.
+- The installer and blockmap go in first and `latest.yml` last (a rename each), so the feed never names a missing
+  file. The three newest installers (by version) stay, with their blockmaps, so copies one or two versions
+  behind update with a small differential download. Older ones are deleted.
+
+**Laptop fallback** (CI broken, or a release to put back), from this repo's root in Git Bash, with root ssh access:
+`bash deploy/vps/publish-desktop.sh <the desktop repo's apps/desktop/release>`. Sign `latest.yml` first with the
+desktop repo's sign script (it adds the `ddpSignature` line and needs the signing key); an unsigned one is refused
+before anything is sent. It sends the newest installer there, which `latest.yml` must name, to the same receiver
+over normal ssh (the host defaults to `root@179.66.153.48`; pass another as a second argument).
+
+**Where the files live.** `/root/deadly-drops/downloads/desktop/`: `latest.yml` (the feed), the installers and
+their blockmaps; also the receiver's dot-named temp files and `.release.lock`, which are never served. Each deploy
+creates the folder if needed and sets it root-owned, folders 755 and files 644 (Caddy has no `CAP_DAC_OVERRIDE`,
+and the app runs as uid 1000), and deletes nothing in it. **web** reads `latest.yml` (`DOWNLOADS_DIR=/downloads`) to
+show the live version in the admin.
+
+**Gating.** `https://ddptournaments.com/downloads/desktop/<file>`: before Caddy serves a file, it asks the app
+(`/api/desktop/download-check/`, with the request's cookies and `Authorization` header). A signed-in staff member
+(the browser) or an activated copy's key (the updater) gets the file; anyone else gets 401/403. Any other
+`/downloads/` path is a 404, and with **web** down they all fail (502) rather than open up. Range requests work
+(resumed and differential downloads); `latest.yml` is never cached. To check: `curl -sI
+https://ddptournaments.com/downloads/desktop/latest.yml` answers 401. Activation codes are made in Admin → Desktop
+app; the app keeps them keyed with `DESKTOP_CODE_SECRET` in `.env`, which the first deploy makes. Keep it: a new
+one voids the codes not used yet (activated copies keep working).
+
+**Backups.** The downloads are not in the nightly backup: they can be built again. After losing the server, build
+the live version from its tag (`desktop-v<version>`) in the desktop repo and publish it with `publish-desktop.sh`
+(CI skips a version that already has its tag), or copy the folder over from the old disk if it survived.
+
+**Rolling back.** Fix forward: installed copies never move to a lower version, and the receiver refuses one. Revert
+the bad change in the desktop repo, raise the version above the bad one (after a bad 0.7.0, release 0.7.1), merge,
+and every copy updates to it. To stop more copies updating to a bad release while the fix is built, move the feed
+aside on the server: `mv downloads/desktop/latest.yml downloads/desktop/.latest.yml.paused`. Updaters then find no
+update, and the next release (any version) puts a new feed in place.
+
+**A wrong, too-high version** (say `99999.0.0` went out by mistake) blocks every later release: the receiver
+refuses anything below the live version. Reset it by hand on the server, in `/root/deadly-drops`:
+
+```sh
+mv downloads/desktop/latest.yml downloads/desktop/.latest.yml.bad   # no feed: the next release may be any version
+rm downloads/desktop/DeadlyDropsPickleball-Setup-99999.0.0.exe downloads/desktop/DeadlyDropsPickleball-Setup-99999.0.0.exe.blockmap
+```
+
+Then put the right version in `apps/desktop/package.json` (one with no `desktop-v` tag yet) and merge, or publish it
+from a laptop. Copies that already installed the wrong version never move down: reinstall those by hand from the
+website's download.
+
+**The signing key.** Each release's `latest.yml` carries a `ddpSignature:` line, an ed25519 signature over its
+version, file name, sha512 and size. The desktop repo's CI adds it in the publish job (never in the build job,
+which runs dependency code) with the repo secret `DESKTOP_SIGNING_KEY`, the private key as PKCS8 PEM. The public
+half is baked into the app and is on this server as `desktop-update-signing.pub.pem` (from `deploy/vps/`, put in
+place by each deploy). The receiver refuses a release that doesn't verify, and the app downloads and installs only
+an update whose signature and file match. So a stolen ssh key, or a changed file on this server, can't push an
+update to installed copies. (A first download from the website is a plain file, though: guard the server too.)
+
+- **Keep an offline backup of the private key** (e.g. in the password manager). If it's lost, installed copies
+  can't accept any update until each is reinstalled by hand with a build that carries a new public key.
+- **Rotating it:** release a version signed with the old key that ships the new public key in the app. Once every
+  copy runs that version, put the new public half in `deploy/vps/desktop-update-signing.pub.pem` (and deploy) and
+  the new private key in `DESKTOP_SIGNING_KEY`, then release again. A copy still on an older version then refuses
+  every update and needs reinstalling by hand.
+- The receiver checks signatures with OpenSSL 3 (`openssl version` on the server; Ubuntu 22.04 and later have it).
+  With an older one it refuses every release rather than skip the check.
+
+**One-time setup** (once per server). The receiver comes with each deploy, but the first must be a laptop deploy
+(`deploy.sh`): only that updates `ci-deploy.sh`, which CI deploys need before they copy the receiver too. Then:
+
+1. Make a key pair for the desktop repo's CI only: `ssh-keygen -t ed25519 -N '' -f ddp-desktop-release -C
+   ddp-desktop-release`.
+2. Add the public half to `/root/.ssh/authorized_keys` on the server as one line:
+   ```
+   restrict,command="/root/deadly-drops/receive-desktop-release.sh" ssh-ed25519 AAAA... ddp-desktop-release
+   ```
+   `restrict` means no shell, no forwarding and no terminal. Whatever command the client asks for, this key runs
+   the receiver with no arguments, and the receiver reads only the tar on stdin.
+3. In GitHub → `dustintris/DeadlyDropsPickleBall` → Settings → Secrets and variables → Actions, set:
+   - `DESKTOP_PUBLISH_KEY`: the private half (then delete the local copy)
+   - `DESKTOP_SIGNING_KEY`: the release signing key (PKCS8 PEM) whose public half is
+     `deploy/vps/desktop-update-signing.pub.pem` (see The signing key; keep its offline backup)
+   - `VPS_HOST`: the server's IP
+   - `VPS_KNOWN_HOSTS`: the output of `ssh-keyscan -t ed25519 <IP>`. Compare its fingerprint with
+     `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` on the server.
 
 ## Backups and restore
 
@@ -121,7 +225,9 @@ To take backups from another server (say the old one), copy them from a laptop:
     - `VPS_SSH_KEY`: the private half (then delete the local copy)
     - `VPS_KNOWN_HOSTS`: the output of `ssh-keyscan -t ed25519 <IP>`. Compare its fingerprint with
       `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` on the server.
-11. **Check**: `curl -sI https://ddptournaments.com`, log in at `/admin`, and run *Run workflow* once to prove
+11. **Desktop releases**: the release key and its GitHub secrets (Desktop app releases, One-time setup), then
+    put the live desktop version back (Desktop app releases, Backups).
+12. **Check**: `curl -sI https://ddptournaments.com`, log in at `/admin`, and run *Run workflow* once to prove
     that CI can deploy.
 
 ## Certificates
