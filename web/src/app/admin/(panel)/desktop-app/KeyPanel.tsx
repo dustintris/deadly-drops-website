@@ -36,7 +36,12 @@ export function KeyPanel({ server, set, createdAt }: { server: string; set: bool
 
   return (
     <section className="adm-card" aria-labelledby="key-h" style={{ display: 'grid', gap: 14 }}>
-      <h2 id="key-h">Connection</h2>
+      <h2 id="key-h">Older app versions</h2>
+      <p className="adm-muted">
+        New installs use activation (above), with a key for each computer. Copies of the app from before activation
+        connect with this one shared key instead: in that app, Load Tournament → download from the management system,
+        then paste the address and key below. Turn it off once every computer has the new version.
+      </p>
       <div className="adm-field">
         <label htmlFor="app-server">Server address</label>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -45,8 +50,8 @@ export function KeyPanel({ server, set, createdAt }: { server: string; set: bool
         </div>
       </div>
       <p>
-        <strong>Key: </strong>
-        {set ? `on, made ${createdAt ? when(createdAt) : 'earlier'}. It can’t be shown again; make a new one if it’s lost.` : 'off. The app can’t download until you make one.'}
+        <strong>Shared key: </strong>
+        {set ? `on, made ${createdAt ? when(createdAt) : 'earlier'}. It can’t be shown again; make a new one if it’s lost.` : 'off. Older copies of the app can’t download until you make one.'}
       </p>
       {key && (
         <div className="adm-field">
@@ -65,7 +70,7 @@ export function KeyPanel({ server, set, createdAt }: { server: string; set: bool
         </button>
         {set && (
           <button type="button" className="adm-btn danger" aria-disabled={busy}
-            onClick={() => void run(revokeAppKeyAction, 'Turn off downloads? The desktop app’s key stops working.')}>
+            onClick={() => void run(revokeAppKeyAction, 'Turn off the shared key? Older copies of the app stop downloading. Activated computers keep working.')}>
             Turn off
           </button>
         )}

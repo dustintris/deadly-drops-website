@@ -145,7 +145,8 @@ serves https://ddptournament.com from the same scripts, with `docker-compose.yml
 - **Backups** run nightly into `/root/deadly-drops/backups/`, on the same disk: copy them off the server now and then.
 
 Environment (`.env.local`, never committed; see `.env.example`): `DATABASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH`
-(the owner), `CONTENT_DIR` (uploaded images), `NEXT_PUBLIC_SITE_URL`. Staff logins live in the database.
+(the owner), `CONTENT_DIR` (uploaded images), `NEXT_PUBLIC_SITE_URL`, `DESKTOP_CODE_SECRET` (desktop-app activation
+codes; required in production) and `DOWNLOADS_DIR` (the published desktop installer). Staff logins live in the database.
 
 ## Code map
 
@@ -164,5 +165,7 @@ Environment (`.env.local`, never committed; see `.env.example`): `DATABASE_URL`,
   refreshes every open screen
 - `src/components/results/Results.tsx`: standings, matches, bracket and medals, shared by the tournament page,
   venue screen and print
-- `src/lib/appsync/` + `src/app/api/tournaments/`: the desktop app's download API (bearer key)
+- `src/lib/appsync/` + `src/app/api/tournaments/` + `src/app/api/desktop/`: the desktop app's download API (bearer
+  key), activation (one-time codes → a key per computer), its status check, and the check Caddy asks before serving
+  the installer and updates from `/downloads/desktop/`
 - `src/theme/tokens.ts`: default colours and the bundled logo (`themeLogo`); the saved theme from the admin overrides them

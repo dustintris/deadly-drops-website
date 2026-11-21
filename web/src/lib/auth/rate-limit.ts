@@ -81,16 +81,61 @@ export async function withHashSlot<T>(fn: () => Promise<T>): Promise<T> {
 
 /* ---------- simple per-key action budget ---------- */
 
+/** Most recently counted key last: each count moves its key to the end, so the front holds the keys idle longest. */
 const budgets = new Map<string, number[]>()
+
+/** Store `key`'s list. When full, the keys idle longest go first (never a reset of every budget at once). */
+function keepBudget(key: string, list: number[]) {
+  budgets.delete(key)
+  if (budgets.size >= MAX_KEYS) {
+    for (const k of budgets.keys()) {
+      budgets.delete(k)
+      if (budgets.size < MAX_KEYS * 0.9) break
+    }
+  }
+  budgets.set(key, list)
+}
 
 /** True (and counted) when `key` has done fewer than `max` actions in the last `windowMs`. */
 export function allowAction(key: string, max: number, windowMs: number): boolean {
   const now = Date.now()
   const list = (budgets.get(key) ?? []).filter((t) => now - t < windowMs)
   if (list.length >= max) return false
-  if (!budgets.has(key) && budgets.size >= MAX_KEYS) budgets.clear()
-  budgets.set(key, [...list, now])
+  keepBudget(key, [...list, now])
   return true
+}
+
+/** How many times `key` was counted in the last `windowMs`. Reads never create entries. */
+export function countActions(key: string, windowMs: number): number {
+  const now = Date.now()
+  return (budgets.get(key) ?? []).filter((t) => now - t < windowMs).length
+}
+
+/** Count one more for `key` with no limit (e.g. failures, checked separately with countActions). */
+export function recordAction(key: string, windowMs: number): void {
+  const now = Date.now()
+  keepBudget(key, [...(budgets.get(key) ?? []).filter((t) => now - t < windowMs), now].slice(-1000))
+}
+
+/** Tests only: forget every action budget (the login counters are kept). */
+export function resetActions(): void {
+  budgets.clear()
+}
+
+/**
+ * The key an address is counted under: IPv4 as it is, IPv6 by its /64 network (one home or host is usually given a
+ * whole /64, so counting single IPv6 addresses would let one machine use thousands of them).
+ */
+export function addressKey(ip: string): string {
+  const a = ip.trim().toLowerCase().replace(/^\[|\]$/g, '').split('%')[0]
+  const v4 = a.match(/^(?:::ffff:)?(\d{1,3}(?:\.\d{1,3}){3})$/)
+  if (v4) return v4[1]
+  if (!a.includes(':')) return a
+  const [head, tail = ''] = a.split('::')
+  const h = head ? head.split(':') : []
+  const t = a.includes('::') && tail ? tail.split(':') : []
+  const groups = a.includes('::') ? [...h, ...Array<string>(Math.max(0, 8 - h.length - t.length)).fill('0'), ...t] : h
+  return `${groups.slice(0, 4).map((g) => g.replace(/^0+(?=.)/, '') || '0').join(':')}::/64`
 }
 
 /**

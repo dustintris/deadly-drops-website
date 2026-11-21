@@ -92,6 +92,13 @@
       "when": 1795193935543,
       "tag": "0012_blossom_theme",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1795243577636,
+      "tag": "0013_desktop_activation",
+      "breakpoints": true
     }
   ]
 }

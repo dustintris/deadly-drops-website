@@ -196,6 +196,61 @@ export const appMeta = pgTable('app_meta', {
   value: text('value').notNull(),
 })
 
+/**
+ * Computers running the desktop app, one row per activation (Admin → Desktop app → Activate a computer). The app
+ * sends its own key (Authorization: Bearer); only the key's SHA-256 is stored. `install_id` is the app's own id for
+ * the computer: activating it again revokes the old row, so each computer has at most one active row.
+ */
+export const desktopInstalls = pgTable(
+  'desktop_installs',
+  {
+    id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+    label: text('label').notNull(),
+    installId: text('install_id').notNull(),
+    deviceName: text('device_name').notNull().default(''),
+    keyHash: text('key_hash').notNull().unique(),
+    // the staff member who made the activation code
+    createdBy: text('created_by').notNull(),
+    activatedAt: timestamp('activated_at', { withTimezone: true }).notNull().defaultNow(),
+    lastSeenAt: timestamp('last_seen_at', { withTimezone: true }),
+    lastVersion: text('last_version'),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex('desktop_installs_active_install_idx').on(t.installId).where(sql`${t.revokedAt} is null`),
+    // the admin's "Revoked" list: newest first, capped
+    index('desktop_installs_revoked_idx').on(t.revokedAt.desc()).where(sql`${t.revokedAt} is not null`),
+    check(
+      'desktop_installs_size_check',
+      sql`length(${t.label}) between 1 and 60 and length(${t.installId}) between 1 and 64 and length(${t.deviceName}) <= 80 and length(${t.keyHash}) = 64 and length(${t.createdBy}) <= 254 and coalesce(length(${t.lastVersion}), 0) <= 32`,
+    ),
+  ],
+)
+
+/** One-time codes that activate a computer. Only the code's SHA-256 is stored; a used code points at its install. */
+export const desktopActivationCodes = pgTable(
+  'desktop_activation_codes',
+  {
+    id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+    codeHash: text('code_hash').notNull().unique(),
+    label: text('label').notNull(),
+    createdBy: text('created_by').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    usedAt: timestamp('used_at', { withTimezone: true }),
+    installRowId: bigint('install_row_id', { mode: 'number' }).references(() => desktopInstalls.id, { onDelete: 'set null' }),
+  },
+  (t) => [
+    index('desktop_activation_codes_install_idx').on(t.installRowId),
+    // the codes not used yet (listed in the admin, counted against the cap)
+    index('desktop_activation_codes_open_idx').on(t.expiresAt).where(sql`${t.usedAt} is null`),
+    check(
+      'desktop_activation_codes_size_check',
+      sql`length(${t.label}) between 1 and 60 and length(${t.codeHash}) = 64 and length(${t.createdBy}) <= 254 and ${t.expiresAt} > ${t.createdAt}`,
+    ),
+  ],
+)
+
 /** Append-only record of admin actions, read newest first by id. */
 export const auditLog = pgTable('audit_log', {
   id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),

@@ -1,4 +1,5 @@
 import 'server-only'
+import { addressKey } from '@/lib/auth/rate-limit'
 
 /**
  * Throttling for the public Contact form and "Join the list", in memory (one server). Kept apart from the login
@@ -28,21 +29,8 @@ function makeRoom(map: Map<string, number[]>, now: number) {
   }
 }
 
-/**
- * The key an address is counted under: IPv4 as it is, IPv6 by its /64 network (one home or host is usually given a
- * whole /64, so counting single IPv6 addresses would let one machine use thousands of them).
- */
-export function addressKey(ip: string): string {
-  const a = ip.trim().toLowerCase().replace(/^\[|\]$/g, '').split('%')[0]
-  const v4 = a.match(/^(?:::ffff:)?(\d{1,3}(?:\.\d{1,3}){3})$/)
-  if (v4) return v4[1]
-  if (!a.includes(':')) return a
-  const [head, tail = ''] = a.split('::')
-  const h = head ? head.split(':') : []
-  const t = a.includes('::') && tail ? tail.split(':') : []
-  const groups = a.includes('::') ? [...h, ...Array<string>(Math.max(0, 8 - h.length - t.length)).fill('0'), ...t] : h
-  return `${groups.slice(0, 4).map((g) => g.replace(/^0+(?=.)/, '') || '0').join(':')}::/64`
-}
+// IPv4 as it is, IPv6 by its /64 network (shared with the desktop app's activation limit)
+export { addressKey }
 
 /** True (and counted) when this address may send one more `kind` now; false when it must wait. */
 export function allowSubmission(kind: Kind, ip: string, now = Date.now()): boolean {
