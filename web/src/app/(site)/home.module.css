@@ -54,7 +54,7 @@
 .tCard > :last-child { margin-top: auto; }
 .tHead { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
 .tName { font-size: clamp(32px, 4vw, 48px); }
-.when { font-family: var(--font-display); font-size: clamp(22px, 2.6vw, 30px); text-transform: uppercase; color: var(--accent); line-height: 1; text-shadow: 0 0 20px rgb(var(--accent-rgb) / .5); }
+.when { font-family: var(--font-display); font-size: clamp(22px, 2.6vw, 30px); text-transform: uppercase; color: var(--accent-ink); line-height: 1; text-shadow: 0 0 20px rgb(var(--accent-rgb) / .5); }
 .tSummary { font-size: 17px; line-height: 1.6; color: rgb(var(--ink-rgb) / .82); max-width: 62ch; }
 .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px 28px; padding-block: 18px; border-block: 1px dashed rgb(var(--ink-rgb) / .16); }
 .facts .wide { grid-column: 1 / -1; }
@@ -66,11 +66,11 @@
 .prizes li { min-width: 104px; padding: 12px 16px; border-radius: 12px; background: var(--surface); border: 1px solid rgb(var(--accent-rgb) / .14); }
 .prizes li[data-place='Gold'] { border-color: var(--accent); box-shadow: 0 0 22px -6px rgb(var(--accent-rgb) / .6); }
 .prizes strong { display: block; font-family: var(--font-display); font-weight: 400; font-size: 28px; line-height: 1; }
-.prizes li[data-place='Gold'] strong { color: var(--accent); }
+.prizes li[data-place='Gold'] strong { color: var(--accent-ink); }
 .prizes span { display: block; margin-top: 4px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .66); }
 .note { margin-top: 20px; max-width: 60ch; font-size: 15px; color: rgb(var(--ink-rgb) / .74); }
-.note a { color: var(--accent); text-decoration: underline; text-underline-offset: .2em; }
-.note a:hover { color: var(--accent-soft); }
+.note a { color: var(--accent-ink); text-decoration: underline; text-underline-offset: .2em; }
+.note a:hover { color: var(--accent-soft-ink); }
 
 /* ---------- charities: a twilight band that melts into pink clouds above the blush section ---------- */
 .cause:global(.darker) {
@@ -103,7 +103,7 @@
 .charityBody { min-width: 0; overflow-wrap: anywhere; display: flex; flex-direction: column; gap: 10px; padding: 24px; }
 .charityBody > :last-child { margin-top: auto; }
 .charityName { font-family: var(--font-display); font-weight: 400; text-transform: uppercase; font-size: clamp(26px, 3vw, 34px); line-height: 1; }
-.charityTagline { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.charityTagline { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent-ink); }
 .charitySummary { font-size: 15px; line-height: 1.6; color: rgb(var(--ink-rgb) / .78); }
 .charityFor { font-size: 15px; }
 
@@ -111,7 +111,7 @@
 .steps { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 /* glossy neon-pink and jet tiles with the black outline of the light sections' cards */
 .steps li { padding: 28px 24px 32px; border-radius: 14px; background: var(--accent) linear-gradient(160deg, rgb(255 255 255 / .28), rgb(255 255 255 / 0) 55%); color: var(--on-accent); border: 1px solid var(--ink-dark); box-shadow: 0 14px 30px -14px rgb(var(--accent-rgb) / .7); }
-.steps li[data-variant='dark'] { background: var(--ink-dark); color: var(--ink); box-shadow: 0 14px 30px -16px rgb(var(--ink-dark-rgb) / .6); }
+.steps li[data-variant='dark'] { background: var(--ink-dark); color: var(--ink); --ink: var(--on-ink-dark); --ink-rgb: var(--on-ink-dark-rgb); --accent-ink: var(--accent); --accent-ink-rgb: var(--accent-rgb); --accent-soft-ink: var(--accent-soft); --accent-soft-ink-rgb: var(--accent-soft-rgb); box-shadow: 0 14px 30px -16px rgb(var(--ink-dark-rgb) / .6); }
 .steps li[data-variant='dark'] strong { color: var(--accent); }
 .steps strong { display: block; font-size: 56px; line-height: 1; }
 .steps h3 { margin-top: 16px; font-size: 20px; font-weight: 600; }

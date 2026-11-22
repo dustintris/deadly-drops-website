@@ -7,7 +7,7 @@
 .tile :global(.badge) { position: absolute; top: 10px; right: 10px; }
 .body { padding: 14px 16px 16px; }
 .body strong { display: block; font-size: 15px; }
-.body span { display: block; margin-top: 2px; font-size: 11px; color: var(--accent); }
+.body span { display: block; margin-top: 2px; font-size: 11px; color: var(--accent-ink); }
 .body p { margin-top: 6px; font-size: 13px; color: rgb(var(--ink-rgb) / .66); }
 .empty { padding: 40px; border: 1px dashed rgb(var(--accent-rgb) / .3); border-radius: 14px; display: grid; gap: 16px; justify-items: start; }
 @media (max-width: 1000px) { .grid { grid-template-columns: repeat(3, 1fr); } }
@@ -21,7 +21,7 @@
 .dashAvatar { width: 72px; height: 72px; flex: none; }
 .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .kpis > div { padding: 18px 20px; border-radius: 12px; background: var(--paper-card); border: 1px solid rgb(var(--ink-dark-rgb) / .08); }
-.kpis > div[data-variant='dark'] { background: var(--ink-dark); color: var(--ink); }
+.kpis > div[data-variant='dark'] { background: var(--ink-dark); color: var(--ink); --ink: var(--on-ink-dark); --ink-rgb: var(--on-ink-dark-rgb); --accent-ink: var(--accent); --accent-ink-rgb: var(--accent-rgb); --accent-soft-ink: var(--accent-soft); --accent-soft-ink-rgb: var(--accent-soft-rgb); }
 .kpis > div[data-variant='dark'] strong, .kpis > div[data-variant='dark'] span { color: var(--accent); }
 .kpis > div[data-variant='accent'] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .kpis > div[data-variant='accent'] span { color: var(--on-accent); }
@@ -36,13 +36,13 @@
 .trend li { flex: 1; border-radius: 4px 4px 0 0; background: linear-gradient(180deg, var(--accent), var(--accent-deep)); opacity: .75; }
 .trend li[data-last='true'] { opacity: 1; }
 .trendAxis { display: flex; justify-content: space-between; margin-top: 8px; font-family: var(--font-mono); font-size: 10px; color: rgb(var(--ink-dark-rgb) / .72); }
-.matches { padding: 22px; border-radius: 12px; background: var(--ink-dark); color: var(--ink); }
+.matches { padding: 22px; border-radius: 12px; background: var(--ink-dark); color: var(--ink); --ink: var(--on-ink-dark); --ink-rgb: var(--on-ink-dark-rgb); --accent-ink: var(--accent); --accent-ink-rgb: var(--accent-rgb); --accent-soft-ink: var(--accent-soft); --accent-soft-ink-rgb: var(--accent-soft-rgb); }
 .matches ul, .results ul { list-style: none; padding: 0; margin-top: 12px; }
 .matches li { display: flex; gap: 16px; align-items: center; padding: 12px 0; border-bottom: 1px solid rgb(var(--ink-rgb) / .1); }
 .matches b { width: 40px; font-size: 20px; color: var(--accent); font-weight: 400; }
 .matches strong, .results strong { display: block; font-size: 14px; }
 .matches small, .results small { display: block; font-size: 12px; color: rgb(var(--ink-rgb) / .66); }
-.results { padding: 22px; border-radius: 12px; background: var(--ink-dark); color: var(--ink); }
+.results { padding: 22px; border-radius: 12px; background: var(--ink-dark); color: var(--ink); --ink: var(--on-ink-dark); --ink-rgb: var(--on-ink-dark-rgb); --accent-ink: var(--accent); --accent-ink-rgb: var(--accent-rgb); --accent-soft-ink: var(--accent-soft); --accent-soft-ink-rgb: var(--accent-soft-rgb); }
 /* black panels inside a light section: their eyebrows take the neon accent, not the light-section plum */
 .matches :global(.eyebrow), .results :global(.eyebrow) { color: var(--accent); }
 .results li { display: flex; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid rgb(var(--ink-rgb) / .08); }

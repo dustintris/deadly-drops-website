@@ -12,7 +12,7 @@
 .values { list-style: none; padding: 0; margin-top: 32px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 .values li { padding: 26px 24px 30px; border-radius: 14px; background: var(--surface2); border: 1px solid rgb(var(--accent-rgb) / .14); }
 .values li[data-accent='true'] { background: var(--accent); color: var(--on-accent); }
-.values strong { font-size: 40px; line-height: 1; color: var(--accent); }
+.values strong { font-size: 40px; line-height: 1; color: var(--accent-ink); }
 .values li[data-accent='true'] strong { color: var(--on-accent); }
 .values h3 { margin-top: 14px; font-size: 19px; font-weight: 600; }
 .values p { margin-top: 10px; font-size: 14px; opacity: .84; }

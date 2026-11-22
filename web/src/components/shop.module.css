@@ -10,18 +10,21 @@
 .itemHead { display: flex; justify-content: space-between; gap: 10px; padding: 14px 14px 16px; }
 .itemHead strong { display: block; font-size: 15px; }
 .itemHead small { display: block; font-size: 12px; color: rgb(var(--ink-rgb) / .66); margin-top: 2px; }
-.itemHead b { font-family: var(--font-display); font-weight: 400; font-size: 24px; color: var(--accent); line-height: 1; }
+.itemHead b { font-family: var(--font-display); font-weight: 400; font-size: 24px; color: var(--accent-ink); line-height: 1; }
 @media (max-width: 720px) { .itemHead { flex-direction: column; } .itemHead small { display: none; } }
 
 .art {
   position: relative; aspect-ratio: 1 / .78; display: grid; place-items: center;
   background: radial-gradient(circle at 50% 40%, rgb(var(--accent-rgb) / .14), transparent 65%), var(--surface);
-  color: var(--accent);
+  color: var(--accent-ink);
 }
 .art svg { width: 42%; height: auto; transition: transform .4s ease; }
 .item:hover .art svg { transform: scale(1.05) rotate(-3deg); }
 .art span { position: absolute; right: 12px; bottom: 10px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .35); }
-.artLarge { aspect-ratio: 1 / 1; border-radius: 14px; background: radial-gradient(circle at 50% 40%, rgb(var(--accent-rgb) / .3), transparent 65%), var(--ink-dark); }
+:global([data-ground='light']) .art span { color: rgb(var(--ink-rgb) / .62); }
+.artLarge { aspect-ratio: 1 / 1; border-radius: 14px; background: radial-gradient(circle at 50% 40%, rgb(var(--accent-rgb) / .3), transparent 65%), var(--ink-dark);
+  /* a black plate: the drawing in the bright accent, the label in light ink (the light page's ink is near-black) */
+  color: var(--accent); --ink: var(--on-ink-dark); --ink-rgb: var(--on-ink-dark-rgb); }
 
 /* product detail */
 .detail { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 6vw, 72px); align-items: start; }
@@ -44,7 +47,7 @@
 .artPhoto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
 .item:hover .artPhoto img { transform: scale(1.04); }
 .itemStock { position: absolute; top: 12px; right: 12px; }
-.soldOut { display: inline-block; padding: 4px 10px; border-radius: 100px; background: var(--ink-dark); color: var(--ink); font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+.soldOut { display: inline-block; padding: 4px 10px; border-radius: 100px; background: var(--ink-dark); color: var(--on-ink-dark); font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
 .lowStock { display: inline-block; padding: 4px 10px; border-radius: 100px; background: var(--accent); color: var(--on-accent); font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
 .gallery { display: grid; gap: 12px; }
 .thumbs { list-style: none; padding: 0; display: flex; gap: 10px; flex-wrap: wrap; }

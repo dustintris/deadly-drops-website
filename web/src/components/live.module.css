@@ -31,7 +31,7 @@
   font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
   border: 1px solid rgb(var(--ink-rgb) / .26); color: rgb(var(--ink-rgb) / .8);
 }
-.status[data-state='live'] { border-color: var(--accent); color: var(--accent); }
+.status[data-state='live'] { border-color: var(--accent); color: var(--accent-ink); }
 .division:not([data-variant='print']) .status[data-state='live'] { box-shadow: 0 0 14px -4px rgb(var(--accent-rgb) / .6); }
 .status[data-state='final'] { border-color: transparent; background: rgb(var(--ink-rgb) / .12); color: var(--ink); }
 
@@ -56,7 +56,7 @@
 .table tbody th { min-width: 150px; font-weight: 600; white-space: normal; overflow-wrap: anywhere; }
 .table .num { text-align: right; }
 .rank { width: 1%; font-family: var(--font-display); font-size: 22px; line-height: 1.1; color: rgb(var(--ink-rgb) / .72); }
-.table tr[data-top='true'] .rank { color: var(--accent); }
+.table tr[data-top='true'] .rank { color: var(--accent-ink); }
 .players { display: block; margin-top: 2px; font-size: 13px; font-weight: 400; color: rgb(var(--ink-rgb) / .7); }
 
 /* matches, round by round */
@@ -71,13 +71,13 @@
   font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; color: rgb(var(--ink-rgb) / .72);
 }
 .badge { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; }
-.badge[data-status='live'] { color: var(--accent); }
+.badge[data-status='live'] { color: var(--accent-ink); }
 .badge[data-status='final'] { color: var(--ink); }
 .side { display: flex; align-items: baseline; gap: 12px; padding: 3px 0; font-size: 15px; }
 .side > span:first-child { min-width: 0; overflow-wrap: anywhere; }
 .side strong { margin-left: auto; font-family: var(--font-display); font-weight: 400; font-size: 24px; line-height: 1; font-variant-numeric: tabular-nums; }
 .side[data-win='true'] { font-weight: 600; }
-.side[data-win='true'] strong { color: var(--accent); }
+.side[data-win='true'] strong { color: var(--accent-ink); }
 .match[data-status='final'] .side[data-win='false'] { color: rgb(var(--ink-rgb) / .72); }
 .tbd { font-style: italic; color: rgb(var(--ink-rgb) / .7); }
 

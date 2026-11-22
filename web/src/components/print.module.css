@@ -2,7 +2,8 @@
    theme tokens, so re-pointing them here turns the whole sheet light without touching their styles. */
 .sheet {
   --ink: var(--ink-dark); --ink-rgb: var(--ink-dark-rgb);
-  --accent: var(--ink-dark); --accent-rgb: var(--ink-dark-rgb);
+  --accent: var(--ink-dark); --accent-rgb: var(--ink-dark-rgb); --accent-ink: var(--ink-dark); --accent-ink-rgb: var(--ink-dark-rgb);
+  --accent-soft-ink: var(--ink-dark); --accent-soft-ink-rgb: var(--ink-dark-rgb); --twinkle: var(--ink-dark); --twinkle-rgb: var(--ink-dark-rgb);
   --accent-soft: var(--ink-dark); --accent-soft-rgb: var(--ink-dark-rgb); --accent-deep: var(--ink-dark); --accent-deep-rgb: var(--ink-dark-rgb);
   --surface2: #fff; --bg: #fff;
   min-height: 100vh; padding: 32px max(20px, 4vw) 48px; background: #fff; color: var(--ink-dark);

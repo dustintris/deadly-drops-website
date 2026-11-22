@@ -22,7 +22,7 @@
 .head { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
 /* logos sit on the theme's logo plate, like tournament logos */
 .logo { flex: none; width: 96px; height: 96px; object-fit: contain; background: var(--logo-plate); border-radius: 14px; padding: 6px; box-shadow: 0 0 0 2px var(--accent), 0 0 22px rgb(var(--accent-rgb) / .45); }
-.tagline { font-family: var(--font-display); text-transform: uppercase; font-size: clamp(20px, 2.4vw, 26px); line-height: 1.1; color: var(--accent); text-shadow: 0 0 20px rgb(var(--accent-rgb) / .45); }
+.tagline { font-family: var(--font-display); text-transform: uppercase; font-size: clamp(20px, 2.4vw, 26px); line-height: 1.1; color: var(--accent-ink); text-shadow: 0 0 20px rgb(var(--accent-rgb) / .45); }
 .story { max-width: 68ch; }
 .summary { margin-top: 28px; max-width: 60ch; font-size: 18px; line-height: 1.7; color: rgb(var(--ink-rgb) / .88); }
 .actions { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; }
@@ -32,13 +32,13 @@
 /* rows inside the panel (not cards in a card) */
 .tournament { display: flex; align-items: center; gap: 14px; min-height: 56px; padding: 12px 0; border-top: 1px dashed rgb(var(--accent-soft-rgb) / .22); transition: color .18s ease; }
 .tournaments li:last-child .tournament { padding-bottom: 0; }
-.tournament:hover strong { color: var(--accent); }
+.tournament:hover strong { color: var(--accent-ink); }
 .tournament:hover .arrow { transform: translateX(3px); }
 .badge { flex: none; width: 44px; height: 44px; object-fit: contain; background: var(--logo-plate); border-radius: 8px; padding: 3px; }
 .tName { min-width: 0; }
 .tName strong { display: block; font-size: 18px; font-weight: 600; }
 .tName span { display: block; margin-top: 2px; font-size: 14px; color: rgb(var(--ink-rgb) / .68); }
-.arrow { margin-left: auto; font-size: 20px; color: var(--accent); transition: transform .18s ease; }
+.arrow { margin-left: auto; font-size: 20px; color: var(--accent-ink); transition: transform .18s ease; }
 
 /* flyers and posters: shown whole (never cropped), side by side when there are two */
 .media { display: grid; gap: 20px; }

@@ -4,7 +4,7 @@
 /* the steps: white, black and neon-pink tiles with the black outline of the light sections' cards (like the tournament weekend) */
 .steps { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
 .steps li { padding: 24px; border-radius: 14px; background: var(--paper-card); border: 1px solid rgb(var(--ink-dark-rgb) / .85); box-shadow: 0 12px 26px -18px rgb(var(--accent-deep-rgb) / .55); }
-.steps li[data-variant='dark'] { background: var(--ink-dark); color: var(--ink); }
+.steps li[data-variant='dark'] { background: var(--ink-dark); color: var(--ink); --ink: var(--on-ink-dark); --ink-rgb: var(--on-ink-dark-rgb); --accent-ink: var(--accent); --accent-ink-rgb: var(--accent-rgb); --accent-soft-ink: var(--accent-soft); --accent-soft-ink-rgb: var(--accent-soft-rgb); }
 .steps li[data-variant='dark'] strong { color: var(--accent); }
 .steps li[data-variant='accent'] { background: var(--accent) linear-gradient(160deg, rgb(var(--paper-card-rgb) / .28), rgb(var(--paper-card-rgb) / 0) 55%); color: var(--on-accent); border-color: var(--ink-dark); box-shadow: 0 14px 30px -14px rgb(var(--accent-rgb) / .7); }
 .steps li[data-variant='accent'] strong { color: var(--on-accent); }

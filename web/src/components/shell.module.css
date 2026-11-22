@@ -26,7 +26,7 @@
   box-shadow: 0 0 0 2px var(--accent), 0 0 18px 2px rgb(var(--accent-rgb) / .55);
 }
 .brand strong { display: block; font-family: var(--font-display); font-weight: 400; font-size: 20px; line-height: 1; text-transform: uppercase; }
-.brand small { display: block; margin-top: 4px; font-family: var(--font-mono); font-size: 9px; letter-spacing: .24em; text-transform: uppercase; color: var(--accent-soft); }
+.brand small { display: block; margin-top: 4px; font-family: var(--font-mono); font-size: 9px; letter-spacing: .24em; text-transform: uppercase; color: var(--accent-soft-ink); }
 .nav { flex: 1; min-width: 0; display: flex; justify-content: center; }
 .nav ul { display: flex; gap: 0; list-style: none; padding: 0; }
 .nav a {
@@ -35,16 +35,16 @@
   color: rgb(var(--ink-rgb) / .8); transition: color .15s ease, text-shadow .15s ease;
 }
 .nav a:hover { color: var(--ink); text-shadow: 0 0 12px rgb(var(--accent-soft-rgb) / .8); }
-.nav a[aria-current='page'] { color: var(--accent); text-shadow: 0 0 14px rgb(var(--accent-rgb) / .6); }
+.nav a[aria-current='page'] { color: var(--accent-ink); text-shadow: 0 0 14px rgb(var(--accent-rgb) / .6); }
 /* a small sparkle under the current page */
 .nav a[aria-current='page']::after {
   content: ''; position: absolute; left: 50%; bottom: 3px; width: 9px; height: 9px; translate: -50% 0;
-  background: var(--accent);
+  background: var(--accent-ink);
   -webkit-mask: var(--sparkle-shape) center / contain no-repeat;
   mask: var(--sparkle-shape) center / contain no-repeat;
 }
 .actions { display: flex; align-items: center; gap: 14px; flex: none; }
-.menuBtn { display: none; min-width: 44px; min-height: 44px; color: var(--accent); font-size: 24px; line-height: 1; text-shadow: 0 0 12px rgb(var(--accent-rgb) / .6); }
+.menuBtn { display: none; min-width: 44px; min-height: 44px; color: var(--accent-ink); font-size: 24px; line-height: 1; text-shadow: 0 0 12px rgb(var(--accent-rgb) / .6); }
 .mobileTitle { display: none; }
 /* the phone menu scrolls inside itself, so all eight pages and the Register button stay reachable on a short screen */
 .mobileMenu {
@@ -57,8 +57,8 @@
   display: flex; align-items: center; min-height: 48px; border-bottom: 1px solid rgb(var(--accent-soft-rgb) / .12);
   font-family: var(--font-display); font-size: 22px; text-transform: uppercase;
 }
-.mobileMenu li a:not(:global(.btn)):hover { color: var(--accent-soft); }
-.mobileMenu li a[aria-current='page'] { color: var(--accent); text-shadow: 0 0 16px rgb(var(--accent-rgb) / .55); }
+.mobileMenu li a:not(:global(.btn)):hover { color: var(--accent-soft-ink); }
+.mobileMenu li a[aria-current='page'] { color: var(--accent-ink); text-shadow: 0 0 16px rgb(var(--accent-rgb) / .55); }
 .menuCtas { display: grid; padding-top: 18px; }
 /* opening the phone menu: the panel unrolls from the header, the pages slide in one after another with a
    neon flash along their rule, and the menu icon spins between ≡ and ✕ (only the opening animates: closing is instant) */
@@ -127,9 +127,9 @@
     font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
     color: rgb(var(--ink-rgb) / .7);
   }
-  .tabbar a span { font-size: 11px; color: rgb(var(--accent-soft-rgb) / .7); }
-  .tabbar a[aria-current='page'] { color: var(--accent); text-shadow: 0 0 10px rgb(var(--accent-rgb) / .6); }
-  .tabbar a[aria-current='page'] span { color: var(--accent); }
+  .tabbar a span { font-size: 11px; color: rgb(var(--accent-soft-ink-rgb) / .7); }
+  .tabbar a[aria-current='page'] { color: var(--accent-ink); text-shadow: 0 0 10px rgb(var(--accent-rgb) / .6); }
+  .tabbar a[aria-current='page'] span { color: var(--accent-ink); }
   /* the star of the tab you land on spins in */
   .tabbar a span { display: inline-block; }
 }
@@ -161,7 +161,7 @@
   box-shadow: 0 0 0 2px var(--accent), 0 0 22px 3px rgb(var(--accent-rgb) / .5);
 }
 .footerBrand p { margin-top: 18px; font-size: 14px; color: rgb(var(--ink-rgb) / .7); line-height: 1.7; }
-.footerBrand a:hover, .footerLinks a:hover { color: var(--accent); }
+.footerBrand a:hover, .footerLinks a:hover { color: var(--accent-ink); }
 .footerLinks { list-style: none; padding: 0; margin-top: 12px; }
 .footerLinks a { display: inline-flex; min-height: 40px; align-items: center; font-size: 14px; color: rgb(var(--ink-rgb) / .74); }
 .join { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 12px; }

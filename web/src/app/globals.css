@@ -1,9 +1,12 @@
 /*
- * Deadly Drops design system: a night sky fading to pink clouds, neon highlights, light sections
- * with dark accents (the default palette is "Blossom", with "Twilight" and "Lime" as presets).
- * Colours come from theme tokens (src/theme/tokens.ts); the decoration below only mixes those
- * tokens, so a preset picked in Admin → Logo & colours recolours the stars, glows and clouds as well.
- * The only literal colours are neutral: white gloss on buttons and black shadows.
+ * Deadly Drops design system: a sky fading to pink clouds, neon highlights, light sections
+ * with dark accents (the default palette is "Bloom", a blush-pink ground; "Blossom", "Twilight" and
+ * "Lime" are presets on a night ground). Colours come from theme tokens (src/theme/tokens.ts); the
+ * decoration below only mixes those tokens, so a preset picked in Admin → Logo & colours recolours the
+ * stars, glows and clouds as well. The only literal colours are neutral: white gloss on buttons and black shadows.
+ * Text in the accent colours uses --accent-ink / --accent-soft-ink: the accent itself on a night ground, a
+ * deeper shade of it on a light one (themeDerived in tokens.ts), so a pastel accent still reads as text.
+ * Black tiles and panels (an --ink-dark ground) redefine --ink and the accent inks for what they hold.
  */
 *, *::before, *::after { box-sizing: border-box; margin: 0; }
 /* the reset above takes away the browser's centring of pop-up dialogs (photo viewer, admin pickers): give it back */
@@ -21,7 +24,7 @@ img { display: block; max-width: 100%; }
 a { color: inherit; text-decoration: none; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; background: none; border: 0; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 3px; border-radius: 6px; }
 /* a neon halo around the ring on the public site (the admin keeps its plain ring) */
 :focus-visible:not(.adm *) { box-shadow: 0 0 0 5px rgb(var(--accent-rgb) / .2), 0 0 20px 4px rgb(var(--accent-rgb) / .38); }
 .light :focus-visible { outline-color: var(--ink-dark); }
@@ -37,13 +40,14 @@ button { cursor: pointer; background: none; border: 0; }
   --glow-soft: 0 0 0 1px rgb(var(--accent-rgb) / .5), 0 0 20px -4px rgb(var(--accent-rgb) / .45);
   /* the sky: night at the top, violet-orchid towards the horizon (text stays AA on every stop) */
   --sky: linear-gradient(180deg, var(--bg) 0%, var(--bg) 16%, color-mix(in srgb, var(--surface2) 85%, var(--accent-deep)) 100%);
-  /* star dust: tiny white, pink and lilac points, tiled (use with --stardust-size / --stardust-repeat) */
+  /* star dust: tiny white (the text colour on a night ground, the deep accent on a light one), pink and lilac
+     points, tiled (use with --stardust-size / --stardust-repeat) */
   --stardust:
-    radial-gradient(1.4px 1.4px at 12% 22%, rgb(var(--ink-rgb) / .8), transparent),
-    radial-gradient(1px 1px at 37% 64%, rgb(var(--ink-rgb) / .55), transparent),
+    radial-gradient(1.4px 1.4px at 12% 22%, rgb(var(--twinkle-rgb) / .8), transparent),
+    radial-gradient(1px 1px at 37% 64%, rgb(var(--twinkle-rgb) / .55), transparent),
     radial-gradient(1.6px 1.6px at 63% 31%, rgb(var(--accent-rgb) / .75), transparent),
     radial-gradient(1.2px 1.2px at 81% 78%, rgb(var(--accent-soft-rgb) / .75), transparent),
-    radial-gradient(1px 1px at 93% 9%, rgb(var(--ink-rgb) / .6), transparent);
+    radial-gradient(1px 1px at 93% 9%, rgb(var(--twinkle-rgb) / .6), transparent);
   --stardust-size: 260px 220px, 260px 220px, 260px 220px, 260px 220px, 260px 220px;
   --stardust-repeat: repeat, repeat, repeat, repeat, repeat;
   /* the top of a light section: a glossy sheen over the blush wall (also the cloud fill above it) */
@@ -114,7 +118,7 @@ main > :is(section, article):first-child:is(.dark, .darker) {
 .d-l { font-size: clamp(44px, 6.4vw, 80px); }
 .d-m { font-size: clamp(34px, 4.4vw, 52px); }
 .d-s { font-size: clamp(26px, 3vw, 34px); }
-.accent { color: var(--accent); }
+.accent { color: var(--accent-ink); }
 /* the starred headline word glows like neon on the night ground */
 .display .accent { text-shadow: 0 0 24px rgb(var(--accent-rgb) / .55), 0 0 2px rgb(var(--accent-rgb) / .35); }
 .light .display .accent { text-shadow: none; }
@@ -122,7 +126,7 @@ main > :is(section, article):first-child:is(.dark, .darker) {
 .light :is(.accent, .accent-on-light) { color: color-mix(in srgb, var(--accent-deep) 62%, var(--ink-dark)); }
 .eyebrow {
   font-family: var(--font-mono), monospace; font-size: 11px; font-weight: 500;
-  letter-spacing: .22em; text-transform: uppercase; color: var(--accent);
+  letter-spacing: .22em; text-transform: uppercase; color: var(--accent-ink);
 }
 .light .eyebrow { color: color-mix(in srgb, var(--accent-deep) 62%, var(--ink-dark)); }
 .eyebrow:has(.live-dot) { display: inline-flex; align-items: center; gap: 8px; }
@@ -156,19 +160,19 @@ main > :is(section, article):first-child:is(.dark, .darker) {
 }
 .btn-accent:hover { background-color: var(--accent-soft); box-shadow: 0 0 0 1px var(--accent-soft), 0 8px 26px -6px rgb(var(--accent-soft-rgb) / .85), 0 0 30px -6px rgb(var(--accent-rgb) / .55); }
 .btn-ghost { border: 1px solid rgb(var(--ink-rgb) / .42); color: var(--ink); }
-.btn-ghost:hover { border-color: var(--accent); color: var(--accent); box-shadow: var(--glow-soft); }
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent-ink); box-shadow: var(--glow-soft); }
 .light .btn-ghost { border-color: var(--ink-dark); color: var(--ink-dark); }
 .light .btn-ghost:hover { border-color: var(--ink-dark); color: var(--ink-dark); background-color: var(--paper-card); box-shadow: 3px 3px 0 var(--ink-dark); }
 /* the black accent: a jet pill with a pink rim on hover */
-.btn-dark { background: var(--ink-dark); color: var(--ink); }
+.btn-dark { background: var(--ink-dark); color: var(--on-ink-dark); }
 .btn-dark:hover { background: color-mix(in srgb, var(--ink-dark) 80%, var(--bg)); box-shadow: var(--glow-soft); }
-.btn-line { border: 1px solid rgb(var(--accent-rgb) / .6); color: var(--accent); }
+.btn-line { border: 1px solid rgb(var(--accent-rgb) / .6); color: var(--accent-ink); }
 .btn-line:hover { background: rgb(var(--accent-rgb) / .1); box-shadow: var(--glow-soft); }
 .btn-sm { min-height: 40px; padding: 0 18px; font-size: 11px; }
 .btn-lg { min-height: 58px; padding: 0 38px; font-size: 13px; }
 .btn-block { width: 100%; }
-.link-arrow { display: inline-flex; align-items: center; min-height: 44px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); background: linear-gradient(var(--accent), var(--accent)) 0 calc(50% + 11px) / 100% 1px no-repeat; }
-.link-arrow:hover { color: var(--accent-soft); background-image: linear-gradient(var(--accent-soft), var(--accent-soft)); }
+.link-arrow { display: inline-flex; align-items: center; min-height: 44px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--accent-ink); background: linear-gradient(var(--accent-ink), var(--accent-ink)) 0 calc(50% + 11px) / 100% 1px no-repeat; }
+.link-arrow:hover { color: var(--accent-soft-ink); background-image: linear-gradient(var(--accent-soft-ink), var(--accent-soft-ink)); }
 
 /* ---------- chips ---------- */
 .chips { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -178,10 +182,10 @@ main > :is(section, article):first-child:is(.dark, .darker) {
   border: 1px solid rgb(var(--accent-rgb) / .34); color: rgb(var(--ink-rgb) / .78);
   transition: background-color .15s ease, color .15s ease, box-shadow .15s ease;
 }
-.chip:hover { border-color: var(--accent); color: var(--ink); }
-.chip[aria-pressed='true'], .chip.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); box-shadow: var(--glow-soft); }
+.chip:hover { border-color: var(--accent-ink); color: var(--ink); }
+.chip[aria-pressed='true'], .chip.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent-ink); box-shadow: var(--glow-soft); }
 .light .chip { border-color: rgb(var(--ink-dark-rgb) / .3); color: rgb(var(--ink-dark-rgb) / .74); }
-.light .chip[aria-pressed='true'] { background: var(--ink-dark); color: var(--ink); border-color: var(--ink-dark); box-shadow: none; }
+.light .chip[aria-pressed='true'] { background: var(--ink-dark); color: var(--on-ink-dark); border-color: var(--ink-dark); box-shadow: none; }
 .tag {
   display: inline-flex; align-items: center; min-height: 30px; padding: 0 12px; border-radius: 100px;
   font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em;
@@ -222,10 +226,14 @@ main > :is(section, article):first-child:is(.dark, .darker) {
 }
 textarea.input { padding: 14px 16px; min-height: 140px; resize: vertical; }
 .input::placeholder { color: rgb(var(--ink-rgb) / .58); }
-.input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / .25), 0 0 18px rgb(var(--accent-rgb) / .3); }
+.input:focus { outline: none; border-color: var(--accent-ink); box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / .25), 0 0 18px rgb(var(--accent-rgb) / .3); }
 .light .input { background: var(--paper-card); border-color: rgb(var(--ink-dark-rgb) / .3); color: var(--ink-dark); }
 .light .input::placeholder { color: rgb(var(--ink-dark-rgb) / .58); }
 .light .input:focus { border-color: var(--ink-dark); box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / .45); }
+/* on a light page (Bloom; the root layout sets <html data-ground>), the night's faint pastel outlines vanish: form
+   fields and chips get a firm ink edge so they still read as controls. The night presets keep theirs. */
+[data-ground='light'] .input:not(:focus) { border-color: rgb(var(--ink-rgb) / .5); }
+[data-ground='light'] .chip:not([aria-pressed='true'], .on, :hover) { border-color: rgb(var(--ink-rgb) / .4); }
 .error { color: var(--danger); font-size: 13px; }
 .light .error { color: var(--danger-on-light); }
 
@@ -246,7 +254,7 @@ textarea.input { padding: 14px 16px; min-height: 140px; resize: vertical; }
    streak down-left, so moving along its own x axis (transform) sends it that way. Hidden when motion is reduced. */
 .sky-meteor {
   position: absolute; width: 150px; height: 2px; border-radius: 2px; opacity: 0;
-  background: linear-gradient(90deg, rgb(var(--ink-rgb) / 0), rgb(var(--accent-soft-rgb) / .55) 60%, rgb(var(--ink-rgb) / .95));
+  background: linear-gradient(90deg, rgb(var(--twinkle-rgb) / 0), rgb(var(--accent-soft-rgb) / .55) 60%, rgb(var(--twinkle-rgb) / .95));
   filter: drop-shadow(0 0 6px rgb(var(--accent-rgb) / .8)); rotate: 152deg; transform-origin: 100% 50%;
 }
 .sky-meteor:nth-of-type(1) { top: 6%; left: 78%; }
@@ -361,9 +369,9 @@ html[data-motion='off'] [data-reveal-state] { opacity: 1; translate: none; scale
   font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
   transition: border-color .15s ease, color .15s ease, background-color .15s ease;
 }
-.motion-toggle span { font-size: 9px; letter-spacing: 0; color: var(--accent); }
-.motion-toggle:hover { border-color: var(--accent); color: var(--ink); }
-.motion-toggle[aria-pressed='true'] { background: rgb(var(--accent-rgb) / .16); border-color: var(--accent); color: var(--ink); }
+.motion-toggle span { font-size: 9px; letter-spacing: 0; color: var(--accent-ink); }
+.motion-toggle:hover { border-color: var(--accent-ink); color: var(--ink); }
+.motion-toggle[aria-pressed='true'] { background: rgb(var(--accent-rgb) / .16); border-color: var(--accent-ink); color: var(--ink); }
 
 /* click effect (Motion.tsx): a neon ring leaving the control and a burst of sparkles, above everything, never in the way */
 .fx-layer { position: fixed; inset: 0; z-index: 300; pointer-events: none; overflow: hidden; }
@@ -388,7 +396,7 @@ html[data-motion='off'] [data-reveal-state] { opacity: 1; translate: none; scale
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
-.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); display: inline-block; box-shadow: 0 0 8px var(--accent); animation: pulse 1.6s ease-in-out infinite; }
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent-ink); display: inline-block; box-shadow: 0 0 8px var(--accent); animation: pulse 1.6s ease-in-out infinite; }
 
 /* live updates: shown while the connection to the live channel is down (LiveRefresh) */
 .live-offline { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 50; margin: 0; padding: 8px 14px; border-radius: 999px; background: var(--surface2); color: var(--ink); border: 1px solid rgb(var(--accent-rgb) / .4); font-size: 13px; box-shadow: 0 4px 16px rgb(0 0 0 / .35); }

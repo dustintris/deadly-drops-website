@@ -9,7 +9,7 @@
 .photo > div { z-index: 1; }
 .direct { display: grid; gap: 6px; padding-bottom: 20px; border-bottom: 1px solid rgb(var(--ink-rgb) / .1); }
 .direct a { font-weight: 600; font-size: 17px; min-height: 32px; display: inline-flex; align-items: center; }
-.direct a:hover { color: var(--accent); }
+.direct a:hover { color: var(--accent-ink); }
 .firstTime { padding: 22px; border-radius: 14px; background: var(--accent); color: var(--on-accent); }
 .firstTime :global(.eyebrow) { color: var(--on-accent); }
 .firstTime p + p { margin-top: 8px; font-size: 15px; }

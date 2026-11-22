@@ -22,7 +22,7 @@
 .initials {
   display: grid; place-items: center; width: 100%; height: 100%;
   font-family: var(--font-display), Impact, sans-serif; font-size: clamp(40px, 5vw, 60px); line-height: 1; text-transform: uppercase;
-  color: var(--accent); text-shadow: 0 0 20px rgb(var(--accent-rgb) / .45);
+  color: var(--accent-ink); text-shadow: 0 0 20px rgb(var(--accent-rgb) / .45);
   background: color-mix(in srgb, var(--accent) 10%, var(--surface)); border: 1px dashed rgb(var(--accent-soft-rgb) / .3); border-radius: inherit;
 }
 .plate[data-logo='false'] { background: none; }

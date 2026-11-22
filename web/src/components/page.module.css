@@ -1,4 +1,4 @@
-.heroWhen { font-family: var(--font-display); font-size: clamp(26px, 3.4vw, 40px); text-transform: uppercase; line-height: 1; color: var(--accent); text-shadow: 0 0 22px rgb(var(--accent-rgb) / .5); }
+.heroWhen { font-family: var(--font-display); font-size: clamp(26px, 3.4vw, 40px); text-transform: uppercase; line-height: 1; color: var(--accent-ink); text-shadow: 0 0 22px rgb(var(--accent-rgb) / .5); }
 
 /* the twilight sky: night above, a lilac haze and a soft beam of light, a pink glow on the horizon under the clouds.
    Text sits above the glow (see .heroInner's bottom padding), so every stop it sits on keeps AA contrast. */

@@ -1,22 +1,26 @@
+import { contrastRatio, hexToRgb, luminance, READABLE, readableOn } from './colour'
+
 /**
  * Brand theme. Every colour on the site reads from these tokens through CSS
  * variables (see `themeToCss`), so a future admin/MIS colour setting only has
  * to supply a different `Theme` object: no component holds a literal colour.
+ * A palette can sit on a night ground (Blossom, Twilight, Lime) or a light one (Bloom): the colours the site
+ * derives from it (`themeDerived`) keep accent text and the black tiles readable either way.
  */
 export type Theme = {
-  /** page ground, darkest */
+  /** page ground (a night sky, or a light blush) */
   bg: string
-  /** dark panels, cards */
+  /** panels, alternate bands */
   surface: string
-  /** raised dark panels, inputs */
+  /** cards, inputs */
   surface2: string
   /** light section ground */
   paper: string
   /** cards on light sections */
   paperCard: string
-  /** main text on dark */
+  /** main text on the page and panels */
   ink: string
-  /** text on light grounds */
+  /** text on light grounds, and the black tiles */
   inkDark: string
   /** brand accent */
   accent: string
@@ -76,8 +80,37 @@ export const BLOSSOM_BRIGHT_THEME: Theme = {
   accentTint: '#4A2142',
 }
 
-/** The site's colours until an admin picks others in Logo & colours: Blossom, brighter. */
-export const defaultTheme: Theme = BLOSSOM_BRIGHT_THEME
+/**
+ * "Bloom", from the palette the owner picked for the Beauty in the Beast season ("Softly Fading Harmonious Bloom":
+ * #FF77B7 #A95BC8 #A5E1A0 #F3C1D0 #E1B7E3 #D0E8D0 #FFCEFF #F0FFF0): a light blush page (#F7E4EA, the blush of the
+ * light sections' glossy top) with blush bands (#F5D3DD) and walls (#F3C1D0), honeydew cards and inputs (#F0FFF0),
+ * the pink (#FF77B7) for buttons, chips, glows and cloud rims, purple (#A95BC8) for gradients and the walls' accent
+ * words, lavender (#E1B7E3) for hovers, sage (#D0E8D0) as the tint, and near-black text and tiles. The pink and
+ * lavender are too light to be text on the blush, so the site writes accent words in deeper shades of them
+ * (`themeDerived`: #AF0052 and #87368B). Migration `drizzle/0015_bloom_theme.sql` moved content saved with the
+ * Blossom-bright colours here once (its test checks both palettes there match this file). Every text pair the admin
+ * checks is WCAG AA.
+ */
+export const BLOOM_THEME: Theme = {
+  bg: '#F7E4EA',
+  surface: '#F5D3DD',
+  surface2: '#F0FFF0',
+  paper: '#F3C1D0',
+  paperCard: '#F0FFF0',
+  ink: '#0D111A',
+  inkDark: '#0D111A',
+  accent: '#FF77B7',
+  accentSoft: '#E1B7E3',
+  accentDeep: '#A95BC8',
+  onAccent: '#0D111A',
+  accentTint: '#D0E8D0',
+  danger: '#A11D1D',
+  dangerOnLight: '#A11D1D',
+  logoPlate: '#FFFFFF',
+}
+
+/** The site's colours until an admin picks others in Logo & colours: Bloom. */
+export const defaultTheme: Theme = BLOOM_THEME
 
 /**
  * "Twilight": a deep indigo night sky fading to orchid, neon pink and lilac highlights, blush-pink light
@@ -126,23 +159,55 @@ export const LEGACY_LIME_THEME: Theme = {
   logoPlate: '#FFFFFF',
 }
 
-const hexToRgb = (hex: string): string => {
-  const h = hex.replace('#', '')
-  const n = parseInt(h.length === 3 ? h.split('').map((c) => c + c).join('') : h, 16)
-  return `${(n >> 16) & 255} ${(n >> 8) & 255} ${n & 255}`
-}
-
 /** The colour keys, in a fixed order. The saved theme also holds the logo, which is not a colour. */
 const COLOUR_KEYS = Object.keys(defaultTheme) as (keyof Theme)[]
 
-/** Renders the theme's colours as CSS custom properties. `-rgb` variants allow alpha: rgb(var(--accent-rgb) / .3) */
+/**
+ * Colours the site works out from a palette, so any palette reads on a night ground or a light one. On the night
+ * presets every one equals a colour the palette already has, so they look exactly as before:
+ * - accentInk / accentSoftInk: the accent (and its lighter twin) as text on the page, panels and cards; the colour
+ *   itself when it reads on the page, else a deeper shade of the same hue (see `readableOn`). Fills, borders and
+ *   glows keep the accent itself.
+ * - onInkDark: text on the black tiles and buttons (an inkDark ground); the page text when it reads there (a night
+ *   palette's off-white), else the light cards' colour (the admin checks that pair).
+ * - twinkle: the brightest star dust; the page text on a night sky, the deep accent on a light ground.
+ */
+export function themeDerived(t: Theme) {
+  const light = themeGround(t) === 'light'
+  // on a light page accent words can also sit on the light sections' walls; on a night page those keep their own
+  // deep pink (`.light .accent`), and a pastel wall would make a light accent impossible to place
+  const grounds = light ? [t.bg, t.surface, t.surface2, t.paper] : [t.bg, t.surface, t.surface2]
+  return {
+    accentInk: readableOn(t.accent, grounds, t.ink),
+    accentSoftInk: readableOn(t.accentSoft, grounds, t.ink),
+    onInkDark: contrastRatio(t.ink, t.inkDark) >= READABLE ? t.ink : t.paperCard,
+    twinkle: light ? t.accentDeep : t.ink,
+  }
+}
+
+/** A theme saved before a colour existed gets that colour's default. */
+const resolve = (theme: Theme): Theme => Object.fromEntries(COLOUR_KEYS.map((key) => [key, theme[key] || defaultTheme[key]])) as Theme
+
+/**
+ * "light" when the page is lighter than its text (Bloom), "night" otherwise. The root layout puts it on <html> as
+ * data-ground, for the few rules a light page needs (firmer form and chip outlines) that would change a night design.
+ */
+export function themeGround(theme: Pick<Theme, 'bg' | 'ink'>): 'light' | 'night' {
+  const bg = theme.bg || defaultTheme.bg
+  const ink = theme.ink || defaultTheme.ink
+  return luminance(bg) > luminance(ink) ? 'light' : 'night'
+}
+
+const cssName = (key: string) => key.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase())
+
+/**
+ * Renders the theme's colours, and the ones derived from them, as CSS custom properties.
+ * `-rgb` variants allow alpha: rgb(var(--accent-rgb) / .3)
+ */
 export function themeToCss(theme: Theme): string {
-  const lines = COLOUR_KEYS.flatMap((key) => {
-    // a theme saved before a colour existed gets that colour's default
-    const value = theme[key] || defaultTheme[key]
-    const name = key.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase())
-    return [`--${name}: ${value};`, `--${name}-rgb: ${hexToRgb(value)};`]
-  })
+  const full = resolve(theme)
+  const all: [string, string][] = [...COLOUR_KEYS.map((key): [string, string] => [key, full[key]]), ...Object.entries(themeDerived(full))]
+  const lines = all.flatMap(([key, value]) => [`--${cssName(key)}: ${value};`, `--${cssName(key)}-rgb: ${hexToRgb(value)};`])
   return `:root{${lines.join('')}}`
 }
 

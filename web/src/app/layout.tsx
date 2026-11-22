@@ -5,7 +5,7 @@ import type { ThemeT } from '@/lib/content-schema'
 import { getClub, getTheme } from '@/lib/data'
 import { asset } from '@/lib/utils'
 import { body, display, mono } from '@/theme/fonts'
-import { DEFAULT_LOGO, defaultTheme, themeLogo, themeToCss } from '@/theme/tokens'
+import { DEFAULT_LOGO, defaultTheme, themeGround, themeLogo, themeToCss } from '@/theme/tokens'
 import './globals.css'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://deadlydropspickleball.com'
@@ -55,7 +55,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // the visitor paused the site's animations (footer switch): rendered in, so nothing moves even for a moment
   const motionOff = jar.get(MOTION_COOKIE)?.value === MOTION_OFF
   return (
-    <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`} data-motion={motionOff ? MOTION_OFF : undefined}>
+    <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`} data-motion={motionOff ? MOTION_OFF : undefined} data-ground={themeGround(theme)}>
       <head>
         <style dangerouslySetInnerHTML={{ __html: themeToCss(theme) }} />
       </head>

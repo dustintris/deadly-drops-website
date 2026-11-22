@@ -6,7 +6,9 @@
 .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 32px 16px 14px; background: linear-gradient(0deg, rgb(var(--bg-rgb) / .85), transparent); opacity: 0; transform: translateY(6px); transition: opacity .25s ease, transform .25s ease; }
 .tile:hover .cap, .tile:focus-visible .cap { opacity: 1; transform: none; }
 .cap strong { display: block; font-size: 15px; }
-.cap small { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.cap small { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent-ink); }
+/* on a light page the wash under the caption is light: the small line takes the text colour, not the deep pink */
+:global([data-ground='light']) .cap small { color: rgb(var(--ink-rgb) / .8); }
 @media (max-width: 860px) { .grid { grid-template-columns: repeat(2, 1fr); gap: 8px; } .cap { opacity: 1; transform: none; } }
 
 .lightbox { width: min(1100px, calc(100vw - 32px)); max-height: calc(100svh - 32px); padding: 0; border: 1px solid rgb(var(--accent-rgb) / .25); border-radius: 16px; background: var(--surface); color: var(--ink); overflow: hidden; }
@@ -15,7 +17,7 @@
 .lbPhoto { position: relative; background: var(--bg); min-height: 320px; }
 .lbPhoto img { width: 100%; height: 100%; max-height: 70svh; object-fit: cover; }
 .lbPrev, .lbNext { position: absolute; top: 50%; translate: 0 -50%; width: 48px; height: 48px; border-radius: 50%; background: rgb(var(--bg-rgb) / .7); border: 1px solid rgb(var(--ink-rgb) / .3); color: var(--ink); }
-.lbPrev:hover, .lbNext:hover { border-color: var(--accent); color: var(--accent); }
+.lbPrev:hover, .lbNext:hover { border-color: var(--accent); color: var(--accent-ink); }
 .lbPrev { left: 14px; }
 .lbNext { right: 14px; }
 .lbSide { padding: 28px; display: flex; flex-direction: column; gap: 14px; }
@@ -39,7 +41,7 @@
 .slideBtn { position: relative; display: block; width: 100%; height: 100%; padding: 0; text-align: left; cursor: zoom-in; }
 .slideBtn img { width: 100%; height: 100%; object-fit: cover; user-select: none; -webkit-user-drag: none; }
 /* the stage clips anything outside it, so the photo's focus ring sits just inside its edge */
-.track .slideBtn:focus-visible { outline: 3px solid var(--accent); outline-offset: -7px; border-radius: 14px; box-shadow: none; }
+.track .slideBtn:focus-visible { outline: 3px solid var(--accent-ink); outline-offset: -7px; border-radius: 14px; box-shadow: none; }
 /* the caption on a fade from the night colour, dark enough to read over any photo */
 .slideCap {
   position: absolute; left: 0; right: 0; bottom: 0; padding: 80px 24px 22px; color: var(--ink);
@@ -47,7 +49,7 @@
   background: linear-gradient(0deg, rgb(var(--bg-rgb) / .94), rgb(var(--bg-rgb) / .8) 50%, rgb(var(--bg-rgb) / 0));
 }
 .slideCap strong { display: block; max-width: 56ch; font-size: clamp(17px, 2vw, 22px); line-height: 1.25; text-wrap: balance; }
-.slideCap small { display: block; margin-top: 6px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.slideCap small { display: block; margin-top: 6px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent-ink); }
 
 /* the controls float over the photo, above the track */
 .nav, .play, .count { position: absolute; z-index: 1; }
@@ -64,8 +66,8 @@
   font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
   transition: border-color .15s ease, color .15s ease;
 }
-.play span[aria-hidden='true'] { font-size: 10px; letter-spacing: 0; color: var(--accent); }
-.nav:hover, .play:hover { border-color: var(--accent); color: var(--accent); }
+.play span[aria-hidden='true'] { font-size: 10px; letter-spacing: 0; color: var(--accent-ink); }
+.nav:hover, .play:hover { border-color: var(--accent); color: var(--accent-ink); }
 /* "3 / 17": only to look at, so a swipe that starts on it still moves the photos */
 .count {
   top: 14px; right: 14px; padding: 6px 12px; border-radius: 100px; pointer-events: none;
@@ -81,7 +83,7 @@
   transition: width .2s ease, background-color .2s ease, scale .2s ease;
 }
 .dot:hover::before { background: var(--ink); }
-.dot[aria-current='true']::before { width: 26px; background: var(--accent); box-shadow: 0 0 10px rgb(var(--accent-rgb) / .6); }
+.dot[aria-current='true']::before { width: 26px; background: var(--accent-ink); box-shadow: 0 0 10px rgb(var(--accent-rgb) / .6); }
 .dot[data-edge]::before { scale: .6; }
 :global(html[data-motion='off']) .dot::before { transition: none; }
 

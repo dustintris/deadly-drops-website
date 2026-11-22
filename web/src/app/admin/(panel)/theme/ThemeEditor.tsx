@@ -1,21 +1,22 @@
 'use client'
 
 import { ImageField, SaveBar, SectionForm, useFieldError, useSection } from '@/components/admin/kit'
-import { contrastRatio, CONTRAST_RULES, type ThemeColourKey, type ThemeT } from '@/lib/content-schema'
+import { contrastRatio, CONTRAST_RULES, THEME_COLOUR_KEYS, type ThemeColourKey, type ThemeT } from '@/lib/content-schema'
 import { asset } from '@/lib/utils'
-import { BLOSSOM_BRIGHT_THEME, BLOSSOM_THEME, defaultTheme, LEGACY_LIME_THEME, themeLogo, TWILIGHT_THEME } from '@/theme/tokens'
+import { BLOOM_THEME, BLOSSOM_BRIGHT_THEME, BLOSSOM_THEME, defaultTheme, LEGACY_LIME_THEME, themeDerived, themeLogo, TWILIGHT_THEME } from '@/theme/tokens'
 
 const GROUPS: { title: string; keys: [ThemeColourKey, string][] }[] = [
   { title: 'Brand accent', keys: [['accent', 'Accent (buttons, highlights)'], ['accentSoft', 'Accent, lighter (hovers)'], ['accentDeep', 'Accent, deeper (gradients)'], ['onAccent', 'Text on accent buttons']] },
-  { title: 'Dark areas', keys: [['bg', 'Page background'], ['surface', 'Panels'], ['surface2', 'Cards and inputs'], ['ink', 'Text on dark'], ['accentTint', 'Initials tiles']] },
-  { title: 'Light areas', keys: [['paper', 'Light section background'], ['paperCard', 'Cards on light sections'], ['inkDark', 'Text on light']] },
-  { title: 'Other', keys: [['danger', 'Error text on dark'], ['dangerOnLight', 'Error text on light'], ['logoPlate', 'Behind the logo']] },
+  { title: 'Page and panels', keys: [['bg', 'Page background'], ['surface', 'Panels and bands'], ['surface2', 'Cards and inputs'], ['ink', 'Text'], ['accentTint', 'Initials tiles']] },
+  { title: 'Light sections', keys: [['paper', 'Light section background'], ['paperCard', 'Cards on light sections'], ['inkDark', 'Text on light sections, and the black tiles']] },
+  { title: 'Other', keys: [['danger', 'Error text'], ['dangerOnLight', 'Error text on light sections'], ['logoPlate', 'Behind the logo']] },
 ]
 
-// Blossom (the default), Blossom deep, Twilight and Lime set every colour (each is a whole design); the others only
-// swap the accent family
+// Bloom (the default), Blossom, Blossom deep, Twilight and Lime set every colour (each is a whole design); the others
+// only swap the accent family
 const PRESETS: { name: string; patch: Partial<ThemeT> }[] = [
-  { name: 'Blossom', patch: { ...BLOSSOM_BRIGHT_THEME } },
+  { name: 'Bloom (blush and pink)', patch: { ...BLOOM_THEME } },
+  { name: 'Blossom (plum night)', patch: { ...BLOSSOM_BRIGHT_THEME } },
   { name: 'Blossom deep (navy night)', patch: { ...BLOSSOM_THEME } },
   { name: 'Twilight', patch: { ...TWILIGHT_THEME } },
   { name: 'Lime (original design)', patch: { ...LEGACY_LIME_THEME } },
@@ -45,6 +46,9 @@ export function ThemeEditor({ initial }: { initial: ThemeT }) {
   const t = s.value
   const set = (patch: Partial<ThemeT>) => s.setValue({ ...t, ...patch })
   const ok = (h: string) => /^#[0-9a-fA-F]{6}$/.test(h)
+  // the colours the site works out from these (accent words, black-tile text), once every colour is a full hex
+  const derived = THEME_COLOUR_KEYS.every((k) => ok(t[k])) ? themeDerived(t) : null
+  const accentWords = derived?.accentInk ?? t.accent
 
   const logo = themeLogo(t)
 
@@ -88,8 +92,8 @@ export function ThemeEditor({ initial }: { initial: ThemeT }) {
               <div style={{ background: t.bg, color: t.ink, padding: 18 }}>
                 <img src={asset(logo.src)} alt="" width={44} height={44}
                   style={{ display: 'block', marginBottom: 10, background: t.logoPlate, borderRadius: '50%', padding: 2, objectFit: 'contain' }} />
-                <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.2em', color: t.accent }}>NEXT UP</p>
-                <p style={{ fontFamily: 'var(--font-display)', fontSize: 30, textTransform: 'uppercase', lineHeight: 1 }}>Deadly <span style={{ color: t.accent }}>Drops</span></p>
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.2em', color: accentWords }}>NEXT UP</p>
+                <p style={{ fontFamily: 'var(--font-display)', fontSize: 30, textTransform: 'uppercase', lineHeight: 1 }}>Deadly <span style={{ color: accentWords }}>Drops</span></p>
                 <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                   <span style={{ background: t.accent, color: t.onAccent, borderRadius: 100, padding: '8px 14px', fontWeight: 700, fontSize: 12 }}>REGISTER</span>
                   <span style={{ background: t.surface2, color: t.ink, borderRadius: 8, padding: '8px 12px', fontSize: 12 }}>$55 entry</span>
@@ -124,6 +128,14 @@ export function ThemeEditor({ initial }: { initial: ThemeT }) {
               })}
             </ul>
             <p className="adm-muted">Each needs 4.5:1 or more. Saving is blocked until all pass.</p>
+            {derived && (
+              <p className="adm-muted" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <span aria-hidden="true" style={{ width: 14, height: 14, borderRadius: 4, background: derived.accentInk, border: '1px solid rgb(0 0 0 / .15)' }} />
+                {derived.accentInk.toUpperCase() === t.accent.toUpperCase()
+                  ? `Accent words use the accent itself (${contrastRatio(derived.accentInk, t.bg).toFixed(1)}:1 on the page).`
+                  : `The accent is too light to read as text on the page, so accent words use a deeper shade of it, ${derived.accentInk} (${contrastRatio(derived.accentInk, t.bg).toFixed(1)}:1). Buttons keep the accent itself.`}
+              </p>
+            )}
           </section>
         </div>
       </div>

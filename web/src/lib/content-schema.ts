@@ -3,6 +3,9 @@
  * before it is saved, so the public site can trust what it reads.
  */
 import { z } from 'zod'
+import { contrastRatio } from '@/theme/colour'
+
+export { contrastRatio }
 
 /* ---------- shared field rules ---------- */
 
@@ -329,27 +332,19 @@ export type SiteContent = {
 
 /* ---------- colour contrast (WCAG 2.x) ---------- */
 
-const lum = (hex: string) => {
-  const n = parseInt(hex.slice(1), 16)
-  const c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => {
-    const s = v / 255
-    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
-  })
-  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
-}
-export const contrastRatio = (a: string, b: string) => {
-  const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p)
-  return (x + 0.05) / (y + 0.05)
-}
+/**
+ * The text pairs a saved theme must keep readable. Accent words are not among them: the site writes them in a
+ * readable shade of the accent it works out itself (`themeDerived` in src/theme/tokens.ts), so a pastel accent on a
+ * light page is fine, and the accent itself stays free for buttons, chips and glows.
+ */
 export const CONTRAST_RULES: [fg: string, bg: string, label: string][] = [
-  ['ink', 'bg', 'Text on the dark page'],
-  ['ink', 'surface', 'Text on dark panels'],
+  ['ink', 'bg', 'Text on the page'],
+  ['ink', 'surface', 'Text on panels'],
   ['inkDark', 'paper', 'Text on light sections'],
   ['inkDark', 'paperCard', 'Text on light cards'],
   ['onAccent', 'accent', 'Text on accent buttons'],
-  ['accent', 'bg', 'Accent text on the dark page'],
-  ['danger', 'surface', 'Error text on dark'],
-  ['dangerOnLight', 'paper', 'Error text on light'],
+  ['danger', 'surface', 'Error text on panels'],
+  ['dangerOnLight', 'paper', 'Error text on light sections'],
 ]
 export function themeContrastIssues(t: Record<string, unknown>) {
   const out: { key: string; message: string; ratio: number }[] = []

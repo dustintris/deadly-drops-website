@@ -55,7 +55,7 @@
 
 .unit {
   font-family: var(--font-mono), monospace; font-size: clamp(11px, calc(var(--cd-tile) * .11), 13px); font-weight: 500; line-height: 1;
-  letter-spacing: .2em; text-transform: uppercase; color: var(--accent-soft);
+  letter-spacing: .2em; text-transform: uppercase; color: var(--accent-soft-ink);
   /* balance the trailing letter-spacing so the label sits centred */
   padding-left: .2em;
 }
