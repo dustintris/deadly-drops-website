@@ -238,8 +238,25 @@ export const VolunteerRole = z.object({
   visible: z.boolean(),
 })
 
+/**
+ * A person on the volunteer crew, shown in "Meet our volunteers" on /volunteers/ in list order. Their name and photo
+ * go on a public page, so the owner adds people who agreed to it. Hidden ones are kept but shown nowhere.
+ */
+export const VolunteerPerson = z.object({
+  id: Id,
+  name: text(2, 80, 'Name'),
+  /** what they usually do on the day, e.g. "Check-in desk"; empty shows none */
+  role: text(0, 60, 'Role'),
+  /** a line about them, or in their own words */
+  bio: text(0, 240, 'About them'),
+  photo: ImageRef.optional(),
+  visible: z.boolean(),
+})
+
 /** The Volunteers page below its headline (the headline itself is in `pages.volunteers`). */
 export const Volunteers = z.object({
+  /** the crew, showcased first on the page */
+  people: z.array(VolunteerPerson).max(80, 'Up to 80 volunteers.'),
   roles: z.array(VolunteerRole).max(12, 'Up to 12 roles.'),
   /** what volunteers get (a shirt, a meal...), one per line; none hides the list */
   perks: lines(text(2, 80, 'Perk')).pipe(z.array(z.string()).max(6, 'Up to 6 perks.')),
@@ -288,6 +305,7 @@ export type FaqT = z.infer<typeof Faq>
 export type CharityT = z.infer<typeof Charity>
 export type SponsorT = z.infer<typeof Sponsor>
 export type VolunteerRoleT = z.infer<typeof VolunteerRole>
+export type VolunteerPersonT = z.infer<typeof VolunteerPerson>
 export type VolunteersT = z.infer<typeof Volunteers>
 export type PageCopyT = z.infer<typeof PageCopy>
 

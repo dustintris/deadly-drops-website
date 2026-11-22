@@ -40,6 +40,8 @@ function normalize(doc: Partial<SiteContent>): SiteContent {
   }
   out.settings = { ...seed.settings, ...doc.settings } as SiteContent['settings']
   out.pages = { ...seed.pages, ...doc.pages }
+  // a Volunteers section saved before the volunteer showcase existed has no `people`
+  out.volunteers = { ...seed.volunteers, ...(doc.volunteers ?? {}) }
   return out
 }
 

@@ -3,6 +3,7 @@
  * Client-safe: used by the Sponsors page, the tournament pages and their tests.
  */
 import { SPONSOR_LEVELS, type SponsorLevel, type SponsorT } from './content-schema'
+import { initials } from './utils'
 
 export type SponsorGroup = { level: SponsorLevel; sponsors: SponsorT[] }
 
@@ -45,8 +46,4 @@ export function sponsoredTournaments<E extends { slug: string }>(sponsor: Pick<S
 }
 
 /** Up to two initials for a sponsor without a logo: "Chula Vista Brewing" → "CV", "Acme" → "AC". */
-export function sponsorInitials(name: string): string {
-  const [first, second] = name.match(/[\p{L}\p{N}]+/gu) ?? []
-  if (!first) return '?'
-  return (second ? first.charAt(0) + second.charAt(0) : first.slice(0, 2)).toUpperCase()
-}
+export const sponsorInitials = initials

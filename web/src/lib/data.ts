@@ -152,10 +152,10 @@ export const getLiveFeed = cache(async (): Promise<{ tournamentId: number; versi
 export const getCharities = async () => (await getContent()).charities
 /** Visible sponsors, in the owner's order (the Sponsors page groups them by level). */
 export const getSponsors = async () => (await getContent()).sponsors.filter((x) => x.visible)
-/** The Volunteers page: its visible roles, perks and sign-up settings. */
+/** The Volunteers page: its visible volunteers and roles, perks and sign-up settings. */
 export const getVolunteers = async () => {
   const v = (await getContent()).volunteers
-  return { ...v, roles: v.roles.filter((r) => r.visible) }
+  return { ...v, people: v.people.filter((p) => p.visible), roles: v.roles.filter((r) => r.visible) }
 }
 /** The charities one tournament plays for (none, one, or more). */
 export const getTournamentCharities = async (slug: string) => charitiesForTournament((await getContent()).charities, slug)

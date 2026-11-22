@@ -5,7 +5,7 @@ import { ContactForm } from '@/components/ContactForm'
 import { PageHero } from '@/components/PageHero'
 import { getClub, getEvents, getPageCopy, getVolunteers } from '@/lib/data'
 import { pageMeta } from '@/lib/seo'
-import { cx } from '@/lib/utils'
+import { asset, cx, initials } from '@/lib/utils'
 import { comingUp, roleTone } from '@/lib/volunteers'
 import v from './volunteers.module.css'
 
@@ -27,7 +27,7 @@ function dateTile(iso: string | null) {
 
 export default async function VolunteersPage() {
   const [copy, vol, events, club] = await Promise.all([getPageCopy('volunteers'), getVolunteers(), getEvents(), getClub()])
-  const { roles, perks, signupOpen } = vol
+  const { people, roles, perks, signupOpen } = vol
   const note = vol.signupNote.trim()
   // worked out on the server, so the browser can't disagree about which tournaments are over
   const upcoming = comingUp(events)
@@ -42,13 +42,51 @@ export default async function VolunteersPage() {
         photo={copy.heroImage?.src}
         photoPosition={copy.heroImage?.position}
       >
-        {(signupOpen || roles.length > 0) && (
+        {(signupOpen || people.length > 0 || roles.length > 0) && (
           <div className={v.ctaRow}>
             {signupOpen && <a href="#signup" className="btn btn-accent">Sign up to volunteer</a>}
-            {roles.length > 0 && <a href="#roles" className="link-arrow">See the roles<span aria-hidden="true">&nbsp;→</span></a>}
+            {people.length > 0
+              ? <a href="#crew" className="link-arrow">Meet our volunteers<span aria-hidden="true">&nbsp;→</span></a>
+              : roles.length > 0 && <a href="#roles" className="link-arrow">See the roles<span aria-hidden="true">&nbsp;→</span></a>}
           </div>
         )}
       </PageHero>
+
+      {people.length > 0 && (
+        <section id="crew" className="section dark" aria-labelledby="crew-title">
+          <div className="wrap">
+            <div className="head-row" data-reveal>
+              <div className="stack-8">
+                <p className="eyebrow">The crew</p>
+                <h2 id="crew-title" className="display d-m"><AccentTitle title="Meet our *volunteers*" /></h2>
+              </div>
+              <p className="muted small" style={{ maxWidth: '38ch' }}>
+                The people who check you in, keep score and keep every tournament day running. Thank you, all of you.
+              </p>
+            </div>
+            {/* role="list": Safari drops list semantics from a list with no bullets */}
+            <ul className={v.crew} role="list" data-count={people.length} data-reveal-stagger>
+              {people.map((p) => (
+                <li key={p.id} className={cx('card', v.person)}>
+                  <div className={v.portrait} data-photo={!!p.photo}>
+                    {p.photo ? (
+                      // the name is right below, so an undescribed photo needs no words of its own
+                      <img src={asset(p.photo.src)} alt={p.photo.alt} style={{ objectPosition: p.photo.position }} loading="lazy" decoding="async" />
+                    ) : (
+                      <span className={v.initials} aria-hidden="true">{initials(p.name)}</span>
+                    )}
+                  </div>
+                  <div className={v.personBody}>
+                    <h3 className={v.personName}>{p.name}</h3>
+                    {p.role && <p className={v.personRole}>{p.role}</p>}
+                    {p.bio && <p className={v.personBio}>{p.bio}</p>}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
 
       {roles.length > 0 && (
         <section id="roles" className="section light" aria-labelledby="roles-title">

@@ -45,6 +45,8 @@ export function buildSeed(): SiteContent {
     charities,
     sponsors: [],
     volunteers: {
+      // real people only, added by the owner with their agreement: none to start with
+      people: [],
       roles: [
         { id: 'vol-checkin', title: 'Check-in desk', body: 'Welcome players as they arrive, tick them off on the check-in screen and hand out their shirts.', visible: true },
         { id: 'vol-score', title: 'Scorekeeping', body: 'Look after a court: enter each game’s score on your phone so the big screen and the website update live.', visible: true },

@@ -159,6 +159,18 @@ describe('content store (PostgreSQL)', () => {
     expect(await unpublishedSections()).toEqual([])
   })
 
+  it('still loads a Volunteers section saved before the volunteer showcase: no people, the rest kept', async () => {
+    const seed = buildSeed()
+    const { people: _none, ...older } = { ...seed.volunteers, signupNote: 'Kept as saved.' }
+    const old = { ...seed, volunteers: older } as unknown as SiteContent
+    await getDb().insert(siteDocuments).values({ key: 'published', data: old })
+
+    const live = await readPublished()
+    expect(live.volunteers.people).toEqual([])
+    expect(live.volunteers.signupNote).toBe('Kept as saved.')
+    expect(live.volunteers.roles).toEqual(seed.volunteers.roles)
+  })
+
   it('publishes and discards the charities section on its own', async () => {
     const draft = await readDraft()
     const [first] = draft.charities

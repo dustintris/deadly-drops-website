@@ -53,6 +53,50 @@
   -webkit-mask: var(--sparkle-shape) center / contain no-repeat; mask: var(--sparkle-shape) center / contain no-repeat;
 }
 
+/* ---------- meet our volunteers: a portrait card each ---------- */
+.crew {
+  list-style: none; padding: 0; display: grid; gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+}
+/* a small crew fills the row instead of leaving a gap at the end */
+.crew[data-count='1'], .crew[data-count='2'], .crew[data-count='3'] { grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 320px)); }
+.person:global(.card) { display: flex; flex-direction: column; gap: 16px; min-width: 0; padding: 14px 14px 20px; transition: border-color .2s ease, box-shadow .2s ease; }
+.person:global(.card):hover { border-color: rgb(var(--accent-rgb) / .55); box-shadow: 0 0 36px -18px rgb(var(--accent-rgb) / .7); }
+.portrait {
+  position: relative; aspect-ratio: 4 / 5; border-radius: 12px; overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 0%, rgb(var(--accent-rgb) / .22), transparent 70%), var(--surface2);
+}
+.portrait img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.portrait[data-photo='true']::after {
+  /* a soft night fade at the foot of the photo, so every portrait sits on the card the same way */
+  content: ''; position: absolute; inset: auto 0 0; height: 30%; pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgb(var(--surface-rgb) / .45));
+}
+/* no photo yet: their initials glow in its place */
+.initials {
+  display: grid; place-items: center; width: 100%; height: 100%;
+  font-family: var(--font-display), Impact, sans-serif; font-size: clamp(56px, 7vw, 80px); line-height: 1; text-transform: uppercase;
+  color: var(--accent); text-shadow: 0 0 22px rgb(var(--accent-rgb) / .5);
+}
+.personBody { display: flex; flex-direction: column; gap: 6px; padding: 0 6px; min-width: 0; }
+.personName { font-size: 20px; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
+.personRole {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--accent);
+  overflow-wrap: anywhere;
+}
+.personBio { font-size: 14px; line-height: 1.5; color: rgb(var(--ink-rgb) / .74); overflow-wrap: anywhere; }
+/* phones: two to a row, so a big crew is quick to scroll through */
+@media (max-width: 560px) {
+  .crew, .crew[data-count] { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .crew[data-count='1'] { grid-template-columns: minmax(0, 1fr); }
+  .person:global(.card) { padding: 8px 8px 14px; gap: 10px; }
+  .personBody { padding: 0 4px; gap: 4px; }
+  .personName { font-size: 16px; }
+  .personRole { font-size: 10px; letter-spacing: .12em; }
+  .personBio { font-size: 13px; }
+  .initials { font-size: 44px; }
+}
+
 /* on its own (no perks), the heading sits beside the list instead of leaving half the band empty */
 @media (min-width: 900px) {
   .extras[data-both='false'] > .upcoming {

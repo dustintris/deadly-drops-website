@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { buildSeed } from '@/content/seed'
 import { defaultTheme } from '@/theme/tokens'
-import { Charity, SECTIONS, sameContent, sectionHash, Theme, type CharityT } from '../content-schema'
+import { Charity, SECTIONS, sameContent, sectionHash, Theme, VolunteerPerson, type CharityT } from '../content-schema'
 
 const LOGO = { src: '/media/0123456789abcdef01234567.png', alt: 'Deadly Drops oni badge' }
 const issuePaths = (r: ReturnType<typeof Theme.safeParse>) => (r.success ? [] : r.error.issues.map((i) => i.path.join('.')))
@@ -52,6 +52,32 @@ describe('sectionHash / sameContent', () => {
     expect(sectionHash({ a: 1 })).not.toBe(sectionHash({ a: 2 }))
     expect(sameContent([1, 2], [2, 1])).toBe(false)
     expect(sameContent({ a: 1 }, { a: 1, b: undefined })).toBe(true) // undefined keys are dropped, as in JSON
+  })
+})
+
+describe('VolunteerPerson (Admin → Volunteers → Our volunteers)', () => {
+  const good = { id: 'vol-maria', name: 'Maria G.', role: 'Check-in desk', bio: 'Here since our first tournament.', visible: true }
+  const paths = (v: unknown) => {
+    const r = VolunteerPerson.safeParse(v)
+    return r.success ? [] : r.error.issues.map((i) => i.path.join('.'))
+  }
+
+  it('takes a name alone, or with a role, a line about them and a photo from the library', () => {
+    expect(paths({ ...good, role: '', bio: '' })).toEqual([])
+    expect(paths({ ...good, photo: { src: '/media/0123456789abcdef01234567.jpg', alt: '', position: '50% 30%' } })).toEqual([])
+  })
+
+  it('refuses a missing name, overlong text, and a photo from outside the library', () => {
+    expect(paths({ ...good, name: ' ' })).toEqual(['name'])
+    expect(paths({ ...good, role: 'x'.repeat(61) })).toEqual(['role'])
+    expect(paths({ ...good, bio: 'x'.repeat(241) })).toEqual(['bio'])
+    expect(paths({ ...good, photo: { src: 'https://elsewhere.example/face.jpg', alt: '' } })).toEqual(['photo.src'])
+  })
+
+  it('belongs to the Volunteers section, which starts with nobody listed', () => {
+    const v = buildSeed().volunteers
+    expect(v.people).toEqual([])
+    expect(SECTIONS.volunteers.safeParse({ ...v, people: [good] }).success).toBe(true)
   })
 })
 

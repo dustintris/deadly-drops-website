@@ -110,7 +110,8 @@ export default async function SponsorsPage() {
               <div className="head-row" data-reveal>
                 <h2 id={titleId} className="display d-m"><LevelTitle text={levelHeading(g.level, g.sponsors.length)} /></h2>
               </div>
-              <ul className={s.grid} data-level={g.level} data-count={g.sponsors.length} data-reveal-stagger>
+              {/* role="list": Safari drops list semantics from a list with no bullets */}
+              <ul className={s.grid} role="list" data-level={g.level} data-count={g.sponsors.length} data-reveal-stagger>
                 {g.sponsors.map((sp) => <SponsorCard key={sp.id} sponsor={sp} events={events} />)}
               </ul>
             </div>

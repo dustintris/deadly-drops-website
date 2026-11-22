@@ -31,6 +31,15 @@ describe('findUsage', () => {
     expect(findUsage(SRC, doc)).toEqual([])
   })
 
+  it('counts a volunteer’s photo, so it can’t be deleted while they are on the Volunteers page', () => {
+    const doc = buildSeed()
+    const person = { id: 'vol-maria', name: 'Maria G.', role: 'Check-in desk', bio: '', visible: true }
+    doc.volunteers = { ...doc.volunteers, people: [{ ...person, photo: { src: SRC, alt: '' } }] }
+    expect(findUsage(SRC, doc)).toEqual(['Volunteer: Maria G.'])
+    doc.volunteers = { ...doc.volunteers, people: [person] }
+    expect(findUsage(SRC, doc)).toEqual([])
+  })
+
   it('still finds the other places an image is used', () => {
     const doc = buildSeed()
     doc.pages = { ...doc.pages, home: { ...doc.pages.home, heroImage: { src: SRC, alt: '' } } }
