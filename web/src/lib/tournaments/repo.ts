@@ -1,5 +1,5 @@
 import 'server-only'
-import { and, asc, eq, inArray, ne, notInArray, or, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, ne, notInArray, or, sql } from 'drizzle-orm'
 import { events as seedEvents } from '@/content/club'
 import { getDb, type Db } from '@/db/client'
 import { appMeta, divisions, matches, siteDocuments, teams, tournaments } from '@/db/schema'
@@ -111,7 +111,7 @@ async function withDivisions(db: Executor, rows: TournamentRow[]): Promise<Tourn
   }))
 }
 
-// first day, undated tournaments last
+// by first day, latest first (the club's order for every tournament list); undated ones, the newest announcements, lead
 const byFirstDay = sql`coalesce(${tournaments.days}[1], '9999-12-31'::date)`
 
 export async function listTournaments(opts: { visibleOnly?: boolean } = {}): Promise<Tournament[]> {
@@ -120,7 +120,7 @@ export async function listTournaments(opts: { visibleOnly?: boolean } = {}): Pro
     .select()
     .from(tournaments)
     .where(opts.visibleOnly ? eq(tournaments.visible, true) : undefined)
-    .orderBy(asc(byFirstDay), asc(tournaments.id))
+    .orderBy(desc(byFirstDay), desc(tournaments.id))
   return withDivisions(db, rows)
 }
 

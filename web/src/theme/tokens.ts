@@ -61,8 +61,23 @@ export const BLOSSOM_THEME: Theme = {
   logoPlate: '#FFFFFF',
 }
 
-/** The site's colours until an admin picks others in Logo & colours: Blossom. */
-export const defaultTheme: Theme = BLOSSOM_THEME
+/**
+ * "Blossom", brighter: the same pink, blush and off-white over a lifted plum night instead of the navy-black
+ * (the owner asked for a brighter background in the same colours). Only the dark grounds change: the page
+ * (#1C1830), panels (#2A2443, #372F55) and the accent tint. Migration `drizzle/0014_blossom_bright.sql` moved
+ * content saved with the exact Blossom colours here once (its test checks both palettes there match this
+ * file). Every text pair the admin checks is WCAG AA.
+ */
+export const BLOSSOM_BRIGHT_THEME: Theme = {
+  ...BLOSSOM_THEME,
+  bg: '#1C1830',
+  surface: '#2A2443',
+  surface2: '#372F55',
+  accentTint: '#4A2142',
+}
+
+/** The site's colours until an admin picks others in Logo & colours: Blossom, brighter. */
+export const defaultTheme: Theme = BLOSSOM_BRIGHT_THEME
 
 /**
  * "Twilight": a deep indigo night sky fading to orchid, neon pink and lilac highlights, blush-pink light

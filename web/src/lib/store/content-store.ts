@@ -108,7 +108,7 @@ export function updateDraft(fn: (d: SiteContent) => SiteContent): Promise<SiteCo
 }
 
 /** Every part of the content that can be published or discarded on its own (media = the photo library). */
-export const CONTENT_KEYS = ['settings', 'theme', 'ticker', 'products', 'media', 'gallery', 'posts', 'faqs', 'charities', 'pages'] as const
+export const CONTENT_KEYS = ['settings', 'theme', 'ticker', 'products', 'media', 'gallery', 'posts', 'faqs', 'charities', 'sponsors', 'volunteers', 'pages'] as const
 export type ContentKey = (typeof CONTENT_KEYS)[number]
 
 /**

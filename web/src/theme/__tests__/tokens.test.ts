@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { Theme, THEME_COLOUR_KEYS, themeContrastIssues } from '@/lib/content-schema'
-import { BLOSSOM_THEME, DEFAULT_LOGO, defaultTheme, LEGACY_LIME_THEME, themeLogo, themeToCss, TWILIGHT_THEME } from '../tokens'
+import { BLOSSOM_BRIGHT_THEME, BLOSSOM_THEME, DEFAULT_LOGO, defaultTheme, LEGACY_LIME_THEME, themeLogo, themeToCss, TWILIGHT_THEME } from '../tokens'
 
 const LOGO = { src: '/media/0123456789abcdef01234567.png', alt: 'Deadly Drops oni badge' }
-const PALETTES = { Blossom: BLOSSOM_THEME, Twilight: TWILIGHT_THEME, Lime: LEGACY_LIME_THEME }
+const PALETTES = { 'Blossom bright': BLOSSOM_BRIGHT_THEME, Blossom: BLOSSOM_THEME, Twilight: TWILIGHT_THEME, Lime: LEGACY_LIME_THEME }
 
 describe('themeToCss', () => {
   it('writes every colour as a CSS variable with an -rgb twin', () => {
     const css = themeToCss(defaultTheme)
-    expect(css).toContain('--bg: #0D111A;')
-    expect(css).toContain('--bg-rgb: 13 17 26;')
+    expect(css).toContain('--bg: #1C1830;')
+    expect(css).toContain('--bg-rgb: 28 24 48;')
     expect(css).toContain('--accent: #ED7BAB;')
     expect(css).toContain('--danger-on-light-rgb: 161 29 29;')
     expect(css).toContain('--logo-plate: #FFFFFF;')
@@ -50,8 +50,12 @@ describe('default and preset palettes', () => {
     expect(Object.keys(palette).sort()).toEqual([...THEME_COLOUR_KEYS].sort())
   })
 
-  it('defaults to Blossom, built from the club owner’s palette', () => {
-    expect(defaultTheme).toEqual(BLOSSOM_THEME)
+  it('defaults to Blossom with the brighter plum grounds, everything else unchanged', () => {
+    expect(defaultTheme).toEqual(BLOSSOM_BRIGHT_THEME)
+    expect(BLOSSOM_BRIGHT_THEME).toEqual({ ...BLOSSOM_THEME, bg: '#1C1830', surface: '#2A2443', surface2: '#372F55', accentTint: '#4A2142' })
+  })
+
+  it('keeps the original Blossom, built from the club owner’s palette, as a preset', () => {
     expect(BLOSSOM_THEME).toMatchObject({
       bg: '#0D111A', inkDark: '#0D111A', onAccent: '#0D111A', // navy-black
       ink: '#F9F9F9', paperCard: '#F9F9F9', // off-white

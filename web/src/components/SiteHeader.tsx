@@ -10,6 +10,8 @@ export const NAV = [
   { href: '/', label: 'Home' },
   { href: '/tournaments/', label: 'Tournaments' },
   { href: '/charity/', label: 'Charity' },
+  { href: '/sponsors/', label: 'Sponsors' },
+  { href: '/volunteers/', label: 'Volunteer' },
   { href: '/shop/', label: 'Shop' },
   { href: '/community/', label: 'Community' },
   { href: '/gallery/', label: 'Gallery' },

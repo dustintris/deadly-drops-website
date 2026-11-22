@@ -1,4 +1,4 @@
-import type { EventState } from '@/lib/events'
+import { latestFirst, type EventState } from '@/lib/events'
 import { MAINCOURT_APP_STORE, MAINCOURT_GOOGLE_PLAY, MAINCOURT_HOME } from '@/lib/maincourt'
 import type { ClubEvent } from '@/lib/types'
 import m from './maincourt.module.css'
@@ -47,8 +47,7 @@ export function MainCourtRegister({ events, states }: { events: ClubEvent[]; sta
   const coming = events
     .map((e) => ({ e, state: states[e.slug] ?? 'tba' }))
     .filter((x) => x.state !== 'past')
-    // ISO dates sort as strings; a tournament without a date goes last
-    .sort((a, b) => (a.e.date ?? '9999').localeCompare(b.e.date ?? '9999'))
+    .sort((a, b) => latestFirst(a.e, b.e))
 
   return (
     <section className="section light" id="register" aria-labelledby="register-title">

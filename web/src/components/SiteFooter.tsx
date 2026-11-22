@@ -8,7 +8,7 @@ import styles from './shell.module.css'
 // same order as the header menu: Tournaments · Charity · Shop · Community · Gallery · About us · Contact us
 // (Members, My play and the season ladder come back with real member accounts)
 const COLS = [
-  { title: 'Play', links: [['Tournaments', '/tournaments/'], ['Charity', '/charity/'], ['Register', '/tournaments/#register']] },
+  { title: 'Play', links: [['Tournaments', '/tournaments/'], ['Charity', '/charity/'], ['Sponsors', '/sponsors/'], ['Volunteer', '/volunteers/'], ['Register', '/tournaments/#register']] },
   { title: 'Club', links: [['Shop', '/shop/'], ['Community', '/community/'], ['Gallery', '/gallery/']] },
   { title: 'More', links: [['About us', '/about/'], ['Contact us', '/contact/']] },
 ]

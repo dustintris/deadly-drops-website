@@ -30,7 +30,7 @@
 .nav { flex: 1; min-width: 0; display: flex; justify-content: center; }
 .nav ul { display: flex; gap: 0; list-style: none; padding: 0; }
 .nav a {
-  position: relative; display: inline-flex; align-items: center; min-height: 44px; padding: 0 9px;
+  position: relative; display: inline-flex; align-items: center; min-height: 44px; padding: 0 8px;
   font-size: 12px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap;
   color: rgb(var(--ink-rgb) / .8); transition: color .15s ease, text-shadow .15s ease;
 }
@@ -86,8 +86,8 @@
   .menuIcon[data-spin] { animation: menu-icon .4s cubic-bezier(.3, .7, .4, 1); }
 }
 
-/* eight pages: tighter, and the brand name gives way to the logo so the menu fits, then the phone menu */
-@media (max-width: 1240px) {
+/* ten pages: tighter, and the brand name gives way to the logo so the menu fits, then the phone menu */
+@media (max-width: 1300px) {
   .headerRow { gap: 16px; }
   .nav a { padding: 0 7px; letter-spacing: .05em; }
   .brand span { display: none; }

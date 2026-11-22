@@ -6,7 +6,7 @@ import { EMAIL_ERROR } from '@/lib/forms'
  * type, the server actions check again before anything is stored.
  */
 
-export const TOPICS = ['Joining', 'Tournaments', 'Coaching', 'Shop order', 'Something else'] as const
+export const TOPICS = ['Joining', 'Tournaments', 'Volunteering', 'Sponsorship', 'Coaching', 'Shop order', 'Something else'] as const
 export type Topic = (typeof TOPICS)[number]
 
 export const LIMITS = { name: 100, email: 254, message: 4000 } as const

@@ -10,6 +10,8 @@ const NAMES: Record<PageKey, { label: string; path: string; photo: boolean }> = 
   shop: { label: 'Shop', path: '/shop/', photo: false },
   gallery: { label: 'Gallery', path: '/gallery/', photo: false },
   contact: { label: 'Contact us', path: '/contact/', photo: true },
+  sponsors: { label: 'Sponsors', path: '/sponsors/', photo: true },
+  volunteers: { label: 'Volunteers', path: '/volunteers/', photo: true },
 }
 
 export function PagesEditor({ initial }: { initial: Record<PageKey, PageCopyT> }) {
@@ -18,7 +20,7 @@ export function PagesEditor({ initial }: { initial: Record<PageKey, PageCopyT> }
 
   return (
     <SectionForm errors={s.errors}>
-      {(['home', 'about', 'community', 'shop', 'gallery', 'contact'] satisfies readonly PageKey[]).filter((k) => PAGE_KEYS.includes(k)).map((key) => {
+      {(['home', 'about', 'community', 'shop', 'gallery', 'contact', 'sponsors', 'volunteers'] satisfies readonly PageKey[]).filter((k) => PAGE_KEYS.includes(k)).map((key) => {
         const p = s.value[key]
         const n = NAMES[key]
         return (

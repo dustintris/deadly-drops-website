@@ -16,7 +16,7 @@ import {
   getCharities, getClub, getEvents, getLiveFeed, getLiveMatch, getNextEvent, getPageCopy, getTicker,
   getTournamentBasics, getTournamentPage, getTournamentsWithPlay,
 } from '@/lib/data'
-import { eventCta, eventEyebrow, eventState, type EventState } from '@/lib/events'
+import { eventCta, eventEyebrow, eventState, latestFirst, type EventState } from '@/lib/events'
 import { plural } from '@/lib/match/present'
 import { FORMAT_LABELS } from '@/lib/tournaments/schema'
 import type { ClubEvent } from '@/lib/types'
@@ -48,8 +48,9 @@ export default async function Home() {
 
   // worked out on the server so the browser can't disagree about the date
   const states: Record<string, EventState> = Object.fromEntries(events.map((e) => [e.slug, eventState(e)]))
-  const upcoming = events.filter((e) => states[e.slug] !== 'past').sort((a, b) => (a.date ?? '9999').localeCompare(b.date ?? '9999'))
-  const past = events.filter((e) => states[e.slug] === 'past').sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''))
+  // the latest first, as on every tournament list
+  const upcoming = events.filter((e) => states[e.slug] !== 'past').sort(latestFirst)
+  const past = events.filter((e) => states[e.slug] === 'past').sort(latestFirst)
   // the tournaments shown in full: everything coming up, or with nothing coming up the latest one (with its results)
   const featured = upcoming.length ? upcoming : past.slice(0, 1)
   const pastList = (upcoming.length ? past : past.slice(1)).slice(0, PAST_SHOWN)

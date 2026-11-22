@@ -9,9 +9,11 @@ import { DivisionResults } from '@/components/results/Results'
 import x from '@/components/tournament.module.css'
 import ts from '@/components/tournaments.module.css'
 import ch from '@/app/(site)/charity/charity.module.css'
+import sp from '@/app/(site)/sponsors/sponsors.module.css'
 import { charityHref, websiteLabel } from '@/lib/charities'
-import type { CharityT } from '@/lib/content-schema'
-import { getClub, getClubLogo, getEvents, getTournamentCharities, getTournamentLive, getTournamentPage } from '@/lib/data'
+import type { CharityT, SponsorT } from '@/lib/content-schema'
+import { getClub, getClubLogo, getEvents, getSponsors, getTournamentCharities, getTournamentLive, getTournamentPage } from '@/lib/data'
+import { sponsorHref, sponsorsForTournament } from '@/lib/sponsors'
 import { eventState, type EventState } from '@/lib/events'
 import { hasPlay, plural } from '@/lib/match/present'
 import { pageMeta } from '@/lib/seo'
@@ -255,10 +257,44 @@ function MedalBlock({ t, medal, back }: { t: Tournament; medal: NonNullable<Tour
   )
 }
 
+/**
+ * "Sponsored by": a quiet row of the sponsors who ticked this tournament (Title first), the last block of the charity
+ * band. Each logo (or name, without one) links to the sponsor's website, else to their card on the Sponsors page.
+ */
+function SponsoredBy({ sponsors }: { sponsors: SponsorT[] }) {
+  return (
+    <section className={sp.strip} aria-labelledby="sponsored-by" data-reveal>
+      <h2 id="sponsored-by" className="eyebrow">Sponsored by</h2>
+      <ul className={sp.stripList}>
+        {sponsors.map((sponsor) => {
+          const mark = sponsor.logo
+            ? <img src={asset(sponsor.logo.src)} alt={sponsor.logo.alt || `${sponsor.name} logo`} loading="lazy" decoding="async" />
+            : sponsor.name
+          return (
+            <li key={sponsor.id} data-level={sponsor.level}>
+              {sponsor.website ? (
+                <a href={sponsor.website} className={sp.stripItem} data-logo={!!sponsor.logo} target="_blank" rel="noopener noreferrer">
+                  {mark}<span className="sr"> (opens in a new tab)</span>
+                </a>
+              ) : (
+                <Link href={sponsorHref(sponsor)} className={sp.stripItem} data-logo={!!sponsor.logo}>{mark}</Link>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+      <Link href="/sponsors/" className="link-arrow">All our sponsors →</Link>
+    </section>
+  )
+}
+
 export default async function TournamentPage({ params }: Params) {
   const slug = (await params).slug
-  const [t, events, club, charities] = await Promise.all([getTournamentPage(slug), getEvents(), getClub(), getTournamentCharities(slug)])
+  const [t, events, club, charities, allSponsors] = await Promise.all([
+    getTournamentPage(slug), getEvents(), getClub(), getTournamentCharities(slug), getSponsors(),
+  ])
   if (!t) notFound()
+  const sponsors = sponsorsForTournament(allSponsors, slug)
   const play = await getTournamentLive(t.id)
 
   const { info, rules, days } = t
@@ -490,15 +526,17 @@ export default async function TournamentPage({ params }: Params) {
 
       {!resultsFirst && resultsSection}
 
-      {(charities.length > 0 || t.info.flyer || t.info.medal) && (
+      {(charities.length > 0 || t.info.flyer || t.info.medal || sponsors.length > 0) && (
         <section className={`section darker rule-top ${ch.playingBand}`}>
           <Sparkles />
           <div className={`wrap ${ch.playingInner}`}>
             {charities.length > 0
               ? charities.map((c) => <PlayingFor key={c.id} c={c} t={t} />)
               : t.info.flyer && <OwnFlyer t={t} flyer={t.info.flyer} />}
-            {/* last in the band, so it sits above the clouds; .playing + .playing spaces it from the block before */}
+            {/* after the charity or flyer; .playing + .playing spaces it from the block before */}
             {t.info.medal && <MedalBlock t={t} medal={t.info.medal} back={t.info.medalBack} />}
+            {/* last in the band, so it sits above the clouds; a dashed rule spaces it from any block before */}
+            {sponsors.length > 0 && <SponsoredBy sponsors={sponsors} />}
           </div>
           {/* the night sky melts into pink clouds above the rules (a light section) */}
           <CloudEdge />

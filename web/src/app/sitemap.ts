@@ -10,7 +10,7 @@ const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://deadlydropspickleball
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [products, posts, events] = await Promise.all([getProducts(), getCommunityPosts(), getEvents()])
   const paths = [
-    '/', '/tournaments/', '/charity/', '/about/', '/shop/', '/community/', '/gallery/', '/contact/',
+    '/', '/tournaments/', '/charity/', '/sponsors/', '/volunteers/', '/about/', '/shop/', '/community/', '/gallery/', '/contact/',
     ...events.map((e) => `/tournaments/${e.slug}/`),
     ...products.map((p) => `/shop/${p.slug}/`),
     ...posts.map((p) => `/community/${p.slug}/`),

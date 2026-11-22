@@ -99,6 +99,13 @@
       "when": 1795243577636,
       "tag": "0013_desktop_activation",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1795335381956,
+      "tag": "0014_blossom_bright",
+      "breakpoints": true
     }
   ]
 }

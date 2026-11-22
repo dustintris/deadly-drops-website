@@ -150,6 +150,13 @@ export const getLiveFeed = cache(async (): Promise<{ tournamentId: number; versi
 
 /** The charities the tournaments play for, in the admin's order. */
 export const getCharities = async () => (await getContent()).charities
+/** Visible sponsors, in the owner's order (the Sponsors page groups them by level). */
+export const getSponsors = async () => (await getContent()).sponsors.filter((x) => x.visible)
+/** The Volunteers page: its visible roles, perks and sign-up settings. */
+export const getVolunteers = async () => {
+  const v = (await getContent()).volunteers
+  return { ...v, roles: v.roles.filter((r) => r.visible) }
+}
 /** The charities one tournament plays for (none, one, or more). */
 export const getTournamentCharities = async (slug: string) => charitiesForTournament((await getContent()).charities, slug)
 /** How a Deadly Drops tournament runs (age + DUPR brackets, round robin, charity focus, meal and shirt). */

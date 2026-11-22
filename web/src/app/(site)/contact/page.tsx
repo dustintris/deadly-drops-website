@@ -3,15 +3,19 @@ import { ContactForm } from '@/components/ContactForm'
 import c from '@/components/contact.module.css'
 import { AccentTitle } from '@/components/AccentTitle'
 import { getClub, getFaqs, getPageCopy } from '@/lib/data'
+import { TOPICS } from '@/lib/inbox/input'
 import { asset } from '@/lib/utils'
 import { pageMeta } from '@/lib/seo'
 
 export const metadata: Metadata = pageMeta('Contact us', 'Contact Deadly Drops Pickleball in Chula Vista, CA about joining, tournaments, coaching or a shop order. Email info@deadlydropspickleball.com.', '/contact/')
 
-export default async function ContactPage({ searchParams }: { searchParams: Promise<{ about?: string | string[] }> }) {
+export default async function ContactPage({ searchParams }: { searchParams: Promise<{ about?: string | string[]; topic?: string | string[] }> }) {
   const [club, faqs, copy, query] = await Promise.all([getClub(), getFaqs(), getPageCopy('contact'), searchParams])
   // ?about=<product> (a product page's "Message us about this item") starts a shop order about it
   const about = typeof query.about === 'string' ? query.about.replace(/[\u0000-\u001f\u007f]+/g, ' ').trim().slice(0, 80) : ''
+  // ?topic=sponsorship (the Sponsors page's "Become a sponsor") picks that topic; anything else is ignored
+  const asked = typeof query.topic === 'string' ? query.topic.trim().toLowerCase() : ''
+  const topic = asked ? TOPICS.find((t) => t.toLowerCase() === asked) : undefined
   const photo = copy.heroImage ?? { src: '/images/club/dominate-play-3.jpg', alt: '' }
   return (
     <>
@@ -21,8 +25,8 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
             {copy.eyebrow && <p className="eyebrow">{copy.eyebrow}</p>}
             <h1 className="display d-l"><AccentTitle title={copy.title} /></h1>
             {copy.lede && <p className="lede">{copy.lede}</p>}
-            {/* keyed so a different ?about= starts a fresh form */}
-            <ContactForm key={about} email={club.email} about={about || undefined} />
+            {/* keyed so a different ?about= or ?topic= starts a fresh form */}
+            <ContactForm key={`${about}|${topic ?? ''}`} email={club.email} about={about || undefined} topic={topic} />
           </div>
           <aside className={c.side}>
             <div className={`photo ${c.photo}`}>

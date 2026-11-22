@@ -186,6 +186,14 @@ export const Faq = z.object({ id: Id, q: text(5, 140, 'Question'), a: text(5, 60
  * the page of every tournament listed in `tournaments`. Tournaments live in the database, so they are
  * linked by web address (slug); a slug that no longer matches a visible tournament is simply not shown.
  */
+/**
+ * Tournaments ticked on a charity or a sponsor. Tournaments live in the database, so they are linked by web address
+ * (slug). Checked as a whole (not per item) so the error lands on the tournament picker.
+ */
+const TournamentSlugs = z.array(z.string()).max(20, 'Up to 20 tournaments.')
+  .refine((l) => l.every((s) => Slug.safeParse(s).success), 'Pick tournaments from the list.')
+  .refine((l) => new Set(l).size === l.length, 'Each tournament can only be ticked once.')
+
 export const Charity = z.object({
   id: Id,
   slug: Slug,
@@ -199,13 +207,49 @@ export const Charity = z.object({
   logo: ImageRef.optional(),
   /** the charity's own flyer, shown next to the tournament's poster */
   flyer: ImageRef.optional(),
-  // checked as a whole (not per item) so the error lands on the tournament picker
-  tournaments: z.array(z.string()).max(20, 'Up to 20 tournaments.')
-    .refine((l) => l.every((s) => Slug.safeParse(s).success), 'Pick tournaments from the list.')
-    .refine((l) => new Set(l).size === l.length, 'Each tournament can only be ticked once.'),
+  tournaments: TournamentSlugs,
 })
 
-export const PAGE_KEYS = ['home', 'about', 'shop', 'gallery', 'contact', 'community'] as const
+/** Sponsor levels, biggest first: the Sponsors page groups sponsors in this order. */
+export const SPONSOR_LEVELS = ['Title', 'Gold', 'Silver', 'Bronze', 'Supporter'] as const
+export type SponsorLevel = (typeof SPONSOR_LEVELS)[number]
+
+/**
+ * A business or person backing the club's tournaments. Shown on /sponsors/ (grouped by level, in list order within a
+ * level) and on the page of every tournament listed in `tournaments`. Hidden ones are kept but shown nowhere.
+ */
+export const Sponsor = z.object({
+  id: Id,
+  name: text(2, 80, 'Sponsor name'),
+  level: z.enum(SPONSOR_LEVELS, { errorMap: () => ({ message: 'Pick a sponsor level.' }) }),
+  /** a line or two about them, shown on their card */
+  blurb: text(0, 280, 'About the sponsor'),
+  website: optional(httpsUrl),
+  logo: ImageRef.optional(),
+  tournaments: TournamentSlugs,
+  visible: z.boolean(),
+})
+
+/** One job on a tournament day, shown as a card on /volunteers/. */
+export const VolunteerRole = z.object({
+  id: Id,
+  title: text(2, 60, 'Role name'),
+  body: text(5, 300, 'What the role involves'),
+  visible: z.boolean(),
+})
+
+/** The Volunteers page below its headline (the headline itself is in `pages.volunteers`). */
+export const Volunteers = z.object({
+  roles: z.array(VolunteerRole).max(12, 'Up to 12 roles.'),
+  /** what volunteers get (a shirt, a meal...), one per line; none hides the list */
+  perks: lines(text(2, 80, 'Perk')).pipe(z.array(z.string()).max(6, 'Up to 6 perks.')),
+  /** show the sign-up form; its messages land in the Inbox under "Volunteering" */
+  signupOpen: z.boolean(),
+  /** shown above the form, or in its place while sign-ups are closed */
+  signupNote: text(0, 240, 'Sign-up note'),
+})
+
+export const PAGE_KEYS = ['home', 'about', 'shop', 'gallery', 'contact', 'community', 'sponsors', 'volunteers'] as const
 export type PageKey = (typeof PAGE_KEYS)[number]
 export const PageCopy = z.object({
   eyebrow: optText(40, 'Small label'),
@@ -226,6 +270,8 @@ export const SECTIONS = {
   posts: z.array(CommunityPost).max(250).refine((l) => new Set(l.map((p) => p.slug)).size === l.length, 'Two posts have the same web address.'),
   faqs: z.array(Faq).max(40),
   charities: z.array(Charity).max(20).refine((l) => new Set(l.map((c) => c.slug)).size === l.length, 'Two charities have the same web address.'),
+  sponsors: z.array(Sponsor).max(60, 'Up to 60 sponsors.'),
+  volunteers: Volunteers,
   pages: z.object(Object.fromEntries(PAGE_KEYS.map((k) => [k, PageCopy])) as Record<PageKey, typeof PageCopy>),
 } as const
 export type SectionKey = keyof typeof SECTIONS
@@ -240,6 +286,9 @@ export type GalleryItemT = z.infer<typeof GalleryItem>
 export type CommunityPostT = z.infer<typeof CommunityPost>
 export type FaqT = z.infer<typeof Faq>
 export type CharityT = z.infer<typeof Charity>
+export type SponsorT = z.infer<typeof Sponsor>
+export type VolunteerRoleT = z.infer<typeof VolunteerRole>
+export type VolunteersT = z.infer<typeof Volunteers>
 export type PageCopyT = z.infer<typeof PageCopy>
 
 export type SiteContent = {
@@ -255,6 +304,8 @@ export type SiteContent = {
   posts: CommunityPostT[]
   faqs: FaqT[]
   charities: CharityT[]
+  sponsors: SponsorT[]
+  volunteers: VolunteersT
   pages: Record<PageKey, PageCopyT>
 }
 

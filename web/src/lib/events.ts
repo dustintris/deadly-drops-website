@@ -7,6 +7,12 @@ export function clubToday(now = new Date()): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now)
 }
 
+/**
+ * The club's order for every list of tournaments: the latest first. A tournament without a date yet is the newest
+ * announcement, so it leads. (ISO dates sort as strings.)
+ */
+export const latestFirst = (a: Pick<ClubEvent, 'date'>, b: Pick<ClubEvent, 'date'>) => (b.date ?? '9999').localeCompare(a.date ?? '9999')
+
 /** Where a tournament stands today, so the site never shows "Register" for an event that is over. */
 export function eventState(e: ClubEvent, now = new Date()): EventState {
   if (!e.date) return e.registrationOpen ? 'open' : 'tba'

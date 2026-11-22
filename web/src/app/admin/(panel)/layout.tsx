@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 
 const LABELS: Record<string, string> = {
   settings: 'club info', theme: 'logo & colours', ticker: 'announcements', products: 'shop',
-  media: 'photos', gallery: 'gallery', posts: 'community', faqs: 'FAQ', charities: 'charities', pages: 'page text',
+  media: 'photos', gallery: 'gallery', posts: 'community', faqs: 'FAQ', charities: 'charities', sponsors: 'sponsors', volunteers: 'volunteers', pages: 'page text',
 }
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {

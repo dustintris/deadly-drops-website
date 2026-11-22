@@ -1,0 +1,131 @@
+/* Sponsors page (/sponsors/): one band per sponsor level, biggest first, then the "Become a sponsor" call to action.
+   Also the "Sponsored by" row on each tournament's page (.strip below).
+   Colours, type and buttons come from the global theme classes; only layout lives here. */
+
+/* ---------- a level's cards ---------- */
+/* auto-fill (not auto-fit): a level with one sponsor keeps a card-sized card instead of one stretched across the page */
+.grid { list-style: none; padding: 0; display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
+.grid[data-level='Title'] { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+@media (min-width: 1000px) { .grid[data-level='Title']:not([data-count='1']) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.grid[data-level='Bronze'] { grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); }
+.grid[data-level='Supporter'] { grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 14px; }
+
+.sponsor:global(.card) {
+  display: flex; flex-direction: column; gap: 18px; min-width: 0; padding: 20px;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+/* the logo, shown whole on the theme's logo plate (logos keep their own colours), like charity and tournament logos */
+.plate { position: relative; flex: none; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; background: var(--logo-plate); --pad: 14px; }
+.plate img { position: absolute; inset: var(--pad); width: calc(100% - 2 * var(--pad)); height: calc(100% - 2 * var(--pad)); object-fit: contain; }
+/* no logo yet: the sponsor's initials glow on a night tile in its place */
+.initials {
+  display: grid; place-items: center; width: 100%; height: 100%;
+  font-family: var(--font-display), Impact, sans-serif; font-size: clamp(40px, 5vw, 60px); line-height: 1; text-transform: uppercase;
+  color: var(--accent); text-shadow: 0 0 20px rgb(var(--accent-rgb) / .45);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface)); border: 1px dashed rgb(var(--accent-soft-rgb) / .3); border-radius: inherit;
+}
+.plate[data-logo='false'] { background: none; }
+
+.body { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.name { font-size: 20px; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
+.blurb { font-size: 15px; line-height: 1.6; color: rgb(var(--ink-rgb) / .78); overflow-wrap: anywhere; }
+/* the tournaments they sponsor and their website sit at the foot of the card, level across a row */
+.foot { margin-top: auto; padding-top: 6px; display: grid; gap: 4px; justify-items: start; }
+.backs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.backs ul { list-style: none; padding: 0; }
+.backsLabel { font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: rgb(var(--ink-rgb) / .66); }
+/* the website: the arrow-link look, but a long address wraps (and keeps its underline) instead of running out of the card */
+.site:global(.link-arrow) {
+  display: inline-block; max-width: 100%; padding-block: 14px 10px; line-height: 1.5; overflow-wrap: anywhere;
+  background: none; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 5px;
+}
+
+/* Gold: a pink rim and a slightly bigger name */
+.sponsor[data-level='Gold']:global(.card) { border-color: rgb(var(--accent-rgb) / .32); }
+.sponsor[data-level='Gold'] .name { font-size: 22px; }
+
+/* Title: the biggest card, lit like the charity panel, the logo beside the words on wider screens */
+.sponsor[data-level='Title']:global(.card) {
+  padding: clamp(20px, 3vw, 32px); gap: 22px; border-color: rgb(var(--accent-rgb) / .45);
+  box-shadow: inset 0 1px 0 rgb(var(--ink-rgb) / .08), 0 0 44px -18px rgb(var(--accent-rgb) / .65);
+}
+.sponsor[data-level='Title'] .plate { aspect-ratio: 4 / 3; border-radius: 14px; --pad: 18px; box-shadow: 0 0 0 2px var(--accent), 0 0 22px rgb(var(--accent-rgb) / .45); }
+.sponsor[data-level='Title'] .plate[data-logo='false'] { box-shadow: none; }
+.sponsor[data-level='Title'] .initials { font-size: clamp(56px, 7vw, 96px); }
+.sponsor[data-level='Title'] .name { font-family: var(--font-display), Impact, sans-serif; font-weight: 400; text-transform: uppercase; font-size: clamp(28px, 3.4vw, 40px); line-height: 1; }
+.sponsor[data-level='Title'] .blurb { font-size: 17px; max-width: 56ch; color: rgb(var(--ink-rgb) / .84); }
+@media (min-width: 720px) {
+  .sponsor[data-level='Title']:global(.card) { flex-direction: row; align-items: center; gap: clamp(24px, 4vw, 48px); }
+  .sponsor[data-level='Title'] .plate { width: clamp(200px, 38%, 360px); }
+  .sponsor[data-level='Title'] .body { align-self: stretch; justify-content: center; }
+  .sponsor[data-level='Title'] .foot { margin-top: 8px; }
+}
+
+/* Bronze: a shorter plate */
+.sponsor[data-level='Bronze'] .plate { aspect-ratio: 2 / 1; --pad: 12px; }
+.sponsor[data-level='Bronze'] .initials { font-size: 40px; }
+
+/* Supporters: compact cards, a small square logo beside the name */
+.sponsor[data-level='Supporter']:global(.card) { flex-direction: row; align-items: flex-start; gap: 16px; padding: 16px; }
+.sponsor[data-level='Supporter'] .plate { width: 72px; aspect-ratio: 1; border-radius: 10px; --pad: 6px; }
+.sponsor[data-level='Supporter'] .initials { font-size: 28px; }
+.sponsor[data-level='Supporter'] .name { font-size: 17px; }
+.sponsor[data-level='Supporter'] .blurb { font-size: 14px; }
+.sponsor[data-level='Supporter'] .body { gap: 6px; }
+/* after the level rules, so every card answers the pointer */
+.sponsor:global(.card):hover { border-color: rgb(var(--accent-rgb) / .55); }
+
+/* ---------- the last band melts into pink clouds above the blush call to action ---------- */
+.lastBand { --cloud-fill: var(--paper-gloss); position: relative; isolation: isolate; padding-bottom: calc(clamp(56px, 8vw, 96px) + 64px); }
+.lastBand > :global(.wrap) { position: relative; z-index: 2; }
+.lastBand + :global(*) { margin-top: -1px; }
+
+/* ---------- Become a sponsor ---------- */
+.cta { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: clamp(32px, 5vw, 72px); align-items: center; }
+.cta > :first-child > * + * { margin-top: 16px; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.cta .actions { margin-top: 28px; }
+/* what a sponsor gets: a white card with a black outline on the blush wall, a pink sparkle for each line */
+.perks:global(.card) { padding: clamp(22px, 3vw, 32px); }
+.perks h3 { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: color-mix(in srgb, var(--accent-deep) 62%, var(--ink-dark)); }
+.perks ul { list-style: none; padding: 0; margin-top: 14px; display: grid; gap: 12px; }
+.perks li { position: relative; padding-left: 28px; font-size: 16px; line-height: 1.5; }
+.perks li::before {
+  content: ''; position: absolute; left: 0; top: .2em; width: 16px; height: 16px; background: var(--accent-deep);
+  -webkit-mask: var(--sparkle-shape) center / contain no-repeat; mask: var(--sparkle-shape) center / contain no-repeat;
+}
+
+@media (max-width: 900px) {
+  .cta { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 420px) {
+  .actions :global(.btn) { width: 100%; }
+}
+
+/* ---------- "Sponsored by" on a tournament's page (/tournaments/[slug]/), the last block of the charity band ---------- */
+.strip { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 28px; }
+/* after the charity, flyer or medal: a dashed rule, like the rows in the charity panel */
+.strip:not(:first-child) { margin-top: clamp(48px, 6vw, 72px); padding-top: clamp(28px, 4vw, 40px); border-top: 1px dashed rgb(var(--accent-soft-rgb) / .22); }
+.stripList { list-style: none; padding: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.stripItem {
+  display: flex; align-items: center; justify-content: center; height: 56px; padding: 6px 12px; border-radius: 10px;
+  background: var(--logo-plate); transition: transform .18s ease, box-shadow .18s ease;
+}
+.stripItem img { height: 44px; width: auto; max-width: 136px; object-fit: contain; }
+/* a sponsor without a logo: their name in a pill */
+.stripItem[data-logo='false'] {
+  height: auto; min-height: 44px; padding: 8px 18px; border-radius: 100px; background: none;
+  border: 1px solid rgb(var(--accent-soft-rgb) / .34); color: rgb(var(--ink-rgb) / .88); font-size: 15px; font-weight: 600;
+}
+.stripItem:hover, .stripItem:focus-visible { box-shadow: var(--glow-soft); }
+@media (prefers-reduced-motion: no-preference) {
+  .stripItem:hover, .stripItem:focus-visible { transform: translateY(-2px); }
+}
+/* the title sponsor's logo is a little bigger */
+.stripList li[data-level='Title'] .stripItem[data-logo='true'] { height: 72px; padding: 8px 14px; }
+.stripList li[data-level='Title'] .stripItem img { height: 56px; max-width: 180px; }
+.strip > :global(.link-arrow) { margin-left: auto; }
+@media (max-width: 560px) {
+  .strip > :global(.link-arrow) { margin-left: 0; }
+}

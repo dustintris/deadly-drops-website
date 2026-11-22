@@ -3,7 +3,7 @@
 import { ImageField, SaveBar, SectionForm, useFieldError, useSection } from '@/components/admin/kit'
 import { contrastRatio, CONTRAST_RULES, type ThemeColourKey, type ThemeT } from '@/lib/content-schema'
 import { asset } from '@/lib/utils'
-import { BLOSSOM_THEME, defaultTheme, LEGACY_LIME_THEME, themeLogo, TWILIGHT_THEME } from '@/theme/tokens'
+import { BLOSSOM_BRIGHT_THEME, BLOSSOM_THEME, defaultTheme, LEGACY_LIME_THEME, themeLogo, TWILIGHT_THEME } from '@/theme/tokens'
 
 const GROUPS: { title: string; keys: [ThemeColourKey, string][] }[] = [
   { title: 'Brand accent', keys: [['accent', 'Accent (buttons, highlights)'], ['accentSoft', 'Accent, lighter (hovers)'], ['accentDeep', 'Accent, deeper (gradients)'], ['onAccent', 'Text on accent buttons']] },
@@ -12,9 +12,11 @@ const GROUPS: { title: string; keys: [ThemeColourKey, string][] }[] = [
   { title: 'Other', keys: [['danger', 'Error text on dark'], ['dangerOnLight', 'Error text on light'], ['logoPlate', 'Behind the logo']] },
 ]
 
-// Blossom (the default), Twilight and Lime set every colour (each is a whole design); the others only swap the accent family
+// Blossom (the default), Blossom deep, Twilight and Lime set every colour (each is a whole design); the others only
+// swap the accent family
 const PRESETS: { name: string; patch: Partial<ThemeT> }[] = [
-  { name: 'Blossom', patch: { ...BLOSSOM_THEME } },
+  { name: 'Blossom', patch: { ...BLOSSOM_BRIGHT_THEME } },
+  { name: 'Blossom deep (navy night)', patch: { ...BLOSSOM_THEME } },
   { name: 'Twilight', patch: { ...TWILIGHT_THEME } },
   { name: 'Lime (original design)', patch: { ...LEGACY_LIME_THEME } },
   { name: 'Club pink', patch: { accent: '#F06AA6', accentSoft: '#F7C6DC', accentDeep: '#C2185B', onAccent: '#111111', accentTint: '#2A0B1C' } },

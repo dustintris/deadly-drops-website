@@ -9,13 +9,14 @@ const ORDER: [string, string][] = [['name', 'c-name'], ['email', 'c-email'], ['m
 
 /**
  * The Contact form. Messages go to Admin → Inbox. `about` (from /contact/?about=… on a product page) opens it
- * as a shop order about that item.
+ * as a shop order about that item; `topic` (e.g. "Volunteering" on the Volunteers page, or /contact/?topic=…)
+ * starts it on that topic.
  */
-export function ContactForm({ email, about }: { email: string; about?: string }) {
+export function ContactForm({ email, about, topic, hint }: { email: string; about?: string; topic?: Topic; hint?: string }) {
   const blank = () => ({
     name: '',
     email: '',
-    topic: (about ? 'Shop order' : TOPICS[0]) as Topic,
+    topic: (about ? 'Shop order' : topic ?? TOPICS[0]) as Topic,
     message: about ? `Hi! I’d like to buy: ${about}.\nSize: ` : '',
     // the hidden bot trap (see lib/inbox/input.ts): people never see it
     website: '',
@@ -91,7 +92,9 @@ export function ContactForm({ email, about }: { email: string; about?: string })
       </fieldset>
       <div className="field">
         <label htmlFor="c-msg">Message</label>
-        <textarea id="c-msg" required aria-required="true" className="input" maxLength={LIMITS.message} placeholder="Tell us what you need. If you've never played, say so and we'll pair you with someone patient." value={f.message} onChange={(e) => set('message', e.target.value)} aria-invalid={!!err.message} aria-describedby="c-msg-e" />
+        {/* a page's own prompt stays visible (a placeholder vanishes once typing starts) */}
+        {hint && <p id="c-msg-h" className="small muted">{hint}</p>}
+        <textarea id="c-msg" required aria-required="true" className="input" maxLength={LIMITS.message} placeholder={hint ? undefined : "Tell us what you need. If you've never played, say so and we'll pair you with someone patient."} value={f.message} onChange={(e) => set('message', e.target.value)} aria-invalid={!!err.message} aria-describedby={hint ? 'c-msg-h c-msg-e' : 'c-msg-e'} />
         {err.message && <p id="c-msg-e" className="error">{err.message}</p>}
       </div>
       {/* bot trap: off screen and inert (no focus, click or screen reader), and password managers are told to skip it */}

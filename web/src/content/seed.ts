@@ -43,6 +43,19 @@ export function buildSeed(): SiteContent {
     posts: communityPosts,
     faqs: faqs.map((f, i) => ({ id: id('faq', i), ...f, visible: true })),
     charities,
+    sponsors: [],
+    volunteers: {
+      roles: [
+        { id: 'vol-checkin', title: 'Check-in desk', body: 'Welcome players as they arrive, tick them off on the check-in screen and hand out their shirts.', visible: true },
+        { id: 'vol-score', title: 'Scorekeeping', body: 'Look after a court: enter each game’s score on your phone so the big screen and the website update live.', visible: true },
+        { id: 'vol-courts', title: 'Court setup', body: 'Put up nets, signs and banners before play starts, and help pack everything away at the end of the day.', visible: true },
+        { id: 'vol-food', title: 'Food & hospitality', body: 'Help serve the players’ meal, keep the water cooler full and the snack table stocked.', visible: true },
+        { id: 'vol-photos', title: 'Photos & social', body: 'Capture the best rallies and the podium moments for the gallery and the club’s social pages.', visible: true },
+      ],
+      perks: [],
+      signupOpen: true,
+      signupNote: 'Tell us which tournament and which role you’d like. We’ll reply with the details for the day.',
+    },
     pages: {
       home: {
         eyebrow: 'Open to all · earned by play',
@@ -70,6 +83,18 @@ export function buildSeed(): SiteContent {
         title: 'The people who *make* the club',
         lede: 'Photos from the courts, club news and stories from the players who keep showing up.',
         heroImage: { src: '/images/club/toy-drive-celebration.jpg', alt: '', position: '50% 40%' },
+      },
+      sponsors: {
+        eyebrow: 'Sponsors',
+        title: 'The people who *back* us',
+        lede: 'Every Deadly Drops tournament plays for charity, and our sponsors help make that happen. Thank you to each one of them.',
+        heroImage: { src: '/images/club/dominate-play-5.jpg', alt: '', position: '75% 40%' },
+      },
+      volunteers: {
+        eyebrow: 'Volunteers',
+        title: 'Help us run the *day*',
+        lede: 'Tournament days run on volunteers. Check players in, keep score or set up the courts, and be part of the fun without picking up a paddle.',
+        heroImage: { src: '/images/club/court-group-photo-2.jpg', alt: '', position: '50% 40%' },
       },
     },
   }

@@ -37,10 +37,13 @@ async function combine(ts: Tournament[]): Promise<ExportTournament[]> {
   }))
 }
 
-/** Every tournament, hidden drafts included (the app is the director's own tool), earliest first. */
+/**
+ * Every tournament, hidden drafts included (the app is the director's own tool), earliest first and undated ones
+ * last: the order the desktop app has always received. The website lists the latest first, so this reverses it.
+ */
 export async function loadAllForApp(): Promise<ExportTournament[]> {
   await ensureImported()
-  return combine(await listTournaments())
+  return combine([...(await listTournaments())].reverse())
 }
 
 export async function loadForApp(id: number): Promise<ExportTournament | null> {
